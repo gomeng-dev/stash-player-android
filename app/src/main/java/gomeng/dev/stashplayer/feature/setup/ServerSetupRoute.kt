@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -39,11 +42,6 @@ import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
-private enum class SetupAuthMode {
-    ApiKey,
-    Password,
-}
-
 @Composable
 fun ServerSetupRoute(
     isFoldLikeLayout: Boolean,
@@ -64,6 +62,7 @@ fun ServerSetupRoute(
     var isSaving by remember { mutableStateOf(false) }
     var statusText by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(savedProfile) {
         savedProfile?.let {
@@ -78,6 +77,8 @@ fun ServerSetupRoute(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .then(if (shouldUseScrollableSetupContent(authMode)) Modifier.verticalScroll(scrollState) else Modifier)
+            .imePadding()
             .padding(if (isFoldLikeLayout) 32.dp else 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -257,7 +258,7 @@ fun ServerSetupRoute(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isSaving && serverUrl.isNotBlank() && authMode == SetupAuthMode.ApiKey,
+                    enabled = !isSaving && serverUrl.isNotBlank() && shouldAllowUntestedSetupSave(authMode),
                 ) {
                     Text(stashString(R.string.auto_kr_0537))
                 }

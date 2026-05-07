@@ -1,4 +1,5 @@
 import java.util.Base64
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -7,21 +8,48 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-val releaseSigningKeystoreBase64 = providers.environmentVariable("ANDROID_SIGNING_KEYSTORE_BASE64").orNull
-val releaseSigningStorePassword = providers.environmentVariable("ANDROID_SIGNING_STORE_PASSWORD").orNull
-val releaseSigningKeyAlias = providers.environmentVariable("ANDROID_SIGNING_KEY_ALIAS").orNull
-val releaseSigningKeyPassword = providers.environmentVariable("ANDROID_SIGNING_KEY_PASSWORD").orNull
-val hasReleaseSigningConfig = listOf(
-    releaseSigningKeystoreBase64,
-    releaseSigningStorePassword,
-    releaseSigningKeyAlias,
-    releaseSigningKeyPassword,
-).all { !it.isNullOrBlank() }
-val releaseSigningKeystoreFile = layout.buildDirectory.file("signing/release-keystore.jks").get().asFile
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.isFile) {
+        file.inputStream().use(::load)
+    }
+}
 
-if (hasReleaseSigningConfig) {
-    releaseSigningKeystoreFile.parentFile.mkdirs()
-    releaseSigningKeystoreFile.writeBytes(Base64.getDecoder().decode(releaseSigningKeystoreBase64))
+fun localProperty(vararg names: String): String? = names.asSequence()
+    .mapNotNull { name -> localProperties.getProperty(name)?.trim()?.takeIf { it.isNotBlank() } }
+    .firstOrNull()
+
+fun environmentVariable(name: String): String? = providers.environmentVariable(name).orNull
+    ?.trim()
+    ?.takeIf { it.isNotBlank() }
+
+val releaseSigningKeystoreBase64 = environmentVariable("ANDROID_SIGNING_KEYSTORE_BASE64")
+val releaseSigningStorePassword = environmentVariable("ANDROID_SIGNING_STORE_PASSWORD")
+    ?: localProperty("ANDROID_SIGNING_STORE_PASSWORD", "android.signing.storePassword", "storePassword")
+val releaseSigningKeyAlias = environmentVariable("ANDROID_SIGNING_KEY_ALIAS")
+    ?: localProperty("ANDROID_SIGNING_KEY_ALIAS", "android.signing.keyAlias", "keyAlias")
+val releaseSigningKeyPassword = environmentVariable("ANDROID_SIGNING_KEY_PASSWORD")
+    ?: localProperty("ANDROID_SIGNING_KEY_PASSWORD", "android.signing.keyPassword", "keyPassword")
+val localReleaseSigningKeystoreFile = localProperty("ANDROID_SIGNING_KEYSTORE_FILE", "android.signing.storeFile", "storeFile")
+    ?.let { rootProject.file(it) }
+    ?: rootProject.file("stash-player-release.jks")
+val generatedReleaseSigningKeystoreFile = layout.buildDirectory.file("signing/release-keystore.jks").get().asFile
+val releaseSigningKeystoreFile = if (releaseSigningKeystoreBase64 != null) {
+    generatedReleaseSigningKeystoreFile
+} else {
+    localReleaseSigningKeystoreFile
+}
+val hasReleaseSigningKeystore = releaseSigningKeystoreBase64 != null || localReleaseSigningKeystoreFile.isFile
+val hasReleaseSigningConfig = hasReleaseSigningKeystore &&
+    listOf(
+        releaseSigningStorePassword,
+        releaseSigningKeyAlias,
+        releaseSigningKeyPassword,
+    ).all { !it.isNullOrBlank() }
+
+if (releaseSigningKeystoreBase64 != null) {
+    generatedReleaseSigningKeystoreFile.parentFile.mkdirs()
+    generatedReleaseSigningKeystoreFile.writeBytes(Base64.getDecoder().decode(releaseSigningKeystoreBase64))
 }
 
 android {

@@ -231,10 +231,16 @@ private fun SimilarVideosSuccess(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = state.title,
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = state.title,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                StashMetadataBadge(StashMetadataBadgeModel(label = state.sourceBadgeLabel))
+            }
             if (state.subtitle.isNotBlank()) {
                 Text(
                     text = state.subtitle,
@@ -337,7 +343,6 @@ fun SimilarSceneCard(
                     horizontalArrangement = Arrangement.spacedBy(cardPolicy.metadataBadgeSpacingDp.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    StashMetadataBadge(StashMetadataBadgeModel(label = item.provenanceLabel))
                     item.metadataBadges.forEach { badge ->
                         StashMetadataBadge(StashMetadataBadgeModel(label = badge))
                     }

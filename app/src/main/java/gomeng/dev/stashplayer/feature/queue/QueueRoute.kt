@@ -38,6 +38,7 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashListMediaRow
 import gomeng.dev.stashplayer.core.ui.designsystem.StashScreenHeader
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeader
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeaderModel
+import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
@@ -369,9 +370,7 @@ private fun QueueSceneRow(
         moveDownLabel = moveDownLabel,
         moveDownEnabled = moveDownEnabled,
     )
-    val thumbnailModel = remember(visualModel.thumbnailUrl, serverProfile) {
-        buildQueueThumbnailModel(visualModel.thumbnailUrl, serverProfile)
-    }
+    val thumbnailModel = rememberStashThumbnailModel(visualModel.thumbnailUrl, serverProfile)
     StashListMediaRow(
         title = visualModel.title,
         subtitle = visualModel.subtitle,

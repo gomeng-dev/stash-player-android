@@ -46,8 +46,8 @@ import gomeng.dev.stashplayer.core.model.StashMainTabSection
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
-import gomeng.dev.stashplayer.core.network.buildStashThumbnailModel
 import gomeng.dev.stashplayer.core.ui.components.SceneCard
+import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashActionPill
 import gomeng.dev.stashplayer.core.ui.designsystem.StashEmptyState
 import gomeng.dev.stashplayer.core.ui.designsystem.StashEmptyStateModel
@@ -347,9 +347,7 @@ private fun HomeHubContent(
                             onClick = { onOpenScene(scene.id, section.scenes, false) },
                             modifier = Modifier.width(cardWidth),
                             thumbnailHeight = thumbnailHeight,
-                            thumbnailModel = remember(scene.thumbnailUrl, serverProfile) {
-                                buildStashThumbnailModel(scene.thumbnailUrl, serverProfile)
-                            },
+                            thumbnailModel = rememberStashThumbnailModel(scene.thumbnailUrl, serverProfile),
                         )
                     }
                 }
@@ -379,9 +377,7 @@ private fun HomeHeroCard(
     modifier: Modifier = Modifier,
     onPlay: () -> Unit,
 ) {
-    val thumbnailModel = remember(scene.thumbnailUrl, serverProfile) {
-        buildStashThumbnailModel(scene.thumbnailUrl, serverProfile)
-    }
+    val thumbnailModel = rememberStashThumbnailModel(scene.thumbnailUrl, serverProfile)
     StashHeroMediaCard(
         title = scene.title,
         subtitle = scene.subtitle.ifBlank { stashString(R.string.auto_kr_0383) },
@@ -592,9 +588,7 @@ private fun HomeScenePreviewRow(
             contentPadding = PaddingValues(horizontal = horizontalPadding),
         ) {
             items(scenes, key = { it.id }) { scene ->
-                val thumbnailModel = remember(scene.thumbnailUrl, serverProfile) {
-                    buildStashThumbnailModel(scene.thumbnailUrl, serverProfile)
-                }
+                val thumbnailModel = rememberStashThumbnailModel(scene.thumbnailUrl, serverProfile)
                 SceneCard(
                     scene = scene,
                     onClick = { onOpenScene(scene.id, allScenes, false) },

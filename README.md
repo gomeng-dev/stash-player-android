@@ -1,17 +1,25 @@
 # Stash Android Player
 
-Native Android media player for [Stash](https://github.com/stashapp/stash),
-built with Kotlin, Jetpack Compose, and Media3/ExoPlayer.
+Stash Android Player is a native Android client for
+[Stash](https://github.com/stashapp/stash), focused on watching and organizing
+your self-hosted Stash library from a phone or tablet.
 
-## Features
+The app is built for a direct connection to your own Stash server. It does not
+include a hosted backend service, cloud sync, or third-party recommendation
+server.
 
-- Connect to a self-hosted Stash server with URL and API key support.
-- Browse, search, queue, and play Stash scenes from a native Android interface.
-- Media3/ExoPlayer playback with fullscreen-first player controls.
-- MX Player-style gesture direction, including tap controls, seeking, side
-  controls, long-press speed hold, lock mode, and watch-page playback.
-- Local queue, watch-later style state, favorites, and playback progress.
-- Dark thumbnail-first UI built with Jetpack Compose and Material 3.
+## What It Does
+
+- Connects to your Stash server with an API key or a login session.
+- Browses and searches your scene library with a mobile-first interface.
+- Plays scenes with Media3/ExoPlayer.
+- Provides fullscreen player controls inspired by MX Player-style gestures.
+- Supports tap controls, double-tap seeking, horizontal seek, side
+  brightness/volume controls, long-press speed hold, and lock mode.
+- Keeps local favorites, Watch Later, and playback queue lists on the device.
+- Shows similar videos using the Stash Hybrid Recommendations Engine plugin
+  when available, with Stash GraphQL recommendations as a fallback.
+- Uses a dark, thumbnail-focused Jetpack Compose UI.
 
 ## Install
 
@@ -25,53 +33,28 @@ installing a downloaded APK.
 
 - Android 10 or newer.
 - A reachable Stash server.
-- Stash API access when your server requires authentication.
-
-The app connects directly to the Stash server you configure. Server URL and API
-key settings are stored locally on the device.
+- Stash API access, or a Stash login session, when your server requires
+  authentication.
 
 Android application ID: `gomeng.dev.stashplayer`.
 
-## Build From Source
+## Privacy
 
-Install JDK 17 or newer and Android SDK 35, then run:
+Your Stash server URL, API key, and session data stay on your device. The app
+does not send your library data to a hosted service controlled by this project.
 
-```bash
-./gradlew --no-daemon :app:assembleDebug
-```
+Treat your Stash credentials as private. Avoid sharing screenshots, logs, or
+screen recordings that expose your server URL, API key, or session cookies.
 
-The debug APK is written to:
+## Help And Updates
 
-```text
-app/build/outputs/apk/debug/
-```
+- Releases: https://github.com/gomeng-dev/stash-player-android/releases
+- Issues: https://github.com/gomeng-dev/stash-player-android/issues
 
-To build a signed release APK, provide these environment variables:
+## Development
 
-```bash
-export ANDROID_SIGNING_KEYSTORE_BASE64="<base64 encoded keystore>"
-export ANDROID_SIGNING_STORE_PASSWORD="<store password>"
-export ANDROID_SIGNING_KEY_ALIAS="<key alias>"
-export ANDROID_SIGNING_KEY_PASSWORD="<key password>"
-./gradlew --no-daemon :app:assembleRelease
-```
-
-## Tech Stack
-
-- Kotlin
-- Jetpack Compose and Material 3
-- AndroidX Navigation
-- Media3/ExoPlayer
-- Coil
-- Room
-- DataStore
-- Retrofit, OkHttp, and Moshi
-
-## Privacy And Security
-
-This app is a client for your own Stash server. It does not include a hosted
-backend service. Treat your Stash URL and API key as private credentials, and
-avoid sharing logs or screenshots that expose them.
+Build instructions, stack details, and signing notes are in
+[DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 

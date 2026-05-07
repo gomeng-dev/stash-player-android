@@ -306,7 +306,7 @@ private data class ApiScene(
             studio = studio?.name ?: "Stash",
             progress = progress,
             isInWatchLater = false,
-            thumbnailUrl = paths?.screenshot,
+            thumbnailUrl = paths.bestThumbnailUrl(),
             playCount = playCount,
             metadataBadges = buildSceneCardMetadataBadges(
                 width = file?.width,
@@ -334,6 +334,17 @@ private data class ApiScenePaths(
     val sprite: String? = null,
     val caption: String? = null,
 )
+
+private fun ApiScenePaths?.bestThumbnailUrl(): String? = listOf(
+    this?.screenshot,
+    this?.preview,
+    this?.webp,
+    this?.sprite,
+).firstNotBlankOrNull()
+
+private fun List<String?>.firstNotBlankOrNull(): String? = firstNotNullOfOrNull { value ->
+    value?.trim()?.takeIf { it.isNotBlank() }
+}
 
 private data class ApiVideoCaption(
     @Json(name = "language_code") val languageCode: String? = null,

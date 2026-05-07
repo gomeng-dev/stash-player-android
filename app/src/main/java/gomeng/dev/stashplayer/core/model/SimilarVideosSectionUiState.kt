@@ -39,7 +39,7 @@ object SimilarVideosSectionCopy {
         SimilarVideosRecommendationSource.GraphQlFallback -> ""
     }
 
-    fun provenanceFor(source: SimilarVideosRecommendationSource): String = when (source) {
+    fun sourceBadgeFor(source: SimilarVideosRecommendationSource): String = when (source) {
         SimilarVideosRecommendationSource.HybridBackend -> stashString(R.string.auto_kr_0034)
         SimilarVideosRecommendationSource.GraphQlFallback -> stashString(R.string.auto_kr_0033)
     }
@@ -86,6 +86,7 @@ sealed interface SimilarVideosSectionUiState {
     data class Success(
         val title: String,
         val subtitle: String,
+        val sourceBadgeLabel: String,
         val layout: SimilarVideosLayout,
         val items: List<SimilarSceneCardUiModel>,
     ) : SimilarVideosSectionUiState
@@ -108,7 +109,6 @@ data class SimilarSceneCardUiModel(
     val title: String,
     val imageUrl: String?,
     val metadataBadges: List<String>,
-    val provenanceLabel: String,
     val scoreLabel: String,
     val reasonChips: List<String>,
     val openContentDescription: String,
@@ -160,7 +160,6 @@ fun buildSimilarVideosSectionUiState(
         .map { recommendation ->
             buildSimilarSceneCardUiModel(
                 recommendation = recommendation,
-                recommendationSource = recommendationSource,
                 queuedSceneIds = queuedSceneIds,
             )
         }
@@ -175,6 +174,7 @@ fun buildSimilarVideosSectionUiState(
     return SimilarVideosSectionUiState.Success(
         title = SimilarVideosSectionCopy.titleFor(recommendationSource),
         subtitle = SimilarVideosSectionCopy.subtitleFor(recommendationSource),
+        sourceBadgeLabel = SimilarVideosSectionCopy.sourceBadgeFor(recommendationSource),
         layout = chooseSimilarVideosLayout(
             availableWidthDp = availableWidthDp,
             layoutContext = layoutContext,
@@ -222,7 +222,6 @@ fun similarVideosCompactVerticalMaxHeightDp(
 
 fun buildSimilarSceneCardUiModel(
     recommendation: SimilarSceneRecommendation,
-    recommendationSource: SimilarVideosRecommendationSource = SimilarVideosRecommendationSource.HybridBackend,
     queuedSceneIds: Set<String> = emptySet(),
 ): SimilarSceneCardUiModel {
     val scene = recommendation.scene
@@ -237,7 +236,6 @@ fun buildSimilarSceneCardUiModel(
         imageUrl = scene.thumbnailUrl?.trim().takeUnless { it.isNullOrEmpty() }
             ?: scene.spriteImageUrl?.trim().takeUnless { it.isNullOrEmpty() },
         metadataBadges = buildSimilarSceneMetadataBadges(scene),
-        provenanceLabel = SimilarVideosSectionCopy.provenanceFor(recommendationSource),
         scoreLabel = formatSimilarSceneScore(recommendation.score),
         reasonChips = emptyList(),
         openContentDescription = stashString(R.string.auto_kr_0036, title),
