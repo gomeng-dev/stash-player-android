@@ -76,6 +76,7 @@ import gomeng.dev.stashplayer.core.player.dragBy
 import gomeng.dev.stashplayer.core.player.playerLockedTouchHint
 import gomeng.dev.stashplayer.core.player.release
 import gomeng.dev.stashplayer.core.player.startPlayerPresentationDragSession
+import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.ui.designsystem.StashAlpha
 import gomeng.dev.stashplayer.core.ui.components.SimilarVideosSection
 import gomeng.dev.stashplayer.core.ui.designsystem.StashColors
@@ -105,6 +106,7 @@ fun PlayerWatchPageContent(
     similarRecommendationsError: String?,
     similarRecommendationsSource: SimilarVideosRecommendationSource,
     queuedSceneIds: Set<String>,
+    serverProfile: StashServerProfile?,
     onSelectRatingStep: (Int) -> Unit,
     onAddCurrentSceneToQueue: () -> Unit,
     onIncrementOCounter: () -> Unit,
@@ -198,6 +200,7 @@ fun PlayerWatchPageContent(
                             recommendationSource = similarRecommendationsSource,
                             layoutContext = SimilarVideosLayoutContext.WatchPage,
                             queuedSceneIds = queuedSceneIds,
+                            serverProfile = serverProfile,
                         )
                     }
                 }

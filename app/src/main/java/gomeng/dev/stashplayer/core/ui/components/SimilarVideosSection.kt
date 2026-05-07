@@ -59,6 +59,7 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashTagChip
 import gomeng.dev.stashplayer.core.ui.designsystem.StashTagChipModel
 import coil.compose.AsyncImage
 import gomeng.dev.stashplayer.R
+import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
 @Composable
@@ -74,6 +75,7 @@ fun SimilarVideosSection(
     recommendationSource: SimilarVideosRecommendationSource = SimilarVideosRecommendationSource.HybridBackend,
     layoutContext: SimilarVideosLayoutContext = SimilarVideosLayoutContext.General,
     queuedSceneIds: Set<String> = emptySet(),
+    serverProfile: StashServerProfile? = null,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val state = buildSimilarVideosSectionUiState(
@@ -91,6 +93,7 @@ fun SimilarVideosSection(
             onPlayScene = onPlayScene,
             onAddToQueue = onAddToQueue,
             onRetry = onRetry,
+            serverProfile = serverProfile,
         )
     }
 }
@@ -102,6 +105,7 @@ fun SimilarVideosSection(
     onAddToQueue: (String) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
+    serverProfile: StashServerProfile? = null,
 ) {
     when (state) {
         SimilarVideosSectionUiState.Loading -> SimilarVideosLoading(modifier)
@@ -120,6 +124,7 @@ fun SimilarVideosSection(
             onPlayScene = onPlayScene,
             onAddToQueue = onAddToQueue,
             modifier = modifier,
+            serverProfile = serverProfile,
         )
     }
 }
@@ -220,6 +225,7 @@ private fun SimilarVideosSuccess(
     onPlayScene: (String) -> Unit,
     onAddToQueue: (String) -> Unit,
     modifier: Modifier = Modifier,
+    serverProfile: StashServerProfile? = null,
 ) {
     val cardPolicy = similarVideosCompactRecommendationCardVisualPolicy()
     Column(
@@ -259,6 +265,7 @@ private fun SimilarVideosSuccess(
                         onPlayScene = onPlayScene,
                         onAddToQueue = onAddToQueue,
                         modifier = Modifier.width(cardPolicy.horizontalRailCardWidthDp.dp),
+                        serverProfile = serverProfile,
                     )
                 }
             }
@@ -277,6 +284,7 @@ private fun SimilarVideosSuccess(
                         onPlayScene = onPlayScene,
                         onAddToQueue = onAddToQueue,
                         modifier = Modifier.fillMaxWidth(),
+                        serverProfile = serverProfile,
                     )
                 }
             }
@@ -290,9 +298,11 @@ fun SimilarSceneCard(
     onPlayScene: (String) -> Unit,
     onAddToQueue: (String) -> Unit,
     modifier: Modifier = Modifier,
+    serverProfile: StashServerProfile? = null,
 ) {
     val primaryClickAction = buildSimilarScenePrimaryClickAction(item)
     val cardPolicy = similarVideosCompactRecommendationCardVisualPolicy()
+    val thumbnailModel = rememberStashThumbnailModel(item.imageUrl, serverProfile)
     StashMediaCard(
         modifier = modifier.clickable(
             onClickLabel = primaryClickAction.contentDescription,
@@ -310,9 +320,9 @@ fun SimilarSceneCard(
                     .clip(RoundedCornerShape(cardPolicy.thumbnailRadiusDp.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
             ) {
-                item.imageUrl?.let { imageUrl ->
+                thumbnailModel?.let { model ->
                     AsyncImage(
-                        model = imageUrl,
+                        model = model,
                         contentDescription = item.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,

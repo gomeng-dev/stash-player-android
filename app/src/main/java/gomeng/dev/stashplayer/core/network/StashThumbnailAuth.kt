@@ -15,7 +15,9 @@ fun buildStashThumbnailRequestSpec(
     serverProfile: StashServerProfile?,
 ): StashThumbnailRequestSpec? {
     val normalized = thumbnailUrl?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-    val resolvedUrl = serverProfile?.authenticatedUrl(normalized) ?: normalized
+    val resolvedUrl = serverProfile?.let { profile ->
+        rewriteStashRecommendationMediaUrl(normalized, profile) ?: profile.authenticatedUrl(normalized)
+    } ?: normalized
     val requestHeaders = when (serverProfile?.authMode) {
         StashServerAuthMode.SessionCookie -> serverProfile.authHeadersFor(resolvedUrl)
         StashServerAuthMode.ApiKey,

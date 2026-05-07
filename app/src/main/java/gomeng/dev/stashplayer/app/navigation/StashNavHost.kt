@@ -115,7 +115,7 @@ fun StashNavHost(
             randomShuffle = randomShuffle,
         )
         playbackQueueContinuation = continuation
-        navController.navigate("player/$sceneId")
+        navController.navigate(playerRouteForScene(sceneId))
     }
 
     suspend fun ensurePlaylistTrailingItems(sceneId: String, minimumTrailingCount: Int) {
@@ -184,7 +184,7 @@ fun StashNavHost(
     }
 
     fun replaceCurrentPlayerScene(sceneId: String) {
-        navController.navigate("player/$sceneId") {
+        navController.navigate(playerRouteForScene(sceneId)) {
             popUpTo("player/{sceneId}") { inclusive = true }
             launchSingleTop = true
         }

@@ -21,6 +21,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
+import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSpriteFrame
 import gomeng.dev.stashplayer.core.player.AspectRatioMode
 import gomeng.dev.stashplayer.core.player.PlayerBackAction
@@ -75,6 +76,7 @@ fun PlayerOverlay(
     similarRecommendationsLoading: Boolean,
     similarRecommendationsError: String?,
     similarRecommendationsSource: SimilarVideosRecommendationSource,
+    serverProfile: StashServerProfile?,
     streamPreferenceOptions: List<PlayerStreamPreferenceOption>,
     streamSourceOptions: List<PlayerStreamSourceOption>,
     playlistItems: List<PlayerPlaylistUiItem>,
@@ -277,6 +279,7 @@ fun PlayerOverlay(
                 similarRecommendationsLoading = similarRecommendationsLoading,
                 similarRecommendationsError = similarRecommendationsError,
                 similarRecommendationsSource = similarRecommendationsSource,
+                serverProfile = serverProfile,
                 onSliderFractionChange = { fraction ->
                     sliderDragging = true
                     sliderPreviewFraction = fraction.coerceIn(0f, 1f)

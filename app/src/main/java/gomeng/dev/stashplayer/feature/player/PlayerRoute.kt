@@ -130,7 +130,13 @@ import gomeng.dev.stashplayer.core.player.canShowPlayerPlaylistAction
 import gomeng.dev.stashplayer.core.player.formatPlayerPosition
 import gomeng.dev.stashplayer.core.player.playerDebugOverlayText
 import gomeng.dev.stashplayer.core.player.playerAspectRatioHudText
+import gomeng.dev.stashplayer.core.player.playerPlaybackInfoLoadStartLogMessage
+import gomeng.dev.stashplayer.core.player.playerPlaybackInfoLoadSuccessLogMessage
 import gomeng.dev.stashplayer.core.player.playerPlaybackSpeedHudText
+import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationClickLogMessage
+import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationQueueLogMessage
+import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationsLoadedLogMessage
+import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationsRequestStartLogMessage
 import gomeng.dev.stashplayer.core.player.removePlayerPlaylistItem
 import gomeng.dev.stashplayer.core.player.reorderPlayerPlaylistItem
 import gomeng.dev.stashplayer.core.player.selectSimilarSceneForPlayback
@@ -149,6 +155,7 @@ import gomeng.dev.stashplayer.core.player.shouldRequestSimilarRecommendationsFor
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestCancelled
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestCompleted
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestStarted
+import gomeng.dev.stashplayer.core.player.nextPlayerMediaSessionId
 import gomeng.dev.stashplayer.core.player.togglePlayerLockState
 import gomeng.dev.stashplayer.core.player.subtitleTrackLanguageCode
 import gomeng.dev.stashplayer.core.ui.components.SceneBulkDeleteConfirmationDialog
@@ -256,10 +263,19 @@ fun PlayerRoute(
     LaunchedEffect(sceneId, activeProfile, streamLoadRetryKey) {
         stream = null
         loadError = null
+        StashDebugLogBuffer.record("Player", playerPlaybackInfoLoadStartLogMessage(sceneId))
         runCatching {
             GraphQlStashStreamResolver(client, activeProfile).resolve(sceneId)
-        }.onSuccess {
-            stream = it
+        }.onSuccess { resolvedStream ->
+            StashDebugLogBuffer.record(
+                "Player",
+                playerPlaybackInfoLoadSuccessLogMessage(
+                    sceneId = sceneId,
+                    streamCandidateCount = resolvedStream.resolvedCandidates.size,
+                    thumbnailAvailable = !resolvedStream.thumbnailUrl.isNullOrBlank() || !resolvedStream.spriteImageUrl.isNullOrBlank(),
+                ),
+            )
+            stream = resolvedStream
         }.onFailure {
             StashDebugLogBuffer.record("Player", "Playback info load failed", it)
             loadError = sanitizePlaybackErrorText(it.message ?: it::class.simpleName ?: stashString(R.string.auto_kr_0447)) ?: stashString(R.string.auto_kr_0447)
@@ -358,7 +374,9 @@ private fun RealPlayerRoute(
         )
     }
     val mediaSession = remember(controller) {
-        MediaSession.Builder(context, controller.player).build()
+        MediaSession.Builder(context, controller.player)
+            .setId(nextPlayerMediaSessionId())
+            .build()
     }
     val similarScenesRepository = remember(client, profile) {
         buildSimilarScenesRepository(
@@ -628,6 +646,13 @@ private fun RealPlayerRoute(
             sceneId = sceneId.trim(),
             retryKey = similarRecommendationsRetryKey,
         )
+        StashDebugLogBuffer.record(
+            "Player",
+            playerSimilarRecommendationsRequestStartLogMessage(
+                sceneId = sceneId,
+                retryKey = similarRecommendationsRetryKey,
+            ),
+        )
         similarRecommendationsRequestState = similarRecommendationsRequestState
             .markSimilarRecommendationsRequestStarted(requestKey)
         similarRecommendationsLoading = true
@@ -640,6 +665,14 @@ private fun RealPlayerRoute(
                         .markSimilarRecommendationsRequestCompleted(requestKey)
                     similarRecommendations = result.recommendations
                     similarRecommendationsSource = result.source
+                    StashDebugLogBuffer.record(
+                        "Player",
+                        playerSimilarRecommendationsLoadedLogMessage(
+                            sceneId = sceneId,
+                            source = result.source,
+                            count = result.recommendations.size,
+                        ),
+                    )
                     similarRecommendationsLoading = false
                 }
                 .onFailure { throwable ->
@@ -654,6 +687,7 @@ private fun RealPlayerRoute(
                     similarRecommendationsError = sanitizePlaybackErrorText(
                         throwable.message ?: throwable::class.simpleName ?: stashString(R.string.auto_kr_0473),
                     ) ?: stashString(R.string.auto_kr_0473)
+                    StashDebugLogBuffer.record("Player", "Similar recommendations request failed", throwable)
                     similarRecommendationsLoading = false
                 }
         } catch (cancellation: CancellationException) {
@@ -1320,12 +1354,25 @@ private fun RealPlayerRoute(
             ?: recommendation?.scene?.fileName
             ?: selectedSceneId
         val thumbnailUrl = recommendation?.scene?.thumbnailUrl ?: recommendation?.scene?.spriteImageUrl
+        val queueSizeBefore = playbackQueue.items.size
         val updatedQueue = appendSimilarSceneToPlaybackQueue(
             queue = playbackQueue,
             currentSceneId = sceneId,
             sceneId = selectedSceneId,
             title = sceneTitle,
             thumbnailUrl = thumbnailUrl,
+        )
+        StashDebugLogBuffer.record(
+            "Player",
+            playerSimilarRecommendationQueueLogMessage(
+                currentSceneId = sceneId,
+                selectedSceneId = selectedSceneId,
+                source = similarRecommendationsSource,
+                recommendationFound = recommendation != null,
+                thumbnailAvailable = !thumbnailUrl.isNullOrBlank(),
+                queueSizeBefore = queueSizeBefore,
+                queueSizeAfter = updatedQueue.items.size,
+            ),
         )
         markPlayerInteraction()
         controlsVisible = true
@@ -1338,6 +1385,7 @@ private fun RealPlayerRoute(
             ?: recommendation?.scene?.fileName
             ?: selectedSceneId
         val thumbnailUrl = recommendation?.scene?.thumbnailUrl ?: recommendation?.scene?.spriteImageUrl
+        val queueSizeBefore = playbackQueue.items.size
         val updatedQueue = selectSimilarSceneForPlayback(
             queue = playbackQueue,
             currentSceneId = sceneId,
@@ -1346,6 +1394,19 @@ private fun RealPlayerRoute(
             thumbnailUrl = thumbnailUrl,
         )
         val targetSceneId = updatedQueue.currentSceneId ?: selectedSceneId
+        StashDebugLogBuffer.record(
+            "Player",
+            playerSimilarRecommendationClickLogMessage(
+                currentSceneId = sceneId,
+                selectedSceneId = selectedSceneId,
+                source = similarRecommendationsSource,
+                recommendationFound = recommendation != null,
+                thumbnailAvailable = !thumbnailUrl.isNullOrBlank(),
+                queueSizeBefore = queueSizeBefore,
+                queueSizeAfter = updatedQueue.items.size,
+                targetSceneId = targetSceneId,
+            ),
+        )
         markPlayerInteraction()
         controlsVisible = true
         onPlaybackQueueChange(updatedQueue)
@@ -1588,6 +1649,7 @@ private fun RealPlayerRoute(
             similarRecommendationsLoading = similarRecommendationsLoading,
             similarRecommendationsError = similarRecommendationsError,
             similarRecommendationsSource = similarRecommendationsSource,
+            serverProfile = profile,
             streamPreferenceOptions = streamPreferenceOptions,
             streamSourceOptions = streamSourceOptions,
             playlistItems = playlistItems,
@@ -1876,6 +1938,7 @@ private fun RealPlayerRoute(
             similarRecommendationsError = similarRecommendationsError,
             similarRecommendationsSource = similarRecommendationsSource,
             queuedSceneIds = queueSceneIds,
+            serverProfile = profile,
             onSelectRatingStep = selectRatingStep,
             onAddCurrentSceneToQueue = {
                 markPlayerInteraction()

@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.SimilarVideosLayoutContext
 import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
+import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.player.PlayerDebugInfoUiState
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashAction
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashActionRowItem
@@ -99,6 +100,7 @@ fun PlayerBottomControls(
     similarRecommendationsLoading: Boolean,
     similarRecommendationsError: String?,
     similarRecommendationsSource: SimilarVideosRecommendationSource,
+    serverProfile: StashServerProfile?,
     onSliderFractionChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit,
     onSelectRatingStep: (Int) -> Unit,
@@ -396,6 +398,7 @@ private fun PlayerExpandedInfoDrawerContent(
     similarRecommendationsLoading: Boolean,
     similarRecommendationsError: String?,
     similarRecommendationsSource: SimilarVideosRecommendationSource,
+    serverProfile: StashServerProfile?,
     onPlaySimilarScene: (String) -> Unit,
     onAddSimilarSceneToQueue: (String) -> Unit,
     onRetrySimilarRecommendations: () -> Unit,
@@ -460,6 +463,7 @@ private fun PlayerExpandedInfoDrawerContent(
                                 modifier = Modifier.padding(12.dp),
                                 recommendationSource = similarRecommendationsSource,
                                 layoutContext = SimilarVideosLayoutContext.PlayerDrawer,
+                                serverProfile = serverProfile,
                             )
                         }
                     }

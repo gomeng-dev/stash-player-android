@@ -36,8 +36,6 @@ installing a downloaded APK.
 - Stash API access, or a Stash login session, when your server requires
   authentication.
 
-Android application ID: `gomeng.dev.stashplayer`.
-
 ## Privacy
 
 Your Stash server URL, API key, and session data stay on your device. The app

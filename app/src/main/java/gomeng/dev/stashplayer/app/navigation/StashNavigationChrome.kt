@@ -3,6 +3,7 @@ package gomeng.dev.stashplayer.app.navigation
 import androidx.annotation.StringRes
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.designsystem.StashTouch
+import java.net.URLEncoder
 
 private val PlayerRoutePattern = "player/{sceneId}"
 
@@ -50,6 +51,9 @@ internal fun stashNavigationChromeVisualPolicy(): StashNavigationChromeVisualPol
 
 internal fun isPlayerRoute(route: String?): Boolean = route == PlayerRoutePattern || route?.startsWith("player/") == true
 
+internal fun playerRouteForScene(sceneId: String): String =
+    "player/${sceneId.encodePlayerRouteSegment()}"
+
 internal fun shouldShowBottomNavigation(
     route: String?,
     isFoldLikeLayout: Boolean,
@@ -82,3 +86,6 @@ internal fun topLevelDestinationLabelResourcesByRoute(): Map<String, Int> = TopL
 
 @StringRes
 internal fun topLevelDestinationLabelResource(route: String): Int = TopLevelDestinationLabelResourcesByRoute.getValue(route)
+
+private fun String.encodePlayerRouteSegment(): String =
+    URLEncoder.encode(this, Charsets.UTF_8.name()).replace("+", "%20")

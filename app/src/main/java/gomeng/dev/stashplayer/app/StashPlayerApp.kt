@@ -29,6 +29,7 @@ class StashPlayerApp : Application() {
     override fun onCreate() {
         super.onCreate()
         updateStashStringContext(this)
+        StashDebugLogBuffer.initialize(this)
         val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             StashDebugLogBuffer.record("Uncaught", "Thread ${thread.name}", throwable)
