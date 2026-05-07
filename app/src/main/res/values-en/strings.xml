@@ -1,0 +1,730 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Stash Player</string>
+    <string name="navigation_home_label">Home</string>
+    <string name="navigation_browse_label">Browse</string>
+    <string name="navigation_search_label">Search</string>
+    <string name="navigation_queue_label">Queue</string>
+    <string name="navigation_settings_label">Settings</string>
+    <string name="scene_card_queue_remove_content_description">Remove from queue</string>
+    <string name="scene_card_queue_removed_feedback">Removed from queue.</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Adjust server, playback, appearance, interface, support, and developer options.</string>
+    <string name="settings_back_button">Back</string>
+    <string name="settings_row_open_indicator">&gt;</string>
+    <string name="settings_category_server_title">Server</string>
+    <string name="settings_category_server_description">Manage the Stash server connection and Hybrid recommendation status.</string>
+    <string name="settings_category_playback_title">Playback</string>
+    <string name="settings_category_playback_description">Choose the default stream mode and what happens when playback ends.</string>
+    <string name="settings_category_appearance_title">Appearance</string>
+    <string name="settings_category_appearance_description">Adjust how the app theme is displayed.</string>
+    <string name="settings_category_interface_title">Interface</string>
+    <string name="settings_category_interface_description">Manage app language and display behavior.</string>
+    <string name="settings_category_support_title">Support</string>
+    <string name="settings_category_support_description">Check the app version and issue reporting links.</string>
+    <string name="settings_category_development_title">Development</string>
+    <string name="settings_category_development_description">Turn player debug display on or off.</string>
+    <string name="settings_default_stream_preference_title">Default stream mode</string>
+    <string name="settings_default_stream_preference_description">Choose the stream priority the player uses first.</string>
+    <string name="settings_stream_preference_auto_label">Auto</string>
+    <string name="settings_stream_preference_auto_description">Let the app choose a stable stream from the candidates returned by Stash.</string>
+    <string name="settings_stream_preference_direct_label">Direct first</string>
+    <string name="settings_stream_preference_direct_description">Try the original Direct stream first.</string>
+    <string name="settings_stream_preference_hls_label">HLS first</string>
+    <string name="settings_stream_preference_hls_description">Try the HLS stream first.</string>
+    <string name="settings_playback_end_action_title">When playback ends</string>
+    <string name="settings_playback_end_action_description">Choose what the player does after a video reaches the end.</string>
+    <string name="settings_playback_end_action_stop_label">Stop</string>
+    <string name="settings_playback_end_action_stop_description">Leave the current video in the ended state.</string>
+    <string name="settings_playback_end_action_repeat_label">Repeat</string>
+    <string name="settings_playback_end_action_repeat_description">Replay the current video from the beginning.</string>
+    <string name="settings_playback_end_action_play_next_label">Play next video</string>
+    <string name="settings_playback_end_action_play_next_description">Continue with the playback queue or a recommended video.</string>
+    <string name="settings_background_playback_title">Background playback</string>
+    <string name="settings_background_playback_description">Keep the current video playing when the app moves to the background.</string>
+    <string name="settings_pip_title">Enable PiP</string>
+    <string name="settings_pip_label">Use PiP</string>
+    <string name="settings_pip_description">Enter a small player when you go home and show a PiP button in the player.</string>
+    <string name="settings_playback_orientation_title">Automatic orientation control</string>
+    <string name="settings_playback_orientation_description">Choose whether the player follows the device rotation sensor.</string>
+    <string name="settings_playback_orientation_off_label">Off</string>
+    <string name="settings_playback_orientation_off_description">Keep the app\'s current orientation behavior.</string>
+    <string name="settings_playback_orientation_sensor_label">Follow sensor</string>
+    <string name="settings_playback_orientation_sensor_description">Follow the device rotation sensor while the player is open.</string>
+    <string name="settings_subtitle_language_title">Subtitle language</string>
+    <string name="settings_subtitle_language_description">Choose the preferred language for subtitle tracks included in the stream.</string>
+    <string name="settings_subtitle_language_auto_label">Auto from OS language</string>
+    <string name="settings_subtitle_language_auto_description">Prefer subtitles that match the device language.</string>
+    <string name="settings_subtitle_language_off_label">Off</string>
+    <string name="settings_subtitle_language_off_description">Do not show subtitle tracks.</string>
+    <string name="settings_subtitle_language_korean_label">한국어</string>
+    <string name="settings_subtitle_language_korean_description">한국어 자막을 우선 선택합니다.</string>
+    <string name="settings_subtitle_language_english_label">English</string>
+    <string name="settings_subtitle_language_english_description">Prefer English subtitles.</string>
+    <string name="settings_subtitle_language_japanese_label">日本語</string>
+    <string name="settings_subtitle_language_japanese_description">日本語字幕を優先します。</string>
+    <string name="settings_subtitle_language_chinese_label">中文</string>
+    <string name="settings_subtitle_language_chinese_description">优先选择中文字幕。</string>
+    <string name="settings_subtitle_language_russian_label">Русский</string>
+    <string name="settings_subtitle_language_russian_description">Предпочитать русские субтитры.</string>
+    <string name="settings_subtitle_language_spanish_label">Español</string>
+    <string name="settings_subtitle_language_spanish_description">Preferir subtítulos en español.</string>
+    <string name="settings_subtitle_font_scale_title">Subtitle font size</string>
+    <string name="settings_subtitle_font_scale_description">Adjust the text size used for player subtitles.</string>
+    <string name="settings_subtitle_font_scale_reset_button">Reset to default</string>
+    <string name="settings_subtitle_font_scale_value_format">%1$d%%</string>
+    <string name="settings_subtitle_position_title">Subtitle position</string>
+    <string name="settings_subtitle_position_description">Choose where subtitles appear vertically.</string>
+    <string name="settings_subtitle_position_bottom_label">Bottom</string>
+    <string name="settings_subtitle_position_bottom_description">Show subtitles near the bottom of the player.</string>
+    <string name="settings_subtitle_position_middle_label">Middle</string>
+    <string name="settings_subtitle_position_middle_description">Show subtitles in the middle of the player.</string>
+    <string name="settings_subtitle_position_top_label">Top</string>
+    <string name="settings_subtitle_position_top_description">Show subtitles near the top of the player.</string>
+    <string name="settings_subtitle_text_alignment_title">Subtitle text alignment</string>
+    <string name="settings_subtitle_text_alignment_description">Choose how multi-line subtitle text is aligned.</string>
+    <string name="settings_subtitle_text_alignment_start_label">Start</string>
+    <string name="settings_subtitle_text_alignment_start_description">Align subtitle text to the start side.</string>
+    <string name="settings_subtitle_text_alignment_center_label">Center</string>
+    <string name="settings_subtitle_text_alignment_center_description">Center subtitle text.</string>
+    <string name="settings_subtitle_text_alignment_end_label">End</string>
+    <string name="settings_subtitle_text_alignment_end_description">Align subtitle text to the end side.</string>
+    <string name="player_pip_button_content_description">Enter PiP</string>
+    <string name="player_pip_action_play">Play</string>
+    <string name="player_pip_action_pause">Pause</string>
+    <string name="player_pip_action_previous">Previous video</string>
+    <string name="player_pip_action_next">Next video</string>
+    <string name="settings_theme_section_title">Theme</string>
+    <string name="settings_theme_mode_title">Theme mode</string>
+    <string name="settings_theme_mode_description">Show the app in dark mode, light mode, or the device system theme. The default is dark for video watching.</string>
+    <string name="settings_theme_mode_system_label">System setting</string>
+    <string name="settings_theme_mode_system_description">Switch between dark and light based on the device setting.</string>
+    <string name="settings_theme_mode_dark_label">Dark</string>
+    <string name="settings_theme_mode_dark_description">Keep a darker interface that stays focused on video watching.</string>
+    <string name="settings_theme_mode_light_label">Light</string>
+    <string name="settings_theme_mode_light_description">Keep a lighter interface for bright environments.</string>
+    <string name="settings_accent_color_title">Default color</string>
+    <string name="settings_accent_color_description">Choose the app accent used for primary buttons, selected states, and highlights.</string>
+    <string name="settings_accent_color_purple_label">Purple</string>
+    <string name="settings_accent_color_purple_description">Use the current default Stash Player color.</string>
+    <string name="settings_accent_color_blue_label">Blue</string>
+    <string name="settings_accent_color_blue_description">Use a calm, clear blue accent.</string>
+    <string name="settings_accent_color_cyan_label">Cyan</string>
+    <string name="settings_accent_color_cyan_description">Use a cyan accent that fits media status surfaces.</string>
+    <string name="settings_accent_color_amber_label">Amber</string>
+    <string name="settings_accent_color_amber_description">Use a warmer amber accent.</string>
+    <string name="settings_accent_color_rose_label">Rose</string>
+    <string name="settings_accent_color_rose_description">Use a stronger rose accent for selected states.</string>
+    <string name="settings_ui_scale_title">UI scale</string>
+    <string name="settings_ui_scale_description">Adjust app text, spacing, and button size. Player gesture areas stay unchanged.</string>
+    <string name="settings_ui_scale_reset_button">Reset to default</string>
+    <string name="settings_ui_scale_value_format">%1$s (%2$d%%)</string>
+    <string name="settings_ui_scale_compact_label">Compact</string>
+    <string name="settings_ui_scale_compact_description">Show more items on each screen.</string>
+    <string name="settings_ui_scale_default_label">Default</string>
+    <string name="settings_ui_scale_default_description">Use the current app sizing.</string>
+    <string name="settings_ui_scale_comfortable_label">Comfortable</string>
+    <string name="settings_ui_scale_comfortable_description">Make text and touch targets slightly larger.</string>
+    <string name="settings_ui_scale_large_label">Large</string>
+    <string name="settings_ui_scale_large_description">Make app UI larger for easier reading.</string>
+    <string name="settings_language_section_title">Language</string>
+    <string name="settings_language_title">App language</string>
+    <string name="settings_language_description">Choose the display language for the app. New screens should be built from string resource keys.</string>
+    <string name="settings_language_system_label">System default</string>
+    <string name="settings_language_system_description">Follow the device language setting.</string>
+    <string name="settings_language_korean_label">Korean</string>
+    <string name="settings_language_korean_description">Use Korean as the app display language.</string>
+    <string name="settings_language_english_label">English</string>
+    <string name="settings_language_english_description">Use English as the app display language.</string>
+    <string name="settings_player_section_title">Player</string>
+    <string name="settings_player_debug_overlay_title">Debug info overlay</string>
+    <string name="settings_player_debug_overlay_description">Show stream type, MIME, and .m3u8 status in the player. URLs, API keys, and headers are never shown.</string>
+    <string name="settings_debug_log_title">App debug log viewer</string>
+    <string name="settings_debug_log_description">Keeps recent logs in memory during this app session. Sensitive auth values are hidden.</string>
+    <string name="settings_debug_log_empty">No logs recorded yet.</string>
+    <string name="settings_debug_log_copy_button">Copy</string>
+    <string name="settings_debug_log_clear_button">Clear</string>
+    <string name="settings_debug_log_clipboard_label">Stash Player debug log</string>
+    <string name="settings_debug_log_copy_complete">Copied logs to the clipboard.</string>
+    <string name="settings_debug_log_clear_complete">Cleared logs.</string>
+    <string name="settings_support_version_title">Version</string>
+    <string name="settings_support_version_description">Current version: %1$s. Tap to open GitHub Releases.</string>
+    <string name="settings_support_unknown_version">Unknown</string>
+    <string name="settings_support_issue_title">Report issue</string>
+    <string name="settings_support_issue_description">Report issues or check progress in GitHub Issues.</string>
+    <string name="settings_support_link_open_failed">Could not open the link.</string>
+    <string name="settings_recommendation_section_title">Hybrid recommendations</string>
+    <string name="settings_recommendation_status_description">Use the Stash Hybrid Recommendations Engine plugin as the primary recommendation source.</string>
+    <string name="settings_recommendation_fallback_description">If the plugin is missing or fails, Stash default recommendations are used.</string>
+    <string name="settings_recommendation_no_stash_server">Save your Stash server first</string>
+    <string name="settings_optional_api_key_label">API Key (optional)</string>
+    <string name="settings_recommendation_testing">Checking Hybrid recommendation status...</string>
+    <string name="settings_recommendation_test_button">Check Hybrid recommendation status</string>
+    <string name="settings_stash_server_section_title">Stash server</string>
+    <string name="settings_server_name_label">Server name</string>
+    <string name="settings_server_url_label">Server URL</string>
+    <string name="settings_api_key_label">API Key</string>
+    <string name="settings_save_in_progress">Saving...</string>
+    <string name="settings_save_complete">Saved</string>
+    <string name="settings_save_button">Save</string>
+    <string name="settings_connection_testing">Checking connection...</string>
+    <string name="settings_connection_success">Connected: Stash %1$s</string>
+    <string name="settings_connection_failed">Connection failed</string>
+    <string name="settings_connection_test_button">Test connection</string>
+    <string name="settings_server_clear_complete">Server settings cleared</string>
+    <string name="settings_server_clear_button">Clear server settings</string>
+    <string name="settings_open_onboarding_button">Open onboarding again</string>
+    <string name="settings_insecure_local_http_api_key_acknowledgement">I understand that credentials sent to a local HTTP server can be exposed by packet capture.</string>
+    <string name="settings_insecure_auth_blocked">This auth method is blocked by the security policy. Use HTTPS or confirm the local HTTP exception.</string>
+    <string name="setup_auth_mode_api_key_label">Connect with API Key</string>
+    <string name="setup_auth_mode_api_key_description">Store an API Key and use it for Stash API and stream requests.</string>
+    <string name="setup_auth_mode_password_label">Log in with ID/password</string>
+    <string name="setup_auth_mode_password_description">Never stores the password. On success, only the session cookie is stored. HTTP is only allowed for local servers after explicit confirmation.</string>
+    <string name="setup_username_label">ID</string>
+    <string name="setup_password_label">Password</string>
+    <string name="setup_password_https_only_warning">HTTPS is safest. Local HTTP login can expose the ID and password to packet capture, so it is only used after explicit confirmation.</string>
+    <string name="setup_username_password_required">Enter both ID and password.</string>
+    <string name="auto_kr_0001" formatted="false">Home</string>
+    <string name="auto_kr_0002" formatted="false">Browse</string>
+    <string name="auto_kr_0003" formatted="false">Search</string>
+    <string name="auto_kr_0004" formatted="false">Playback queue</string>
+    <string name="auto_kr_0005" formatted="false">Settings</string>
+    <string name="auto_kr_0006" formatted="false">Failed to load tags</string>
+    <string name="auto_kr_0007" formatted="false">Already in the queue.</string>
+    <string name="auto_kr_0008" formatted="false">Added to playback queue.</string>
+    <string name="auto_kr_0009" formatted="false">Added</string>
+    <string name="auto_kr_0010" formatted="false">Add to queue</string>
+    <string name="auto_kr_0011" formatted="false">Playback queue cleared.</string>
+    <string name="auto_kr_0012" formatted="false">Undo</string>
+    <string name="auto_kr_0013" formatted="false">Removed from Watch Later.</string>
+    <string name="auto_kr_0014" formatted="false">Added from Watch Later to playback queue.</string>
+    <string name="auto_kr_0015">Added %1$s Watch Later items to playback queue.</string>
+    <string name="auto_kr_0016" formatted="false">Watch Later</string>
+    <string name="auto_kr_0017" formatted="false">My filter</string>
+    <string name="auto_kr_0019">%1$s deleted</string>
+    <string name="auto_kr_0020">%1$s failed</string>
+    <string name="auto_kr_0021" formatted="false">No deleted items</string>
+    <string name="auto_kr_0022" formatted="false">Similar tags</string>
+    <string name="auto_kr_0023" formatted="false">Similar filename</string>
+    <string name="auto_kr_0024" formatted="false">Visual similarity</string>
+    <string name="auto_kr_0025" formatted="false">Similar duration</string>
+    <string name="auto_kr_0026" formatted="false">Resolution match</string>
+    <string name="auto_kr_0027" formatted="false">Taste signal</string>
+    <string name="auto_kr_0028" formatted="false">Similar videos</string>
+    <string name="auto_kr_0029" formatted="false">There is no recommendation cache for this video yet</string>
+    <string name="auto_kr_0030" formatted="false">Could not load recommendations. Please try again.</string>
+    <string name="auto_kr_0031" formatted="false">Try again</string>
+    <string name="auto_kr_0032" formatted="false">Reload similar videos</string>
+    <string name="auto_kr_0033" formatted="false">Stash default recommendations</string>
+    <string name="auto_kr_0034" formatted="false">Stash Hybrid recommendations</string>
+    <string name="auto_kr_0035" formatted="false">Untitled video</string>
+    <string name="auto_kr_0036">Open similar video: %1$s</string>
+    <string name="auto_kr_0037">Play similar video: %1$s</string>
+    <string name="auto_kr_0038">Add to playback queue: %1$s</string>
+    <string name="auto_kr_0039" formatted="false">Play</string>
+    <string name="auto_kr_0040" formatted="false">Queue</string>
+    <string name="auto_kr_0041">Already added to playback queue: %1$s</string>
+    <string name="auto_kr_0042" formatted="false">High match</string>
+    <string name="auto_kr_0043" formatted="false">Medium match</string>
+    <string name="auto_kr_0044" formatted="false">Low match</string>
+    <string name="auto_kr_0045">%1$s hr</string>
+    <string name="auto_kr_0046">%1$s hr %2$s min</string>
+    <string name="auto_kr_0047">%1$s min</string>
+    <string name="auto_kr_0048" formatted="false">Recently updated</string>
+    <string name="auto_kr_0049" formatted="false">Recently released</string>
+    <string name="auto_kr_0050" formatted="false">Recently added</string>
+    <string name="auto_kr_0051" formatted="false">Most played</string>
+    <string name="auto_kr_0052" formatted="false">Long videos</string>
+    <string name="auto_kr_0053" formatted="false">Short</string>
+    <string name="auto_kr_0054" formatted="false">Medium</string>
+    <string name="auto_kr_0055" formatted="false">Long</string>
+    <string name="auto_kr_0056" formatted="false">Very long</string>
+    <string name="auto_kr_0057" formatted="false">Watched</string>
+    <string name="auto_kr_0058" formatted="false">Unwatched</string>
+    <string name="auto_kr_0059" formatted="false">Resume</string>
+    <string name="auto_kr_0060">After %1$s</string>
+    <string name="auto_kr_0061">Before %1$s</string>
+    <string name="auto_kr_0062">%1$s-%2$s min</string>
+    <string name="auto_kr_0063">%1$s min or more</string>
+    <string name="auto_kr_0064">%1$s min or less</string>
+    <string name="auto_kr_0065" formatted="false">Save</string>
+    <string name="auto_kr_0066" formatted="false">Tags</string>
+    <string name="auto_kr_0067" formatted="false">Date and duration</string>
+    <string name="auto_kr_0068" formatted="false">Rating and quality</string>
+    <string name="auto_kr_0069" formatted="false">Local</string>
+    <string name="auto_kr_0070" formatted="false">All filters</string>
+    <string name="auto_kr_0071" formatted="false">Sort</string>
+    <string name="auto_kr_0072" formatted="false">Direction</string>
+    <string name="auto_kr_0073" formatted="false">Random</string>
+    <string name="auto_kr_0074" formatted="false">Display</string>
+    <string name="auto_kr_0075" formatted="false">Actions</string>
+    <string name="auto_kr_0076" formatted="false">View</string>
+    <string name="auto_kr_0077" formatted="false">Clear selection</string>
+    <string name="auto_kr_0078" formatted="false">Selection count</string>
+    <string name="auto_kr_0079" formatted="false">Select all</string>
+    <string name="auto_kr_0080" formatted="false">Play selection</string>
+    <string name="auto_kr_0081" formatted="false">Delete</string>
+    <string name="auto_kr_0082" formatted="false">More</string>
+    <string name="auto_kr_0083" formatted="false">Grid</string>
+    <string name="auto_kr_0084" formatted="false">List</string>
+    <string name="auto_kr_0085" formatted="false">Date, duration, status</string>
+    <string name="auto_kr_0086" formatted="false">Local and saved filters</string>
+    <string name="auto_kr_0087" formatted="false">Random and shuffle</string>
+    <string name="auto_kr_0088" formatted="false">Play first video</string>
+    <string name="auto_kr_0089" formatted="false">Invert selection</string>
+    <string name="auto_kr_0090" formatted="false">Saved/recent filters</string>
+    <string name="auto_kr_0091" formatted="false">Edit filters</string>
+    <string name="auto_kr_0092" formatted="false">Filters</string>
+    <string name="auto_kr_0093" formatted="false">Random ON</string>
+    <string name="auto_kr_0094" formatted="false">Random OFF</string>
+    <string name="auto_kr_0095" formatted="false">Shuffle again</string>
+    <string name="auto_kr_0096">Saved %1$s</string>
+    <string name="auto_kr_0097">Open saved/recent filters, %1$s saved filters</string>
+    <string name="auto_kr_0098" formatted="false">Open saved/recent filters</string>
+    <string name="auto_kr_0099">Filters %1$s</string>
+    <string name="auto_kr_0100">Open all filters, %1$s active filters</string>
+    <string name="auto_kr_0101" formatted="false">Open all filters</string>
+    <string name="auto_kr_0102">Open %1$s filter directly, %2$s active</string>
+    <string name="auto_kr_0103">Open %1$s filter directly</string>
+    <string name="auto_kr_0104">%1$s quick select: %2$s</string>
+    <string name="auto_kr_0105">%1$s instant toggle: %2$s</string>
+    <string name="auto_kr_0106" formatted="false">Shuffle random sort again</string>
+    <string name="auto_kr_0107" formatted="false">Turn on random sort</string>
+    <string name="auto_kr_0108" formatted="false">View mode</string>
+    <string name="auto_kr_0109">%1$s total · %2$s shown</string>
+    <string name="auto_kr_0110">%1$s shown</string>
+    <string name="auto_kr_0111" formatted="false">Video selection action toolbar</string>
+    <string name="auto_kr_0112" formatted="false">Video discovery toolbar</string>
+    <string name="auto_kr_0113">%1$s selected</string>
+    <string name="auto_kr_0114">%1$s videos selected</string>
+    <string name="auto_kr_0115" formatted="false">Recently released videos</string>
+    <string name="auto_kr_0116" formatted="false">Recently added videos</string>
+    <string name="auto_kr_0117" formatted="false">Recently updated videos</string>
+    <string name="auto_kr_0118">Edit %1$s filter</string>
+    <string name="auto_kr_0119">Clear %1$s filter</string>
+    <string name="auto_kr_0120" formatted="false">Added to favorites</string>
+    <string name="auto_kr_0121" formatted="false">Removed from favorites</string>
+    <string name="auto_kr_0122" formatted="false">720p or higher</string>
+    <string name="auto_kr_0123" formatted="false">1080p or higher</string>
+    <string name="auto_kr_0124" formatted="false">1440p or higher</string>
+    <string name="auto_kr_0125" formatted="false">4K or higher</string>
+    <string name="auto_kr_0126" formatted="false">All</string>
+    <string name="auto_kr_0127">%1$s or higher</string>
+    <string name="auto_kr_0128">%1$s or lower</string>
+    <string name="auto_kr_0129" formatted="false">No filters</string>
+    <string name="auto_kr_0130" formatted="false">Empty filter</string>
+    <string name="auto_kr_0131">%1$s · Applied</string>
+    <string name="auto_kr_0132">Quick apply saved filter %1$s</string>
+    <string name="auto_kr_0133" formatted="false">Tag </string>
+    <string name="auto_kr_0134" formatted="false">New filter</string>
+    <string name="auto_kr_0135" formatted="false">Title</string>
+    <string name="auto_kr_0136" formatted="false">Performer</string>
+    <string name="auto_kr_0137" formatted="false">Studio</string>
+    <string name="auto_kr_0138" formatted="false">findTags, scene_filter.tags, and saved/recent filter serialization are already verified.</string>
+    <string name="auto_kr_0139" formatted="false">GraphQL findPerformers/query parser, SceneFilterType.performers mapping, and saved/recent filter serialization are not ready yet.</string>
+    <string name="auto_kr_0140" formatted="false">GraphQL findStudios/query parser, SceneFilterType.studios mapping, and saved/recent filter serialization are not ready yet.</string>
+    <string name="auto_kr_0141">%1$s selected</string>
+    <string name="auto_kr_0142" formatted="false">None selected</string>
+    <string name="auto_kr_0143" formatted="false">Apply tag filter</string>
+    <string name="auto_kr_0144" formatted="false">Clear</string>
+    <string name="auto_kr_0145" formatted="false">Clear selected tags and keep the filter sheet open.</string>
+    <string name="auto_kr_0146" formatted="false">Close tag filter</string>
+    <string name="auto_kr_0147">%1$s selected · Ready to apply</string>
+    <string name="auto_kr_0148"> · Saved %1$s</string>
+    <string name="auto_kr_0149">%1$s saved</string>
+    <string name="auto_kr_0150" formatted="false">Search/select tags</string>
+    <string name="auto_kr_0151" formatted="false">Date, duration, watch status</string>
+    <string name="auto_kr_0152" formatted="false">Star rating, resolution, file type</string>
+    <string name="auto_kr_0153" formatted="false">Favorites and saved filters</string>
+    <string name="auto_kr_0154" formatted="false">Random sort/shuffle</string>
+    <string name="auto_kr_0155">%1$s tags</string>
+    <string name="auto_kr_0156">Date %1$s</string>
+    <string name="auto_kr_0157">Duration %1$s</string>
+    <string name="auto_kr_0158">Rating %1$s</string>
+    <string name="auto_kr_0159" formatted="false">Favorites only</string>
+    <string name="auto_kr_0160">Saved filter: %1$s</string>
+    <string name="auto_kr_0161" formatted="false">Stash Hybrid recommendations available</string>
+    <string name="auto_kr_0162" formatted="false">Stash default recommendations will be used</string>
+    <string name="auto_kr_0163" formatted="false">Authentication failed. Check the API key</string>
+    <string name="auto_kr_0164" formatted="false">Hybrid recommendation response is too slow</string>
+    <string name="auto_kr_0165" formatted="false">Could not check Hybrid recommendation status</string>
+    <string name="auto_kr_0166">Hybrid recommendation response was invalid (HTTP %1$s)</string>
+    <string name="auto_kr_0167" formatted="false">Could not load recommended videos</string>
+    <string name="auto_kr_0168">Video %1$s</string>
+    <string name="auto_kr_0169">Video %1$s</string>
+    <string name="auto_kr_0170">Video %1$s</string>
+    <string name="auto_kr_0171" formatted="false">Auto recommendation</string>
+    <string name="auto_kr_0172" formatted="false">Original Direct</string>
+    <string name="auto_kr_0173">Stash demo video %1$s</string>
+    <string name="auto_kr_0174" formatted="false">Stash did not return delete completion.</string>
+    <string name="auto_kr_0175">Tags: %1$s</string>
+    <string name="auto_kr_0176" formatted="false">Same studio</string>
+    <string name="auto_kr_0177">Brightness %1$s%%</string>
+    <string name="auto_kr_0178" formatted="false">No info</string>
+    <string name="auto_kr_0179" formatted="false">Path/URL</string>
+    <string name="auto_kr_0180" formatted="false">Streaming</string>
+    <string name="auto_kr_0181" formatted="false">Thumbnail</string>
+    <string name="auto_kr_0182">URL available · %1$s</string>
+    <string name="auto_kr_0183">Available · %1$s</string>
+    <string name="auto_kr_0184" formatted="false">None</string>
+    <string name="auto_kr_0185" formatted="false">Sprite</string>
+    <string name="auto_kr_0186" formatted="false">Stream candidates</string>
+    <string name="auto_kr_0187">Active %1$s/%2$s · %3$s originals</string>
+    <string name="auto_kr_0188" formatted="false">Recommendation source</string>
+    <string name="auto_kr_0189" formatted="false">Details</string>
+    <string name="auto_kr_0190" formatted="false">View playback debug details</string>
+    <string name="auto_kr_0191" formatted="false">Playback debug details</string>
+    <string name="auto_kr_0192" formatted="false">Close</string>
+    <string name="auto_kr_0193">%1$s frames</string>
+    <string name="auto_kr_0194">Image available · %1$s</string>
+    <string name="auto_kr_0195" formatted="false">1.5x fast playback</string>
+    <string name="auto_kr_0196">Rating %1$s</string>
+    <string name="auto_kr_0197">Played %1$s times</string>
+    <string name="auto_kr_0198" formatted="false">Unknown</string>
+    <string name="auto_kr_0199" formatted="false">Expand details</string>
+    <string name="auto_kr_0200" formatted="false">Collapse details</string>
+    <string name="auto_kr_0201" formatted="false">Preparing playback…</string>
+    <string name="auto_kr_0202" formatted="false">Buffering…</string>
+    <string name="auto_kr_0203" formatted="false">Playback finished</string>
+    <string name="auto_kr_0204" formatted="false">Playback failed</string>
+    <string name="auto_kr_0205" formatted="false">Unlock</string>
+    <string name="auto_kr_0206" formatted="false">Lock player</string>
+    <string name="auto_kr_0207" formatted="false">Stream options</string>
+    <string name="auto_kr_0208" formatted="false">Playback speed</string>
+    <string name="auto_kr_0209" formatted="false">Aspect ratio</string>
+    <string name="auto_kr_0210" formatted="false">Playback mode</string>
+    <string name="auto_kr_0211" formatted="false">Open stream options</string>
+    <string name="auto_kr_0212">Select playback speed, current %1$s</string>
+    <string name="auto_kr_0213">Select aspect ratio, current %1$s</string>
+    <string name="auto_kr_0214">Toggle aspect ratio, current %1$s, next %2$s</string>
+    <string name="auto_kr_0215" formatted="false">Shuffle playback</string>
+    <string name="auto_kr_0216" formatted="false">Sequential playback</string>
+    <string name="auto_kr_0217" formatted="false">Switch to sequential playback</string>
+    <string name="auto_kr_0218" formatted="false">Switch to shuffle playback</string>
+    <string name="auto_kr_0219" formatted="false">Shuffle playback is available when the playlist has at least 2 items</string>
+    <string name="auto_kr_0220">Select playback mode, current %1$s</string>
+    <string name="auto_kr_0221">Open playlist, %1$s items</string>
+    <string name="auto_kr_0222" formatted="false">No playlist</string>
+    <string name="auto_kr_0223" formatted="false">Previous video or beginning</string>
+    <string name="auto_kr_0224" formatted="false">Pause</string>
+    <string name="auto_kr_0225" formatted="false">Next video</string>
+    <string name="auto_kr_0226" formatted="false">No next video</string>
+    <string name="auto_kr_0227" formatted="false">Added to playback queue</string>
+    <string name="auto_kr_0228" formatted="false">Add to playback queue</string>
+    <string name="auto_kr_0229" formatted="false">Remove from favorites</string>
+    <string name="auto_kr_0230" formatted="false">Add to favorites</string>
+    <string name="auto_kr_0231" formatted="false">Remove from Watch Later</string>
+    <string name="auto_kr_0232" formatted="false">Add to Watch Later</string>
+    <string name="auto_kr_0233" formatted="false">Failed to save rating</string>
+    <string name="auto_kr_0234" formatted="false">Rating</string>
+    <string name="auto_kr_0235">Saving rating, current %1$s</string>
+    <string name="auto_kr_0236">Adjust rating, current %1$s</string>
+    <string name="auto_kr_0237" formatted="false">Favorited</string>
+    <string name="auto_kr_0238" formatted="false">Favorite</string>
+    <string name="auto_kr_0239" formatted="false">In Watch Later</string>
+    <string name="auto_kr_0240" formatted="false">Already added to playback queue, duplicates are not allowed</string>
+    <string name="auto_kr_0241" formatted="false">More details</string>
+    <string name="auto_kr_0242" formatted="false">Open more details</string>
+    <string name="auto_kr_0243" formatted="false">Playlist </string>
+    <string name="auto_kr_0244" formatted="false">items</string>
+    <string name="auto_kr_0245" formatted="false"> · Shuffled</string>
+    <string name="auto_kr_0246" formatted="false">Current</string>
+    <string name="auto_kr_0247">Playlist reorder handle: %1$s, %2$s/%3$s</string>
+    <string name="auto_kr_0248" formatted="false">Move up</string>
+    <string name="auto_kr_0249" formatted="false">Move down</string>
+    <string name="auto_kr_0250" formatted="false">Remove from playlist</string>
+    <string name="auto_kr_0251" formatted="false">Deleting video...</string>
+    <string name="auto_kr_0252">%1$s playlist actions</string>
+    <string name="auto_kr_0253" formatted="false">Saving rating…</string>
+    <string name="auto_kr_0254">Saved rating %1$s</string>
+    <string name="auto_kr_0255">Failed to save rating: %1$s</string>
+    <string name="auto_kr_0256" formatted="false">No rating</string>
+    <string name="auto_kr_0257">%1$s-star rating</string>
+    <string name="auto_kr_0258">%1$s.5-star rating</string>
+    <string name="auto_kr_0259" formatted="false">Retry with another stream</string>
+    <string name="auto_kr_0260">Stream: %1$s</string>
+    <string name="auto_kr_0261">Stream policy: %1$s</string>
+    <string name="auto_kr_0262" formatted="false">Prefer original Direct, fall back to HLS/transcode on failure</string>
+    <string name="auto_kr_0263" formatted="false">Prioritize Direct original candidates</string>
+    <string name="auto_kr_0264" formatted="false">Prioritize HLS/transcode candidates</string>
+    <string name="auto_kr_0265" formatted="false">Stream type: Unknown · Codec: Auto · Decoder: Android auto</string>
+    <string name="auto_kr_0266">Stream type: %1$s · Label: %2$s · Mime type: %3$s · .m3u8: %4$s · Codec: Auto · Decoder: Android auto</string>
+    <string name="auto_kr_0267" formatted="false">Retry current stream</string>
+    <string name="auto_kr_0268" formatted="false">Other stream</string>
+    <string name="auto_kr_0269" formatted="false">Try another stream</string>
+    <string name="auto_kr_0270" formatted="false">Open settings</string>
+    <string name="auto_kr_0271" formatted="false">Open playback settings</string>
+    <string name="auto_kr_0272" formatted="false">Play next video</string>
+    <string name="auto_kr_0273" formatted="false">Play from beginning</string>
+    <string name="auto_kr_0274" formatted="false">Play current video from beginning</string>
+    <string name="auto_kr_0275" formatted="false">Locked · unlock with the lock button</string>
+    <string name="auto_kr_0276" formatted="false">Default 1x</string>
+    <string name="auto_kr_0277">Speed %1$sx</string>
+    <string name="auto_kr_0278" formatted="false">Fit</string>
+    <string name="auto_kr_0279" formatted="false">Fill</string>
+    <string name="auto_kr_0280" formatted="false">Crop</string>
+    <string name="auto_kr_0281">Screen %1$s</string>
+    <string name="auto_kr_0282" formatted="false">Back to detail view</string>
+    <string name="auto_kr_0283" formatted="false">View fullscreen</string>
+    <string name="auto_kr_0284" formatted="false">Exit fullscreen</string>
+    <string name="auto_kr_0285" formatted="false">Close player</string>
+    <string name="auto_kr_0286" formatted="false">Close video info</string>
+    <string name="auto_kr_0287" formatted="false">View video info</string>
+    <string name="auto_kr_0288">Volume %1$s%%</string>
+    <string name="auto_kr_0289" formatted="false">Delete selected videos</string>
+    <string name="auto_kr_0290">Delete %1$s selected videos from Stash.</string>
+    <string name="auto_kr_0291" formatted="false">This cannot be undone. To prevent accidental deletion, you must check the confirmation box below.</string>
+    <string name="auto_kr_0292" formatted="false">Like the Stash source deletion dialog, generated side files are deleted by default, while the actual video file is optional.</string>
+    <string name="auto_kr_0293" formatted="false">Also delete actual video files and funscripts</string>
+    <string name="auto_kr_0294" formatted="false">Delete generated side files</string>
+    <string name="auto_kr_0295" formatted="false">I understand this delete action cannot be undone.</string>
+    <string name="auto_kr_0296" formatted="false">Cancel</string>
+    <string name="auto_kr_0297" formatted="false">Deleting…</string>
+    <string name="auto_kr_0298" formatted="false">Selected</string>
+    <string name="auto_kr_0299" formatted="false">Loading similar videos...</string>
+    <string name="auto_kr_0300">Recommendation score %1$s</string>
+    <string name="auto_kr_0301">Detail filters%1$s</string>
+    <string name="auto_kr_0302" formatted="false">Detail filters</string>
+    <string name="auto_kr_0303" formatted="false">Apply date, video duration, and watch status to Browse/Search results.</string>
+    <string name="auto_kr_0304" formatted="false">Date</string>
+    <string name="auto_kr_0305" formatted="false">Clear date</string>
+    <string name="auto_kr_0306" formatted="false">Start date</string>
+    <string name="auto_kr_0307" formatted="false">End date</string>
+    <string name="auto_kr_0308" formatted="false">Duration</string>
+    <string name="auto_kr_0309" formatted="false">Clear duration</string>
+    <string name="auto_kr_0310" formatted="false">Minimum minutes</string>
+    <string name="auto_kr_0311" formatted="false">Example: 10</string>
+    <string name="auto_kr_0312" formatted="false">Maximum minutes</string>
+    <string name="auto_kr_0313" formatted="false">Example: 90</string>
+    <string name="auto_kr_0314" formatted="false">Watch status</string>
+    <string name="auto_kr_0315" formatted="false">Clear status</string>
+    <string name="auto_kr_0316" formatted="false">Apply</string>
+    <string name="auto_kr_0317" formatted="false"> Saved</string>
+    <string name="auto_kr_0318">Local%1$s</string>
+    <string name="auto_kr_0319" formatted="false">Local library</string>
+    <string name="auto_kr_0320" formatted="false">Favorites, Watch Later, playback queue, and saved filters are stored only in this app. They are not sent to the Stash server.</string>
+    <string name="auto_kr_0321" formatted="false">List filter</string>
+    <string name="auto_kr_0322" formatted="false">Show favorites only</string>
+    <string name="auto_kr_0323" formatted="false">Save current filter</string>
+    <string name="auto_kr_0324" formatted="false">Saved filter name</string>
+    <string name="auto_kr_0325" formatted="false">Example: 4★+ MP4</string>
+    <string name="auto_kr_0326" formatted="false">Clear applied filter</string>
+    <string name="auto_kr_0327" formatted="false">Saved filters</string>
+    <string name="auto_kr_0328" formatted="false">You do not have any saved filters yet.</string>
+    <string name="auto_kr_0329">%1$s · Applied</string>
+    <string name="auto_kr_0330">Quality and rating%1$s</string>
+    <string name="auto_kr_0331" formatted="false">Quality and rating filter</string>
+    <string name="auto_kr_0332" formatted="false">Apply rating, resolution, and file type to Browse/Search results.</string>
+    <string name="auto_kr_0333" formatted="false">Clear rating</string>
+    <string name="auto_kr_0334" formatted="false">Choose minimum/maximum scores with the same star slider as the player. The maximum can be left blank, and when set it cannot be lower than the minimum.</string>
+    <string name="auto_kr_0335" formatted="false">Resolution</string>
+    <string name="auto_kr_0336" formatted="false">Clear format</string>
+    <string name="auto_kr_0337" formatted="false">File type</string>
+    <string name="auto_kr_0338" formatted="false">Minimum score</string>
+    <string name="auto_kr_0339" formatted="false">Not set</string>
+    <string name="auto_kr_0340" formatted="false">or higher</string>
+    <string name="auto_kr_0341" formatted="false">Maximum score</string>
+    <string name="auto_kr_0342" formatted="false">or lower</string>
+    <string name="auto_kr_0343">Rating filter %1$s</string>
+    <string name="auto_kr_0344" formatted="false">Saved filters</string>
+    <string name="auto_kr_0345" formatted="false">No saved filters</string>
+    <string name="auto_kr_0346">%1$s saved filters</string>
+    <string name="auto_kr_0347"> · %1$s recent</string>
+    <string name="auto_kr_0348" formatted="false">Close saved filters</string>
+    <string name="auto_kr_0349" formatted="false">Quick apply saved filters</string>
+    <string name="auto_kr_0350" formatted="false">Apply frequently used saved filters without scrolling through the list.</string>
+    <string name="auto_kr_0351" formatted="false">Recent filters</string>
+    <string name="auto_kr_0352" formatted="false">Reapply recently used combinations directly from the saved filters screen.</string>
+    <string name="auto_kr_0353" formatted="false">Current filter</string>
+    <string name="auto_kr_0354" formatted="false">No active filters</string>
+    <string name="auto_kr_0355">A filter named \'%1$s\' already exists, so it will be saved as \'%2$s\'.</string>
+    <string name="auto_kr_0356" formatted="false">Leave blank to save as \'My filter\'.</string>
+    <string name="auto_kr_0357" formatted="false">Quick save</string>
+    <string name="auto_kr_0358" formatted="false">Search saved filters</string>
+    <string name="auto_kr_0359" formatted="false">Find by name…</string>
+    <string name="auto_kr_0360" formatted="false">You do not have any saved filters yet. Save the current filter by name to load it again later.</string>
+    <string name="auto_kr_0361" formatted="false">No saved filters match the search term.</string>
+    <string name="auto_kr_0362">Delete saved filter %1$s</string>
+    <string name="auto_kr_0363" formatted="false"> selected</string>
+    <string name="auto_kr_0364">Tags%1$s</string>
+    <string name="auto_kr_0365" formatted="false">Clear tags</string>
+    <string name="auto_kr_0366" formatted="false">Clear saved filter</string>
+    <string name="auto_kr_0367" formatted="false">Clear random</string>
+    <string name="auto_kr_0368" formatted="false">Tag filter</string>
+    <string name="auto_kr_0369" formatted="false">Search and select tags, then tap Apply to update Browse/Search results.</string>
+    <string name="auto_kr_0370" formatted="false">Search tags</string>
+    <string name="auto_kr_0371" formatted="false">Tag name…</string>
+    <string name="auto_kr_0372" formatted="false">Could not load tags.</string>
+    <string name="auto_kr_0373" formatted="false">No tags to display.</string>
+    <string name="auto_kr_0374" formatted="false">Reset</string>
+    <string name="auto_kr_0375" formatted="false">Filter hub</string>
+    <string name="auto_kr_0376">%1$s saved filters</string>
+    <string name="auto_kr_0377">%1$s active filters · Open only the sections you need to edit</string>
+    <string name="auto_kr_0378" formatted="false">Reset all</string>
+    <string name="auto_kr_0379" formatted="false">Reapply recently used combinations right away.</string>
+    <string name="auto_kr_0380">Not set · %1$s</string>
+    <string name="auto_kr_0381" formatted="false">Run</string>
+    <string name="auto_kr_0382" formatted="false">Open</string>
+    <string name="auto_kr_0383" formatted="false">Recommended video to play now</string>
+    <string name="auto_kr_0384">Server status · %1$s</string>
+    <string name="auto_kr_0385">Error: %1$s</string>
+    <string name="auto_kr_0386">Edit %1$s filter</string>
+    <string name="auto_kr_0387">Clear %1$s</string>
+    <string name="auto_kr_0388">Clear %1$s filter</string>
+    <string name="auto_kr_0389" formatted="false">, selected</string>
+    <string name="auto_kr_0390" formatted="false">Now playing</string>
+    <string name="auto_kr_0391" formatted="false">Untitled</string>
+    <string name="auto_kr_0392" formatted="false">Section</string>
+    <string name="auto_kr_0393" formatted="false">Options</string>
+    <string name="auto_kr_0394" formatted="false">In use</string>
+    <string name="auto_kr_0395">%1$s · %2$s items</string>
+    <string name="auto_kr_0396" formatted="false">Status</string>
+    <string name="auto_kr_0397">%1$s items</string>
+    <string name="auto_kr_0398">%1$s items</string>
+    <string name="auto_kr_0399" formatted="false">Date, duration, playback status</string>
+    <string name="auto_kr_0400" formatted="false">Local and saved</string>
+    <string name="auto_kr_0401" formatted="false">Sort direction</string>
+    <string name="auto_kr_0402" formatted="false">Search…</string>
+    <string name="auto_kr_0403" formatted="false">Clear search</string>
+    <string name="auto_kr_0404" formatted="false">More actions</string>
+    <string name="auto_kr_0405" formatted="false">More selection actions</string>
+    <string name="auto_kr_0406" formatted="false">Save your Stash server URL and API key to load recent videos and play real streaming URLs.</string>
+    <string name="auto_kr_0407" formatted="false">Save your server URL and API key to show recommendation groups similar to Stash FrontPage on the main tab.</string>
+    <string name="auto_kr_0408" formatted="false">No video groups to display.</string>
+    <string name="auto_kr_0409" formatted="false">Failed to load discovery list</string>
+    <string name="auto_kr_0410" formatted="false">Stash server settings are required.</string>
+    <string name="auto_kr_0411" formatted="false">Delete failed</string>
+    <string name="auto_kr_0412" formatted="false">Browse</string>
+    <string name="auto_kr_0413" formatted="false">Browse your Stash video library by title while changing sort options.</string>
+    <string name="auto_kr_0414">%1$s items</string>
+    <string name="auto_kr_0415" formatted="false">Set up your Stash server first</string>
+    <string name="auto_kr_0416" formatted="false">A server URL and API key are required to load the browse list.</string>
+    <string name="auto_kr_0417" formatted="false">Could not load the browse list</string>
+    <string name="auto_kr_0418" formatted="false">Load more</string>
+    <string name="auto_kr_0419" formatted="false">No videos to display</string>
+    <string name="auto_kr_0420" formatted="false">Try reducing filters or changing the sort option.</string>
+    <string name="auto_kr_0421" formatted="false">This is the last item.</string>
+    <string name="auto_kr_0422" formatted="false">Descending ↓</string>
+    <string name="auto_kr_0423" formatted="false">Ascending ↑</string>
+    <string name="auto_kr_0424" formatted="false">Videos to continue</string>
+    <string name="auto_kr_0425" formatted="false">Empty</string>
+    <string name="auto_kr_0426" formatted="false">Saved videos</string>
+    <string name="auto_kr_0427" formatted="false">Favorite videos</string>
+    <string name="auto_kr_0428" formatted="false">Play queue</string>
+    <string name="auto_kr_0429" formatted="false">Shuffle play</string>
+    <string name="auto_kr_0430" formatted="false">Browse and search</string>
+    <string name="auto_kr_0431" formatted="false">Server status</string>
+    <string name="auto_kr_0432" formatted="false">Recently added/updated videos and filter browsing</string>
+    <string name="auto_kr_0433" formatted="false">Find videos with search terms and saved filters</string>
+    <string name="auto_kr_0434" formatted="false">Setup required</string>
+    <string name="auto_kr_0435" formatted="false">Connect your Stash server to start browsing and searching from Home.</string>
+    <string name="auto_kr_0436" formatted="false">Needs attention</string>
+    <string name="auto_kr_0437" formatted="false">Could not load server sections. Check your network and settings.</string>
+    <string name="auto_kr_0438" formatted="false">Connected</string>
+    <string name="auto_kr_0439" formatted="false">Saved Stash server</string>
+    <string name="auto_kr_0440">%1$s videos ready to continue</string>
+    <string name="auto_kr_0441" formatted="false">Add videos from Browse or Search.</string>
+    <string name="auto_kr_0442">%1$s videos to watch later</string>
+    <string name="auto_kr_0443" formatted="false">Save videos to watch later.</string>
+    <string name="auto_kr_0444">%1$s favorite videos</string>
+    <string name="auto_kr_0445" formatted="false">Collect frequently watched videos as favorites.</string>
+    <string name="auto_kr_0446" formatted="false">Start with Browse for recently added videos, or Search when you know what you want.</string>
+    <string name="auto_kr_0447" formatted="false">Unknown error</string>
+    <string name="auto_kr_0448" formatted="false">Refreshing</string>
+    <string name="auto_kr_0449" formatted="false">Refresh</string>
+    <string name="auto_kr_0450" formatted="false">Stash sections</string>
+    <string name="auto_kr_0451" formatted="false">Recent/resume groups loaded from the server.</string>
+    <string name="auto_kr_0452" formatted="false">No server video sections yet</string>
+    <string name="auto_kr_0453" formatted="false">You can find videos directly from Browse or Search.</string>
+    <string name="auto_kr_0454">%1$s %2$s items</string>
+    <string name="auto_kr_0455" formatted="false">Browse new videos or search directly with filters.</string>
+    <string name="auto_kr_0456" formatted="false">-10 sec</string>
+    <string name="auto_kr_0457" formatted="false">Play/pause</string>
+    <string name="auto_kr_0458" formatted="false">+10 sec</string>
+    <string name="auto_kr_0459">Current %1$s</string>
+    <string name="auto_kr_0460">Current %1$s</string>
+    <string name="auto_kr_0461">Current %1$s</string>
+    <string name="auto_kr_0462">%1$s sheet</string>
+    <string name="auto_kr_0463" formatted="false">Open the next video in playlist order.</string>
+    <string name="auto_kr_0464" formatted="false">Shuffle playlist order and play in the visible order.</string>
+    <string name="auto_kr_0465" formatted="false">Available when the playlist has at least 2 items.</string>
+    <string name="auto_kr_0466" formatted="false">Current playback order</string>
+    <string name="auto_kr_0467" formatted="false">Playlist sheet</string>
+    <string name="auto_kr_0468" formatted="false">Video</string>
+    <string name="auto_kr_0469" formatted="false">Player rating</string>
+    <string name="auto_kr_0470" formatted="false">Stash server settings are missing. Save the server URL and API key in Settings.</string>
+    <string name="auto_kr_0471">Could not load playback info.
+%1$s</string>
+    <string name="auto_kr_0472" formatted="false">Loading video info from Stash</string>
+    <string name="auto_kr_0473" formatted="false">Could not load recommended videos.</string>
+    <string name="auto_kr_0474" formatted="false">Stash did not return rating save completion.</string>
+    <string name="auto_kr_0475" formatted="false">Stash Hybrid recommendations</string>
+    <string name="auto_kr_0476" formatted="false">Playlist order changed</string>
+    <string name="auto_kr_0477" formatted="false">Removed from playlist</string>
+    <string name="auto_kr_0478" formatted="false">Cannot remove from playlist</string>
+    <string name="auto_kr_0479" formatted="false">Failed to add to playback queue</string>
+    <string name="auto_kr_0480" formatted="false">Brightness control unavailable</string>
+    <string name="auto_kr_0481" formatted="false">To beginning</string>
+    <string name="auto_kr_0482" formatted="false">Applied shuffled playlist order</string>
+    <string name="auto_kr_0483" formatted="false">Applied sequential playback</string>
+    <string name="auto_kr_0484" formatted="false">Already in playback queue</string>
+    <string name="auto_kr_0485" formatted="false">Added to favorites</string>
+    <string name="auto_kr_0486" formatted="false">Added to Watch Later</string>
+    <string name="auto_kr_0487" formatted="false">Removed from Watch Later</string>
+    <string name="auto_kr_0488" formatted="false">Resume from previous position?</string>
+    <string name="auto_kr_0489" formatted="false">From beginning</string>
+    <string name="auto_kr_0490" formatted="false">Stream</string>
+    <string name="auto_kr_0491" formatted="false">Shuffled order</string>
+    <string name="auto_kr_0492" formatted="false">Sequential</string>
+    <string name="auto_kr_0493">Current rating %1$s</string>
+    <string name="auto_kr_0494" formatted="false">Playing</string>
+    <string name="auto_kr_0495">Move %1$s up</string>
+    <string name="auto_kr_0496">Move %1$s down</string>
+    <string name="auto_kr_0497" formatted="false">Play all</string>
+    <string name="auto_kr_0498" formatted="false">Play entire playback queue</string>
+    <string name="auto_kr_0499" formatted="false">Shuffle playback queue</string>
+    <string name="auto_kr_0500" formatted="false">Clear</string>
+    <string name="auto_kr_0501" formatted="false">Clear playback queue</string>
+    <string name="auto_kr_0502" formatted="false">Add all to queue</string>
+    <string name="auto_kr_0503" formatted="false">Add all Watch Later items to queue</string>
+    <string name="auto_kr_0504" formatted="false">Remove</string>
+    <string name="auto_kr_0505" formatted="false">A local playlist built from items added to the queue or Watch Later from Browse/Search cards.</string>
+    <string name="auto_kr_0506" formatted="false">Up next queue</string>
+    <string name="auto_kr_0507" formatted="false">Playback queue is empty</string>
+    <string name="auto_kr_0508" formatted="false">Choose videos in Browse to build a queue for continuous playback.</string>
+    <string name="auto_kr_0509" formatted="false">Go to Browse</string>
+    <string name="auto_kr_0510" formatted="false">Collect candidates to watch someday, then send them to the playback queue when ready.</string>
+    <string name="auto_kr_0511" formatted="false">No videos to watch later</string>
+    <string name="auto_kr_0512" formatted="false">Save videos you like from Search to Watch Later.</string>
+    <string name="auto_kr_0513" formatted="false">Go to Search</string>
+    <string name="auto_kr_0514" formatted="false">No favorite videos</string>
+    <string name="auto_kr_0515" formatted="false">Save frequently watched videos as favorites from Browse.</string>
+    <string name="auto_kr_0516" formatted="false">Send Watch Later items to the queue to watch now.</string>
+    <string name="auto_kr_0517" formatted="false">All Watch Later items are already in the queue.</string>
+    <string name="auto_kr_0518" formatted="false">Search failed</string>
+    <string name="auto_kr_0519" formatted="false">Adjust search, filters, sort, and view actions from the toolbar.</string>
+    <string name="auto_kr_0520" formatted="false">None</string>
+    <string name="auto_kr_0521">Search term: %1$s · Filters %2$s · Sort: %3$s %4$s · Page size: %5$s</string>
+    <string name="auto_kr_0522" formatted="false">A server URL and API key are required to load search results.</string>
+    <string name="auto_kr_0523" formatted="false">Start a search</string>
+    <string name="auto_kr_0524" formatted="false">Enter a search term or set filters to show Stash video results here.</string>
+    <string name="auto_kr_0525" formatted="false">Could not load search results</string>
+    <string name="auto_kr_0526" formatted="false">No search results</string>
+    <string name="auto_kr_0527" formatted="false">Try changing the search term or reducing filters.</string>
+    <string name="auto_kr_0528" formatted="false">This is the last result.</string>
+    <string name="auto_kr_0529" formatted="false">On a physical device, enter the LAN IP or domain of your Mac/server instead of 127.0.0.1. Android Emulator uses 10.0.2.2:9999.</string>
+    <string name="auto_kr_0530" formatted="false">Server name</string>
+    <string name="auto_kr_0531" formatted="false">Server URL, e.g. http://192.168.0.10:9999</string>
+    <string name="auto_kr_0532" formatted="false">Enter the server URL.</string>
+    <string name="auto_kr_0533" formatted="false">Checking connection...</string>
+    <string name="auto_kr_0534">Connected: Stash %1$s</string>
+    <string name="auto_kr_0535" formatted="false">Connection failed</string>
+    <string name="auto_kr_0536" formatted="false">Test connection and save</string>
+    <string name="auto_kr_0537" formatted="false">Save without testing</string>
+    <string name="player_o_counter_label" formatted="false">O-count</string>
+    <string name="player_o_counter_value_label">%1$d times</string>
+    <string name="player_o_counter_add_content_description">Add O-count, current %1$s</string>
+    <string name="player_o_counter_saving_content_description">Saving O-count, current %1$s</string>
+    <string name="player_o_counter_saved">Saved O-count %1$d times</string>
+    <string name="player_o_counter_save_failed">Failed to save O-count: %1$s</string>
+</resources>

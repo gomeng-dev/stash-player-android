@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Stash Player</string>
+    <string name="navigation_home_label">홈</string>
+    <string name="navigation_browse_label">둘러보기</string>
+    <string name="navigation_search_label">검색</string>
+    <string name="navigation_queue_label">재생 대기열</string>
+    <string name="navigation_settings_label">설정</string>
+    <string name="scene_card_queue_remove_content_description">대기열에서 제거</string>
+    <string name="scene_card_queue_removed_feedback">재생 대기열에서 제거했습니다.</string>
+    <string name="settings_title">설정</string>
+    <string name="settings_subtitle">서버, 재생, 모양, 인터페이스, 개발, 지원 옵션을 조정합니다.</string>
+    <string name="settings_back_button">뒤로</string>
+    <string name="settings_row_open_indicator">&gt;</string>
+    <string name="settings_category_server_title">서버</string>
+    <string name="settings_category_server_description">Stash 서버 연결과 Hybrid 추천 상태를 관리합니다.</string>
+    <string name="settings_category_playback_title">재생</string>
+    <string name="settings_category_playback_description">기본 스트림 방식과 재생 종료 동작을 정합니다.</string>
+    <string name="settings_category_appearance_title">모양</string>
+    <string name="settings_category_appearance_description">앱 테마 표시 방식을 조정합니다.</string>
+    <string name="settings_category_interface_title">인터페이스</string>
+    <string name="settings_category_interface_description">앱 언어와 표시 기준을 관리합니다.</string>
+    <string name="settings_category_development_title">개발</string>
+    <string name="settings_category_development_description">플레이어 디버그 표시를 켜고 끕니다.</string>
+    <string name="settings_category_support_title">지원</string>
+    <string name="settings_category_support_description">앱 버전과 문제 신고 링크를 확인합니다.</string>
+    <string name="settings_default_stream_preference_title">기본 스트림 방식</string>
+    <string name="settings_default_stream_preference_description">플레이어가 처음 고를 스트림 우선순위를 정합니다.</string>
+    <string name="settings_stream_preference_auto_label">자동</string>
+    <string name="settings_stream_preference_auto_description">Stash에서 받은 후보 중 앱이 안정적인 스트림을 고릅니다.</string>
+    <string name="settings_stream_preference_direct_label">Direct 우선</string>
+    <string name="settings_stream_preference_direct_description">원본 Direct 스트림을 먼저 시도합니다.</string>
+    <string name="settings_stream_preference_hls_label">HLS 우선</string>
+    <string name="settings_stream_preference_hls_description">HLS 스트림을 먼저 시도합니다.</string>
+    <string name="settings_playback_end_action_title">재생 종료 시 동작</string>
+    <string name="settings_playback_end_action_description">영상이 끝났을 때 플레이어가 이어서 할 동작을 정합니다.</string>
+    <string name="settings_playback_end_action_stop_label">멈춤</string>
+    <string name="settings_playback_end_action_stop_description">현재 영상이 끝나면 그대로 종료 상태로 둡니다.</string>
+    <string name="settings_playback_end_action_repeat_label">반복</string>
+    <string name="settings_playback_end_action_repeat_description">현재 영상을 처음부터 다시 재생합니다.</string>
+    <string name="settings_playback_end_action_play_next_label">다음 영상 재생</string>
+    <string name="settings_playback_end_action_play_next_description">재생 대기열 또는 추천 영상으로 이어서 재생합니다.</string>
+    <string name="settings_background_playback_title">백그라운드 재생</string>
+    <string name="settings_background_playback_description">앱이 백그라운드로 이동해도 현재 영상을 계속 재생합니다.</string>
+    <string name="settings_pip_title">PiP 활성화</string>
+    <string name="settings_pip_label">PiP 사용</string>
+    <string name="settings_pip_description">홈으로 이동할 때 작은 플레이어로 전환하고 플레이어에서 PiP 버튼을 표시합니다.</string>
+    <string name="settings_playback_orientation_title">자동 화면 방향 제어</string>
+    <string name="settings_playback_orientation_description">플레이어 화면에서 기기 센서에 따라 화면 방향을 바꿀지 정합니다.</string>
+    <string name="settings_playback_orientation_off_label">꺼짐</string>
+    <string name="settings_playback_orientation_off_description">앱의 현재 화면 방향 정책을 유지합니다.</string>
+    <string name="settings_playback_orientation_sensor_label">센서 따름</string>
+    <string name="settings_playback_orientation_sensor_description">플레이어 화면에서 기기 회전 센서를 따릅니다.</string>
+    <string name="settings_subtitle_language_title">자막 언어</string>
+    <string name="settings_subtitle_language_description">스트림에 포함된 자막 트랙 중 우선 사용할 언어를 정합니다.</string>
+    <string name="settings_subtitle_language_auto_label">OS 언어 기반 자동</string>
+    <string name="settings_subtitle_language_auto_description">기기의 현재 언어에 맞는 자막을 우선 선택합니다.</string>
+    <string name="settings_subtitle_language_off_label">끄기</string>
+    <string name="settings_subtitle_language_off_description">자막 트랙을 표시하지 않습니다.</string>
+    <string name="settings_subtitle_language_korean_label">한국어</string>
+    <string name="settings_subtitle_language_korean_description">한국어 자막을 우선 선택합니다.</string>
+    <string name="settings_subtitle_language_english_label">English</string>
+    <string name="settings_subtitle_language_english_description">Prefer English subtitles.</string>
+    <string name="settings_subtitle_language_japanese_label">日本語</string>
+    <string name="settings_subtitle_language_japanese_description">日本語字幕を優先します。</string>
+    <string name="settings_subtitle_language_chinese_label">中文</string>
+    <string name="settings_subtitle_language_chinese_description">优先选择中文字幕。</string>
+    <string name="settings_subtitle_language_russian_label">Русский</string>
+    <string name="settings_subtitle_language_russian_description">Предпочитать русские субтитры.</string>
+    <string name="settings_subtitle_language_spanish_label">Español</string>
+    <string name="settings_subtitle_language_spanish_description">Preferir subtítulos en español.</string>
+    <string name="settings_subtitle_font_scale_title">자막 글꼴 크기</string>
+    <string name="settings_subtitle_font_scale_description">플레이어 자막의 글자 크기를 조정합니다.</string>
+    <string name="settings_subtitle_font_scale_reset_button">기본값으로</string>
+    <string name="settings_subtitle_font_scale_value_format">%1$d%%</string>
+    <string name="settings_subtitle_position_title">자막 위치</string>
+    <string name="settings_subtitle_position_description">자막이 표시될 세로 위치를 정합니다.</string>
+    <string name="settings_subtitle_position_bottom_label">아래</string>
+    <string name="settings_subtitle_position_bottom_description">화면 아래쪽에 자막을 표시합니다.</string>
+    <string name="settings_subtitle_position_middle_label">가운데</string>
+    <string name="settings_subtitle_position_middle_description">화면 가운데에 자막을 표시합니다.</string>
+    <string name="settings_subtitle_position_top_label">위</string>
+    <string name="settings_subtitle_position_top_description">화면 위쪽에 자막을 표시합니다.</string>
+    <string name="settings_subtitle_text_alignment_title">자막 텍스트 정렬</string>
+    <string name="settings_subtitle_text_alignment_description">여러 줄 자막의 텍스트 정렬 방식을 정합니다.</string>
+    <string name="settings_subtitle_text_alignment_start_label">시작</string>
+    <string name="settings_subtitle_text_alignment_start_description">자막 텍스트를 시작 방향에 맞춥니다.</string>
+    <string name="settings_subtitle_text_alignment_center_label">가운데</string>
+    <string name="settings_subtitle_text_alignment_center_description">자막 텍스트를 가운데에 맞춥니다.</string>
+    <string name="settings_subtitle_text_alignment_end_label">끝</string>
+    <string name="settings_subtitle_text_alignment_end_description">자막 텍스트를 끝 방향에 맞춥니다.</string>
+    <string name="player_pip_button_content_description">PiP로 전환</string>
+    <string name="player_pip_action_play">재생</string>
+    <string name="player_pip_action_pause">일시정지</string>
+    <string name="player_pip_action_previous">이전 영상</string>
+    <string name="player_pip_action_next">다음 영상</string>
+    <string name="settings_theme_section_title">테마</string>
+    <string name="settings_theme_mode_title">테마 모드</string>
+    <string name="settings_theme_mode_description">앱 전체를 다크, 라이트, 또는 기기 시스템 설정에 맞춰 표시합니다. 기본값은 영상 감상에 맞춘 다크입니다.</string>
+    <string name="settings_theme_mode_system_label">시스템 설정</string>
+    <string name="settings_theme_mode_system_description">기기 설정에 따라 다크/라이트를 전환합니다.</string>
+    <string name="settings_theme_mode_dark_label">다크</string>
+    <string name="settings_theme_mode_dark_description">영상 감상에 집중하기 좋은 어두운 화면으로 고정합니다.</string>
+    <string name="settings_theme_mode_light_label">라이트</string>
+    <string name="settings_theme_mode_light_description">밝은 환경에서 보기 쉬운 라이트 화면으로 고정합니다.</string>
+    <string name="settings_accent_color_title">기본 색상</string>
+    <string name="settings_accent_color_description">앱의 주요 버튼, 선택 상태, 강조 색상을 정합니다.</string>
+    <string name="settings_accent_color_purple_label">보라</string>
+    <string name="settings_accent_color_purple_description">현재 기본값과 같은 Stash Player 색상입니다.</string>
+    <string name="settings_accent_color_blue_label">파랑</string>
+    <string name="settings_accent_color_blue_description">차분하고 선명한 파란색 강조를 사용합니다.</string>
+    <string name="settings_accent_color_cyan_label">청록</string>
+    <string name="settings_accent_color_cyan_description">미디어 상태와 잘 어울리는 청록색 강조를 사용합니다.</string>
+    <string name="settings_accent_color_amber_label">앰버</string>
+    <string name="settings_accent_color_amber_description">따뜻한 노란빛 강조를 사용합니다.</string>
+    <string name="settings_accent_color_rose_label">로즈</string>
+    <string name="settings_accent_color_rose_description">강한 선택감을 주는 붉은빛 강조를 사용합니다.</string>
+    <string name="settings_ui_scale_title">UI 스케일</string>
+    <string name="settings_ui_scale_description">앱 화면의 글자, 간격, 버튼 크기를 조정합니다. 플레이어 제스처 영역은 유지합니다.</string>
+    <string name="settings_ui_scale_reset_button">기본값으로</string>
+    <string name="settings_ui_scale_value_format">%1$s (%2$d%%)</string>
+    <string name="settings_ui_scale_compact_label">작게</string>
+    <string name="settings_ui_scale_compact_description">한 화면에 더 많은 항목을 표시합니다.</string>
+    <string name="settings_ui_scale_default_label">기본</string>
+    <string name="settings_ui_scale_default_description">현재 앱의 기본 크기를 사용합니다.</string>
+    <string name="settings_ui_scale_comfortable_label">편하게</string>
+    <string name="settings_ui_scale_comfortable_description">글자와 터치 영역을 조금 더 크게 표시합니다.</string>
+    <string name="settings_ui_scale_large_label">크게</string>
+    <string name="settings_ui_scale_large_description">앱 UI를 더 크게 표시해 읽기 쉽게 만듭니다.</string>
+    <string name="settings_language_section_title">언어</string>
+    <string name="settings_language_title">앱 언어</string>
+    <string name="settings_language_description">앱에서 사용할 표시 언어를 선택합니다. 새 화면은 문자열 리소스 키를 기준으로 작성합니다.</string>
+    <string name="settings_language_system_label">시스템 기본값</string>
+    <string name="settings_language_system_description">기기의 언어 설정을 따릅니다.</string>
+    <string name="settings_language_korean_label">한국어</string>
+    <string name="settings_language_korean_description">앱 표시 언어를 한국어로 고정합니다.</string>
+    <string name="settings_language_english_label">English</string>
+    <string name="settings_language_english_description">앱 표시 언어를 영어로 고정합니다.</string>
+    <string name="settings_player_section_title">Player</string>
+    <string name="settings_player_debug_overlay_title">Debug info overlay</string>
+    <string name="settings_player_debug_overlay_description">플레이어에서 스트림 방식, MIME, .m3u8 여부를 작게 표시합니다. URL/API Key/헤더는 표시하지 않습니다.</string>
+    <string name="settings_debug_log_title">앱 디버그 로그 뷰어</string>
+    <string name="settings_debug_log_description">앱 실행 중 발생한 최근 로그를 메모리에 보관합니다. 민감한 인증 값은 표시하지 않습니다.</string>
+    <string name="settings_debug_log_empty">아직 기록된 로그가 없습니다.</string>
+    <string name="settings_debug_log_copy_button">복사</string>
+    <string name="settings_debug_log_clear_button">초기화</string>
+    <string name="settings_debug_log_clipboard_label">Stash Player debug log</string>
+    <string name="settings_debug_log_copy_complete">로그를 클립보드에 복사했습니다.</string>
+    <string name="settings_debug_log_clear_complete">로그를 초기화했습니다.</string>
+    <string name="settings_support_version_title">버전</string>
+    <string name="settings_support_version_description">현재 버전: %1$s. 누르면 GitHub Releases를 엽니다.</string>
+    <string name="settings_support_unknown_version">알 수 없음</string>
+    <string name="settings_support_issue_title">문제 신고</string>
+    <string name="settings_support_issue_description">GitHub Issues에서 문제를 신고하거나 진행 상황을 확인합니다.</string>
+    <string name="settings_support_link_open_failed">링크를 열 수 없습니다.</string>
+    <string name="settings_recommendation_section_title">Hybrid 추천</string>
+    <string name="settings_recommendation_status_description">Stash Hybrid Recommendations Engine 플러그인을 기본 추천 소스로 사용합니다.</string>
+    <string name="settings_recommendation_fallback_description">플러그인이 없거나 실패하면 Stash 기본 추천으로 대체됩니다.</string>
+    <string name="settings_recommendation_no_stash_server">먼저 Stash 서버를 저장해 주세요</string>
+    <string name="settings_optional_api_key_label">API Key (선택)</string>
+    <string name="settings_recommendation_testing">Hybrid 추천 상태 확인 중...</string>
+    <string name="settings_recommendation_test_button">Hybrid 추천 상태 확인</string>
+    <string name="settings_stash_server_section_title">Stash 서버</string>
+    <string name="settings_server_name_label">서버 이름</string>
+    <string name="settings_server_url_label">서버 주소</string>
+    <string name="settings_api_key_label">API Key</string>
+    <string name="settings_save_in_progress">저장 중...</string>
+    <string name="settings_save_complete">저장 완료</string>
+    <string name="settings_save_button">저장</string>
+    <string name="settings_connection_testing">연결 확인 중...</string>
+    <string name="settings_connection_success">연결 성공: Stash %1$s</string>
+    <string name="settings_connection_failed">연결 실패</string>
+    <string name="settings_connection_test_button">연결 테스트</string>
+    <string name="settings_server_clear_complete">서버 설정 삭제 완료</string>
+    <string name="settings_server_clear_button">서버 설정 삭제</string>
+    <string name="settings_open_onboarding_button">온보딩 다시 열기</string>
+    <string name="settings_insecure_local_http_api_key_acknowledgement">로컬 HTTP 서버에서는 인증 정보가 패킷 캡처에 노출될 수 있음을 이해했습니다.</string>
+    <string name="settings_insecure_auth_blocked">이 인증 방식은 보안 정책상 사용할 수 없습니다. HTTPS를 사용하거나 로컬 HTTP 예외를 확인해 주세요.</string>
+    <string name="setup_auth_mode_api_key_label">API Key로 연결</string>
+    <string name="setup_auth_mode_api_key_description">API Key를 저장해 Stash API와 스트림 요청에 사용합니다.</string>
+    <string name="setup_auth_mode_password_label">ID/비밀번호로 로그인</string>
+    <string name="setup_auth_mode_password_description">비밀번호는 저장하지 않습니다. 성공하면 세션 쿠키만 저장하며, HTTP는 로컬 서버에서 명시 확인 후에만 허용합니다.</string>
+    <string name="setup_username_label">아이디</string>
+    <string name="setup_password_label">비밀번호</string>
+    <string name="setup_password_https_only_warning">HTTPS가 가장 안전합니다. 로컬 HTTP 로그인은 패킷 캡처에 ID/비밀번호가 노출될 수 있어 명시 확인 후에만 사용합니다.</string>
+    <string name="setup_username_password_required">아이디와 비밀번호를 입력해 주세요.</string>
+    <string name="auto_kr_0001" formatted="false">홈</string>
+    <string name="auto_kr_0002" formatted="false">둘러보기</string>
+    <string name="auto_kr_0003" formatted="false">검색</string>
+    <string name="auto_kr_0004" formatted="false">재생 대기열</string>
+    <string name="auto_kr_0005" formatted="false">설정</string>
+    <string name="auto_kr_0006" formatted="false">태그 로드 실패</string>
+    <string name="auto_kr_0007" formatted="false">이미 대기열에 있습니다.</string>
+    <string name="auto_kr_0008" formatted="false">재생 대기열에 추가했습니다.</string>
+    <string name="auto_kr_0009" formatted="false">추가됨</string>
+    <string name="auto_kr_0010" formatted="false">대기열 추가</string>
+    <string name="auto_kr_0011" formatted="false">재생 대기열을 비웠습니다.</string>
+    <string name="auto_kr_0012" formatted="false">되돌리기</string>
+    <string name="auto_kr_0013" formatted="false">나중에 보기에서 제거했습니다.</string>
+    <string name="auto_kr_0014" formatted="false">나중에 보기에서 재생 대기열에 추가했습니다.</string>
+    <string name="auto_kr_0015">나중에 보기 %1$s개를 재생 대기열에 추가했습니다.</string>
+    <string name="auto_kr_0016" formatted="false">나중에 보기</string>
+    <string name="auto_kr_0017" formatted="false">내 필터</string>
+    <string name="auto_kr_0018" formatted="false" translatable="false">[^a-z0-9가-힣]+</string>
+    <string name="auto_kr_0019">%1$s개 삭제됨</string>
+    <string name="auto_kr_0020">%1$s개 실패</string>
+    <string name="auto_kr_0021" formatted="false">삭제된 항목 없음</string>
+    <string name="auto_kr_0022" formatted="false">태그 유사</string>
+    <string name="auto_kr_0023" formatted="false">파일명 유사</string>
+    <string name="auto_kr_0024" formatted="false">시각 유사</string>
+    <string name="auto_kr_0025" formatted="false">비슷한 길이</string>
+    <string name="auto_kr_0026" formatted="false">해상도 일치</string>
+    <string name="auto_kr_0027" formatted="false">취향 신호</string>
+    <string name="auto_kr_0028" formatted="false">비슷한 영상</string>
+    <string name="auto_kr_0029" formatted="false">아직 이 영상의 추천 캐시가 없어요</string>
+    <string name="auto_kr_0030" formatted="false">추천을 불러오지 못했어요. 다시 시도해 주세요.</string>
+    <string name="auto_kr_0031" formatted="false">다시 시도</string>
+    <string name="auto_kr_0032" formatted="false">비슷한 영상 다시 불러오기</string>
+    <string name="auto_kr_0033" formatted="false">Stash 기본 추천</string>
+    <string name="auto_kr_0034" formatted="false">Stash Hybrid 추천</string>
+    <string name="auto_kr_0035" formatted="false">제목 없는 영상</string>
+    <string name="auto_kr_0036">비슷한 영상 열기: %1$s</string>
+    <string name="auto_kr_0037">비슷한 영상 재생: %1$s</string>
+    <string name="auto_kr_0038">재생 대기열에 추가: %1$s</string>
+    <string name="auto_kr_0039" formatted="false">재생</string>
+    <string name="auto_kr_0040" formatted="false">대기열</string>
+    <string name="auto_kr_0041">재생 대기열에 이미 추가됨: %1$s</string>
+    <string name="auto_kr_0042" formatted="false">추천도 높음</string>
+    <string name="auto_kr_0043" formatted="false">추천도 보통</string>
+    <string name="auto_kr_0044" formatted="false">추천도 낮음</string>
+    <string name="auto_kr_0045">%1$s시간</string>
+    <string name="auto_kr_0046">%1$s시간 %2$s분</string>
+    <string name="auto_kr_0047">%1$s분</string>
+    <string name="auto_kr_0048" formatted="false">최근 업데이트</string>
+    <string name="auto_kr_0049" formatted="false">최근 공개</string>
+    <string name="auto_kr_0050" formatted="false">최근 추가</string>
+    <string name="auto_kr_0051" formatted="false">많이 재생</string>
+    <string name="auto_kr_0052" formatted="false">긴 영상</string>
+    <string name="auto_kr_0053" formatted="false">짧음</string>
+    <string name="auto_kr_0054" formatted="false">보통</string>
+    <string name="auto_kr_0055" formatted="false">김</string>
+    <string name="auto_kr_0056" formatted="false">매우 김</string>
+    <string name="auto_kr_0057" formatted="false">시청함</string>
+    <string name="auto_kr_0058" formatted="false">미시청</string>
+    <string name="auto_kr_0059" formatted="false">이어보기</string>
+    <string name="auto_kr_0060">%1$s 이후</string>
+    <string name="auto_kr_0061">%1$s 이전</string>
+    <string name="auto_kr_0062">%1$s분~%2$s분</string>
+    <string name="auto_kr_0063">%1$s분 이상</string>
+    <string name="auto_kr_0064">%1$s분 이하</string>
+    <string name="auto_kr_0065" formatted="false">저장</string>
+    <string name="auto_kr_0066" formatted="false">태그</string>
+    <string name="auto_kr_0067" formatted="false">날짜·길이</string>
+    <string name="auto_kr_0068" formatted="false">평점·화질</string>
+    <string name="auto_kr_0069" formatted="false">로컬</string>
+    <string name="auto_kr_0070" formatted="false">전체필터</string>
+    <string name="auto_kr_0071" formatted="false">정렬</string>
+    <string name="auto_kr_0072" formatted="false">방향</string>
+    <string name="auto_kr_0073" formatted="false">무작위</string>
+    <string name="auto_kr_0074" formatted="false">표시</string>
+    <string name="auto_kr_0075" formatted="false">작업</string>
+    <string name="auto_kr_0076" formatted="false">보기</string>
+    <string name="auto_kr_0077" formatted="false">선택 해제</string>
+    <string name="auto_kr_0078" formatted="false">선택 개수</string>
+    <string name="auto_kr_0079" formatted="false">전체 선택</string>
+    <string name="auto_kr_0080" formatted="false">선택 재생</string>
+    <string name="auto_kr_0081" formatted="false">삭제</string>
+    <string name="auto_kr_0082" formatted="false">더보기</string>
+    <string name="auto_kr_0083" formatted="false">격자</string>
+    <string name="auto_kr_0084" formatted="false">목록</string>
+    <string name="auto_kr_0085" formatted="false">날짜·길이·상태</string>
+    <string name="auto_kr_0086" formatted="false">로컬·저장 필터</string>
+    <string name="auto_kr_0087" formatted="false">무작위·셔플</string>
+    <string name="auto_kr_0088" formatted="false">첫 영상 재생</string>
+    <string name="auto_kr_0089" formatted="false">반전 선택</string>
+    <string name="auto_kr_0090" formatted="false">저장/최근 필터</string>
+    <string name="auto_kr_0091" formatted="false">필터 편집</string>
+    <string name="auto_kr_0092" formatted="false">필터</string>
+    <string name="auto_kr_0093" formatted="false">무작위 ON</string>
+    <string name="auto_kr_0094" formatted="false">무작위 OFF</string>
+    <string name="auto_kr_0095" formatted="false">다시 섞기</string>
+    <string name="auto_kr_0096">저장 %1$s</string>
+    <string name="auto_kr_0097">저장/최근 필터 열기, 저장된 필터 %1$s개</string>
+    <string name="auto_kr_0098" formatted="false">저장/최근 필터 열기</string>
+    <string name="auto_kr_0099">필터 %1$s</string>
+    <string name="auto_kr_0100">전체 필터 열기, 활성 필터 %1$s개</string>
+    <string name="auto_kr_0101" formatted="false">전체 필터 열기</string>
+    <string name="auto_kr_0102">%1$s 필터 바로 열기, 활성 %2$s개</string>
+    <string name="auto_kr_0103">%1$s 필터 바로 열기</string>
+    <string name="auto_kr_0104">%1$s 빠른 선택: %2$s</string>
+    <string name="auto_kr_0105">%1$s 즉시 전환: %2$s</string>
+    <string name="auto_kr_0106" formatted="false">무작위 정렬 다시 섞기</string>
+    <string name="auto_kr_0107" formatted="false">무작위 정렬 켜기</string>
+    <string name="auto_kr_0108" formatted="false">보기 방식</string>
+    <string name="auto_kr_0109">총 %1$s개 · 현재 %2$s개</string>
+    <string name="auto_kr_0110">현재 %1$s개</string>
+    <string name="auto_kr_0111" formatted="false">영상 선택 작업 툴바</string>
+    <string name="auto_kr_0112" formatted="false">영상 탐색 툴바</string>
+    <string name="auto_kr_0113">선택 %1$s개</string>
+    <string name="auto_kr_0114">선택된 영상 %1$s개</string>
+    <string name="auto_kr_0115" formatted="false">최근 공개 영상</string>
+    <string name="auto_kr_0116" formatted="false">최근 추가 영상</string>
+    <string name="auto_kr_0117" formatted="false">최근 업데이트 영상</string>
+    <string name="auto_kr_0118">%1$s 필터 편집</string>
+    <string name="auto_kr_0119">%1$s 필터 해제</string>
+    <string name="auto_kr_0120" formatted="false">즐겨찾기에 추가됨</string>
+    <string name="auto_kr_0121" formatted="false">즐겨찾기 해제됨</string>
+    <string name="auto_kr_0122" formatted="false">720p 이상</string>
+    <string name="auto_kr_0123" formatted="false">1080p 이상</string>
+    <string name="auto_kr_0124" formatted="false">1440p 이상</string>
+    <string name="auto_kr_0125" formatted="false">4K 이상</string>
+    <string name="auto_kr_0126" formatted="false">전체</string>
+    <string name="auto_kr_0127">%1$s 이상</string>
+    <string name="auto_kr_0128">%1$s 이하</string>
+    <string name="auto_kr_0129" formatted="false">필터 없음</string>
+    <string name="auto_kr_0130" formatted="false">빈 필터</string>
+    <string name="auto_kr_0131">%1$s · 적용 중</string>
+    <string name="auto_kr_0132">%1$s 저장 필터 빠른 적용</string>
+    <string name="auto_kr_0133" formatted="false">태그 </string>
+    <string name="auto_kr_0134" formatted="false">새 필터</string>
+    <string name="auto_kr_0135" formatted="false">제목</string>
+    <string name="auto_kr_0136" formatted="false">출연자</string>
+    <string name="auto_kr_0137" formatted="false">스튜디오</string>
+    <string name="auto_kr_0138" formatted="false">findTags, scene_filter.tags, 저장/최근 필터 직렬화가 이미 검증되어 있습니다.</string>
+    <string name="auto_kr_0139" formatted="false">GraphQL findPerformers/query parser와 SceneFilterType.performers 매핑, 저장/최근 필터 직렬화가 아직 없습니다.</string>
+    <string name="auto_kr_0140" formatted="false">GraphQL findStudios/query parser와 SceneFilterType.studios 매핑, 저장/최근 필터 직렬화가 아직 없습니다.</string>
+    <string name="auto_kr_0141">선택 %1$s개</string>
+    <string name="auto_kr_0142" formatted="false">선택 없음</string>
+    <string name="auto_kr_0143" formatted="false">태그 필터 적용</string>
+    <string name="auto_kr_0144" formatted="false">해제</string>
+    <string name="auto_kr_0145" formatted="false">선택한 태그를 해제하고 필터 시트를 유지합니다.</string>
+    <string name="auto_kr_0146" formatted="false">태그 필터 닫기</string>
+    <string name="auto_kr_0147">선택 %1$s개 · 적용 준비</string>
+    <string name="auto_kr_0148"> · 저장 %1$s</string>
+    <string name="auto_kr_0149">저장 %1$s개</string>
+    <string name="auto_kr_0150" formatted="false">태그 검색/선택</string>
+    <string name="auto_kr_0151" formatted="false">날짜, 길이, 시청 상태</string>
+    <string name="auto_kr_0152" formatted="false">별점, 해상도, 파일 형식</string>
+    <string name="auto_kr_0153" formatted="false">즐겨찾기와 저장된 필터</string>
+    <string name="auto_kr_0154" formatted="false">무작위 정렬/셔플</string>
+    <string name="auto_kr_0155">태그 %1$s개</string>
+    <string name="auto_kr_0156">날짜 %1$s</string>
+    <string name="auto_kr_0157">길이 %1$s</string>
+    <string name="auto_kr_0158">평점 %1$s</string>
+    <string name="auto_kr_0159" formatted="false">즐겨찾기만</string>
+    <string name="auto_kr_0160">저장 필터: %1$s</string>
+    <string name="auto_kr_0161" formatted="false">Stash Hybrid 추천 사용 가능</string>
+    <string name="auto_kr_0162" formatted="false">Stash 기본 추천으로 대체됩니다</string>
+    <string name="auto_kr_0163" formatted="false">인증에 실패했어요. API Key를 확인해 주세요</string>
+    <string name="auto_kr_0164" formatted="false">Hybrid 추천 응답이 너무 늦어요</string>
+    <string name="auto_kr_0165" formatted="false">Hybrid 추천 상태를 확인하지 못했어요</string>
+    <string name="auto_kr_0166">Hybrid 추천 응답이 올바르지 않아요 (HTTP %1$s)</string>
+    <string name="auto_kr_0167" formatted="false">추천 영상을 불러오지 못했어요</string>
+    <string name="auto_kr_0168">영상 %1$s</string>
+    <string name="auto_kr_0169">영상 %1$s</string>
+    <string name="auto_kr_0170">영상 %1$s</string>
+    <string name="auto_kr_0171" formatted="false">자동 추천</string>
+    <string name="auto_kr_0172" formatted="false">원본 Direct</string>
+    <string name="auto_kr_0173">Stash 데모 영상 %1$s</string>
+    <string name="auto_kr_0174" formatted="false">Stash가 삭제 완료를 반환하지 않았습니다.</string>
+    <string name="auto_kr_0175">태그: %1$s</string>
+    <string name="auto_kr_0176" formatted="false">같은 스튜디오</string>
+    <string name="auto_kr_0177">밝기 %1$s%%</string>
+    <string name="auto_kr_0178" formatted="false">정보 없음</string>
+    <string name="auto_kr_0179" formatted="false">경로/URL</string>
+    <string name="auto_kr_0180" formatted="false">스트리밍</string>
+    <string name="auto_kr_0181" formatted="false">썸네일</string>
+    <string name="auto_kr_0182">URL 있음 · %1$s</string>
+    <string name="auto_kr_0183">있음 · %1$s</string>
+    <string name="auto_kr_0184" formatted="false">없음</string>
+    <string name="auto_kr_0185" formatted="false">스프라이트</string>
+    <string name="auto_kr_0186" formatted="false">스트림 후보</string>
+    <string name="auto_kr_0187">활성 %1$s/%2$s · 원본 %3$s개</string>
+    <string name="auto_kr_0188" formatted="false">추천 소스</string>
+    <string name="auto_kr_0189" formatted="false">상세</string>
+    <string name="auto_kr_0190" formatted="false">재생 디버그 상세 정보 보기</string>
+    <string name="auto_kr_0191" formatted="false">재생 디버그 상세 정보</string>
+    <string name="auto_kr_0192" formatted="false">닫기</string>
+    <string name="auto_kr_0193">프레임 %1$s개</string>
+    <string name="auto_kr_0194">이미지 있음 · %1$s</string>
+    <string name="auto_kr_0195" formatted="false">1.5x 빠른 재생</string>
+    <string name="auto_kr_0196">평점 %1$s</string>
+    <string name="auto_kr_0197">재생 %1$s회</string>
+    <string name="auto_kr_0198" formatted="false">미상</string>
+    <string name="auto_kr_0199" formatted="false">상세 정보 펼치기</string>
+    <string name="auto_kr_0200" formatted="false">상세 정보 접기</string>
+    <string name="auto_kr_0201" formatted="false">재생 준비 중…</string>
+    <string name="auto_kr_0202" formatted="false">버퍼링 중…</string>
+    <string name="auto_kr_0203" formatted="false">재생이 끝났습니다</string>
+    <string name="auto_kr_0204" formatted="false">재생 실패</string>
+    <string name="auto_kr_0205" formatted="false">잠금 해제</string>
+    <string name="auto_kr_0206" formatted="false">플레이어 잠금</string>
+    <string name="auto_kr_0207" formatted="false">스트림 옵션</string>
+    <string name="auto_kr_0208" formatted="false">재생 속도</string>
+    <string name="auto_kr_0209" formatted="false">화면 비율</string>
+    <string name="auto_kr_0210" formatted="false">재생 방식</string>
+    <string name="auto_kr_0211" formatted="false">스트림 옵션 열기</string>
+    <string name="auto_kr_0212">재생 속도 선택, 현재 %1$s</string>
+    <string name="auto_kr_0213">화면 비율 선택, 현재 %1$s</string>
+    <string name="auto_kr_0214">화면 비율 전환, 현재 %1$s, 다음 %2$s</string>
+    <string name="auto_kr_0215" formatted="false">섞은 순서 재생</string>
+    <string name="auto_kr_0216" formatted="false">순차 재생</string>
+    <string name="auto_kr_0217" formatted="false">순차 재생으로 전환</string>
+    <string name="auto_kr_0218" formatted="false">섞은 순서 재생으로 전환</string>
+    <string name="auto_kr_0219" formatted="false">재생목록이 2개 이상일 때 섞은 순서 재생 가능</string>
+    <string name="auto_kr_0220">재생 방식 선택, 현재 %1$s</string>
+    <string name="auto_kr_0221">재생목록 열기, %1$s개 항목</string>
+    <string name="auto_kr_0222" formatted="false">재생목록 없음</string>
+    <string name="auto_kr_0223" formatted="false">이전 영상 또는 처음으로</string>
+    <string name="auto_kr_0224" formatted="false">일시정지</string>
+    <string name="auto_kr_0225" formatted="false">다음 영상</string>
+    <string name="auto_kr_0226" formatted="false">다음 영상 없음</string>
+    <string name="auto_kr_0227" formatted="false">재생 대기열에 추가됨</string>
+    <string name="auto_kr_0228" formatted="false">재생 대기열 추가</string>
+    <string name="auto_kr_0229" formatted="false">즐겨찾기 해제</string>
+    <string name="auto_kr_0230" formatted="false">즐겨찾기 추가</string>
+    <string name="auto_kr_0231" formatted="false">나중에 보기 해제</string>
+    <string name="auto_kr_0232" formatted="false">나중에 보기 추가</string>
+    <string name="auto_kr_0233" formatted="false">평점 저장 실패</string>
+    <string name="auto_kr_0234" formatted="false">평점</string>
+    <string name="auto_kr_0235">평점 저장 중, 현재 %1$s</string>
+    <string name="auto_kr_0236">평점 조정, 현재 %1$s</string>
+    <string name="auto_kr_0237" formatted="false">즐겨찾기됨</string>
+    <string name="auto_kr_0238" formatted="false">즐겨찾기</string>
+    <string name="auto_kr_0239" formatted="false">나중에 보기됨</string>
+    <string name="auto_kr_0240" formatted="false">재생 대기열에 이미 추가됨, 중복 추가 불가</string>
+    <string name="auto_kr_0241" formatted="false">자세히</string>
+    <string name="auto_kr_0242" formatted="false">자세한 정보 열기</string>
+    <string name="auto_kr_0243" formatted="false">재생목록 </string>
+    <string name="auto_kr_0244" formatted="false">개</string>
+    <string name="auto_kr_0245" formatted="false"> · 섞은 순서</string>
+    <string name="auto_kr_0246" formatted="false">현재</string>
+    <string name="auto_kr_0247">재생목록 순서 변경 핸들: %1$s, %2$s/%3$s</string>
+    <string name="auto_kr_0248" formatted="false">위로 이동</string>
+    <string name="auto_kr_0249" formatted="false">아래로 이동</string>
+    <string name="auto_kr_0250" formatted="false">재생목록에서 제거</string>
+    <string name="auto_kr_0251" formatted="false">영상 삭제...</string>
+    <string name="auto_kr_0252">%1$s 재생목록 작업</string>
+    <string name="auto_kr_0253" formatted="false">평점 저장 중…</string>
+    <string name="auto_kr_0254">평점 %1$s 저장됨</string>
+    <string name="auto_kr_0255">평점 저장 실패: %1$s</string>
+    <string name="auto_kr_0256" formatted="false">평점 없음</string>
+    <string name="auto_kr_0257">평점 %1$s점</string>
+    <string name="auto_kr_0258">평점 %1$s.5점</string>
+    <string name="auto_kr_0259" formatted="false">다른 스트림으로 재시도</string>
+    <string name="auto_kr_0260">스트림: %1$s</string>
+    <string name="auto_kr_0261">스트림 정책: %1$s</string>
+    <string name="auto_kr_0262" formatted="false">원본 Direct 우선, 실패하면 HLS/transcode로 fallback</string>
+    <string name="auto_kr_0263" formatted="false">Direct 원본 후보를 최우선으로 재생</string>
+    <string name="auto_kr_0264" formatted="false">HLS/transcode 후보를 최우선으로 재생</string>
+    <string name="auto_kr_0265" formatted="false">Stream type: Unknown · Codec: 자동 · Decoder: Android 자동</string>
+    <string name="auto_kr_0266">Stream type: %1$s · Label: %2$s · Mime type: %3$s · .m3u8: %4$s · Codec: 자동 · Decoder: Android 자동</string>
+    <string name="auto_kr_0267" formatted="false">현재 스트림 다시 시도</string>
+    <string name="auto_kr_0268" formatted="false">다른 스트림</string>
+    <string name="auto_kr_0269" formatted="false">다른 스트림 시도</string>
+    <string name="auto_kr_0270" formatted="false">설정 열기</string>
+    <string name="auto_kr_0271" formatted="false">재생 설정 열기</string>
+    <string name="auto_kr_0272" formatted="false">다음 영상 재생</string>
+    <string name="auto_kr_0273" formatted="false">처음부터 재생</string>
+    <string name="auto_kr_0274" formatted="false">현재 영상 처음부터 재생</string>
+    <string name="auto_kr_0275" formatted="false">잠금됨 · 자물쇠 버튼으로 해제</string>
+    <string name="auto_kr_0276" formatted="false">기본 1x</string>
+    <string name="auto_kr_0277">속도 %1$sx</string>
+    <string name="auto_kr_0278" formatted="false">맞춤</string>
+    <string name="auto_kr_0279" formatted="false">채움</string>
+    <string name="auto_kr_0280" formatted="false">자르기</string>
+    <string name="auto_kr_0281">화면 %1$s</string>
+    <string name="auto_kr_0282" formatted="false">상세 보기로 돌아가기</string>
+    <string name="auto_kr_0283" formatted="false">전체화면으로 보기</string>
+    <string name="auto_kr_0284" formatted="false">전체화면 나가기</string>
+    <string name="auto_kr_0285" formatted="false">플레이어 닫기</string>
+    <string name="auto_kr_0286" formatted="false">영상 정보 닫기</string>
+    <string name="auto_kr_0287" formatted="false">영상 정보 보기</string>
+    <string name="auto_kr_0288">볼륨 %1$s%%</string>
+    <string name="auto_kr_0289" formatted="false">선택한 영상 삭제</string>
+    <string name="auto_kr_0290">선택한 %1$s개 영상을 Stash에서 삭제합니다.</string>
+    <string name="auto_kr_0291" formatted="false">이 작업은 되돌릴 수 없습니다. 실수 삭제를 막기 위해 아래 확인란을 체크해야 삭제할 수 있습니다.</string>
+    <string name="auto_kr_0292" formatted="false">Stash 원본 삭제창과 동일하게 생성된 보조 파일은 기본 삭제하고, 실제 영상 파일 삭제는 별도 선택합니다.</string>
+    <string name="auto_kr_0293" formatted="false">실제 영상 파일과 funscript도 삭제</string>
+    <string name="auto_kr_0294" formatted="false">생성된 보조 파일 삭제</string>
+    <string name="auto_kr_0295" formatted="false">삭제가 되돌릴 수 없는 작업임을 이해했습니다.</string>
+    <string name="auto_kr_0296" formatted="false">취소</string>
+    <string name="auto_kr_0297" formatted="false">삭제 중…</string>
+    <string name="auto_kr_0298" formatted="false">선택됨</string>
+    <string name="auto_kr_0299" formatted="false">비슷한 영상을 불러오는 중...</string>
+    <string name="auto_kr_0300">추천 점수 %1$s</string>
+    <string name="auto_kr_0301">상세 필터%1$s</string>
+    <string name="auto_kr_0302" formatted="false">상세 필터</string>
+    <string name="auto_kr_0303" formatted="false">날짜, 영상 길이, 시청 상태를 둘러보기/검색 결과에 적용합니다.</string>
+    <string name="auto_kr_0304" formatted="false">날짜</string>
+    <string name="auto_kr_0305" formatted="false">날짜 해제</string>
+    <string name="auto_kr_0306" formatted="false">시작일</string>
+    <string name="auto_kr_0307" formatted="false">종료일</string>
+    <string name="auto_kr_0308" formatted="false">길이</string>
+    <string name="auto_kr_0309" formatted="false">길이 해제</string>
+    <string name="auto_kr_0310" formatted="false">최소 분</string>
+    <string name="auto_kr_0311" formatted="false">예: 10</string>
+    <string name="auto_kr_0312" formatted="false">최대 분</string>
+    <string name="auto_kr_0313" formatted="false">예: 90</string>
+    <string name="auto_kr_0314" formatted="false">시청 상태</string>
+    <string name="auto_kr_0315" formatted="false">상태 해제</string>
+    <string name="auto_kr_0316" formatted="false">적용</string>
+    <string name="auto_kr_0317" formatted="false"> 저장</string>
+    <string name="auto_kr_0318">로컬%1$s</string>
+    <string name="auto_kr_0319" formatted="false">로컬 보관함</string>
+    <string name="auto_kr_0320" formatted="false">즐겨찾기, 나중에 보기, 재생 대기열, 저장 필터는 이 앱 안에만 저장됩니다. Stash 서버에는 전송하지 않습니다.</string>
+    <string name="auto_kr_0321" formatted="false">목록 필터</string>
+    <string name="auto_kr_0322" formatted="false">즐겨찾기만 보기</string>
+    <string name="auto_kr_0323" formatted="false">현재 필터 저장</string>
+    <string name="auto_kr_0324" formatted="false">저장 필터 이름</string>
+    <string name="auto_kr_0325" formatted="false">예: 4★ 이상 MP4</string>
+    <string name="auto_kr_0326" formatted="false">적용 해제</string>
+    <string name="auto_kr_0327" formatted="false">저장된 필터</string>
+    <string name="auto_kr_0328" formatted="false">아직 저장한 필터가 없습니다.</string>
+    <string name="auto_kr_0329">%1$s · 적용 중</string>
+    <string name="auto_kr_0330">화질·평점%1$s</string>
+    <string name="auto_kr_0331" formatted="false">화질·평점 필터</string>
+    <string name="auto_kr_0332" formatted="false">평점, 해상도, 파일 형식을 둘러보기/검색 결과에 적용합니다.</string>
+    <string name="auto_kr_0333" formatted="false">평점 해제</string>
+    <string name="auto_kr_0334" formatted="false">플레이어와 같은 별점 슬라이더로 최저점/최고점을 고릅니다. 최고점은 비워둘 수 있고, 설정 시 최저점보다 낮아지지 않습니다.</string>
+    <string name="auto_kr_0335" formatted="false">해상도</string>
+    <string name="auto_kr_0336" formatted="false">형식 해제</string>
+    <string name="auto_kr_0337" formatted="false">파일 형식</string>
+    <string name="auto_kr_0338" formatted="false">최저점</string>
+    <string name="auto_kr_0339" formatted="false">미설정</string>
+    <string name="auto_kr_0340" formatted="false">이상</string>
+    <string name="auto_kr_0341" formatted="false">최고점</string>
+    <string name="auto_kr_0342" formatted="false">이하</string>
+    <string name="auto_kr_0343">평점 필터 %1$s</string>
+    <string name="auto_kr_0344" formatted="false">저장 필터</string>
+    <string name="auto_kr_0345" formatted="false">저장된 필터 없음</string>
+    <string name="auto_kr_0346">저장된 필터 %1$s개</string>
+    <string name="auto_kr_0347"> · 최근 %1$s개</string>
+    <string name="auto_kr_0348" formatted="false">저장 필터 닫기</string>
+    <string name="auto_kr_0349" formatted="false">저장 필터 빠른 적용</string>
+    <string name="auto_kr_0350" formatted="false">자주 쓰는 저장 필터를 목록을 내려 찾지 않고 바로 적용합니다.</string>
+    <string name="auto_kr_0351" formatted="false">최근 필터</string>
+    <string name="auto_kr_0352" formatted="false">최근 적용한 조합을 저장 필터 화면에서 바로 다시 적용합니다.</string>
+    <string name="auto_kr_0353" formatted="false">현재 필터</string>
+    <string name="auto_kr_0354" formatted="false">활성 필터 없음</string>
+    <string name="auto_kr_0355">이미 \'%1$s\' 이름이 있어 \'%2$s\'으로 저장합니다.</string>
+    <string name="auto_kr_0356" formatted="false">비워두면 \'내 필터\'로 저장합니다.</string>
+    <string name="auto_kr_0357" formatted="false">빠른 저장</string>
+    <string name="auto_kr_0358" formatted="false">저장 필터 검색</string>
+    <string name="auto_kr_0359" formatted="false">이름으로 찾기…</string>
+    <string name="auto_kr_0360" formatted="false">아직 저장한 필터가 없습니다. 현재 필터를 이름으로 저장해 다시 불러올 수 있습니다.</string>
+    <string name="auto_kr_0361" formatted="false">검색어와 일치하는 저장 필터가 없습니다.</string>
+    <string name="auto_kr_0362">%1$s 저장 필터 삭제</string>
+    <string name="auto_kr_0363" formatted="false"> 선택</string>
+    <string name="auto_kr_0364">태그%1$s</string>
+    <string name="auto_kr_0365" formatted="false">태그 해제</string>
+    <string name="auto_kr_0366" formatted="false">저장 필터 해제</string>
+    <string name="auto_kr_0367" formatted="false">무작위 해제</string>
+    <string name="auto_kr_0368" formatted="false">태그 필터</string>
+    <string name="auto_kr_0369" formatted="false">검색하며 태그를 고르고, 적용을 눌러야 둘러보기/검색 결과에 반영됩니다.</string>
+    <string name="auto_kr_0370" formatted="false">태그 검색</string>
+    <string name="auto_kr_0371" formatted="false">태그 이름…</string>
+    <string name="auto_kr_0372" formatted="false">태그를 가져오지 못했습니다.</string>
+    <string name="auto_kr_0373" formatted="false">표시할 태그가 없습니다.</string>
+    <string name="auto_kr_0374" formatted="false">초기화</string>
+    <string name="auto_kr_0375" formatted="false">필터 허브</string>
+    <string name="auto_kr_0376">저장 필터 %1$s개</string>
+    <string name="auto_kr_0377">활성 필터 %1$s개 · 필요한 섹션만 열어 편집</string>
+    <string name="auto_kr_0378" formatted="false">전체 초기화</string>
+    <string name="auto_kr_0379" formatted="false">최근 적용한 조합을 바로 다시 적용합니다.</string>
+    <string name="auto_kr_0380">미설정 · %1$s</string>
+    <string name="auto_kr_0381" formatted="false">실행</string>
+    <string name="auto_kr_0382" formatted="false">열기</string>
+    <string name="auto_kr_0383" formatted="false">바로 재생할 추천 영상</string>
+    <string name="auto_kr_0384">서버 상태 · %1$s</string>
+    <string name="auto_kr_0385">오류: %1$s</string>
+    <string name="auto_kr_0386">%1$s 필터 편집</string>
+    <string name="auto_kr_0387">%1$s 해제</string>
+    <string name="auto_kr_0388">%1$s 필터 해제</string>
+    <string name="auto_kr_0389" formatted="false">, 선택됨</string>
+    <string name="auto_kr_0390" formatted="false">현재 재생 중</string>
+    <string name="auto_kr_0391" formatted="false">제목 없음</string>
+    <string name="auto_kr_0392" formatted="false">섹션</string>
+    <string name="auto_kr_0393" formatted="false">옵션</string>
+    <string name="auto_kr_0394" formatted="false">현재 사용 중</string>
+    <string name="auto_kr_0395">%1$s · %2$s개</string>
+    <string name="auto_kr_0396" formatted="false">상태</string>
+    <string name="auto_kr_0397">%1$s개</string>
+    <string name="auto_kr_0398">%1$s개</string>
+    <string name="auto_kr_0399" formatted="false">날짜·길이·재생상태</string>
+    <string name="auto_kr_0400" formatted="false">로컬·저장</string>
+    <string name="auto_kr_0401" formatted="false">정렬 방향</string>
+    <string name="auto_kr_0402" formatted="false">검색…</string>
+    <string name="auto_kr_0403" formatted="false">검색 지우기</string>
+    <string name="auto_kr_0404" formatted="false">작업 더보기</string>
+    <string name="auto_kr_0405" formatted="false">선택 작업 더보기</string>
+    <string name="auto_kr_0406" formatted="false">Stash 서버 주소와 API Key를 저장하면 최근 영상 목록과 실제 스트리밍 URL로 재생합니다.</string>
+    <string name="auto_kr_0407" formatted="false">서버 주소와 API Key를 저장하면 메인 탭에 Stash FrontPage와 유사한 추천 영상 묶음이 표시됩니다.</string>
+    <string name="auto_kr_0408" formatted="false">표시할 영상 묶음이 없습니다.</string>
+    <string name="auto_kr_0409" formatted="false">탐색 목록 로드 실패</string>
+    <string name="auto_kr_0410" formatted="false">Stash 서버 설정이 필요합니다.</string>
+    <string name="auto_kr_0411" formatted="false">삭제 실패</string>
+    <string name="auto_kr_0412" formatted="false">탐색</string>
+    <string name="auto_kr_0413" formatted="false">정렬 기준을 바꿔가며 제목 중심으로 Stash 영상 라이브러리를 훑어봅니다.</string>
+    <string name="auto_kr_0414">%1$s개</string>
+    <string name="auto_kr_0415" formatted="false">Stash 서버를 먼저 설정해 주세요</string>
+    <string name="auto_kr_0416" formatted="false">둘러보기 목록을 가져오려면 서버 주소와 API Key가 필요합니다.</string>
+    <string name="auto_kr_0417" formatted="false">탐색 목록을 가져오지 못했습니다</string>
+    <string name="auto_kr_0418" formatted="false">더 불러오기</string>
+    <string name="auto_kr_0419" formatted="false">표시할 영상이 없습니다</string>
+    <string name="auto_kr_0420" formatted="false">필터를 줄이거나 정렬 조건을 바꿔 보세요.</string>
+    <string name="auto_kr_0421" formatted="false">마지막 항목입니다.</string>
+    <string name="auto_kr_0422" formatted="false">내림차순 ↓</string>
+    <string name="auto_kr_0423" formatted="false">오름차순 ↑</string>
+    <string name="auto_kr_0424" formatted="false">이어 볼 영상</string>
+    <string name="auto_kr_0425" formatted="false">비어 있음</string>
+    <string name="auto_kr_0426" formatted="false">저장한 영상</string>
+    <string name="auto_kr_0427" formatted="false">좋아하는 영상</string>
+    <string name="auto_kr_0428" formatted="false">대기열 재생</string>
+    <string name="auto_kr_0429" formatted="false">셔플 재생</string>
+    <string name="auto_kr_0430" formatted="false">둘러보기와 검색</string>
+    <string name="auto_kr_0431" formatted="false">서버 상태</string>
+    <string name="auto_kr_0432" formatted="false">최근 추가/업데이트 영상과 필터 탐색</string>
+    <string name="auto_kr_0433" formatted="false">검색어와 저장 필터로 원하는 영상 찾기</string>
+    <string name="auto_kr_0434" formatted="false">설정 필요</string>
+    <string name="auto_kr_0435" formatted="false">Stash 서버를 연결하면 홈에서 바로 둘러보기와 검색을 시작할 수 있습니다.</string>
+    <string name="auto_kr_0436" formatted="false">확인 필요</string>
+    <string name="auto_kr_0437" formatted="false">서버 섹션을 불러오지 못했습니다. 네트워크와 설정을 확인해 주세요.</string>
+    <string name="auto_kr_0438" formatted="false">연결됨</string>
+    <string name="auto_kr_0439" formatted="false">저장된 Stash 서버</string>
+    <string name="auto_kr_0440">바로 이어 볼 영상 %1$s개</string>
+    <string name="auto_kr_0441" formatted="false">둘러보기나 검색에서 영상을 담아두세요.</string>
+    <string name="auto_kr_0442">나중에 볼 영상 %1$s개</string>
+    <string name="auto_kr_0443" formatted="false">나중에 볼 영상을 저장해 두세요.</string>
+    <string name="auto_kr_0444">즐겨찾기 영상 %1$s개</string>
+    <string name="auto_kr_0445" formatted="false">자주 보는 영상을 즐겨찾기로 모아두세요.</string>
+    <string name="auto_kr_0446" formatted="false">최근 추가 영상은 둘러보기에서, 조건이 분명하면 검색에서 시작하세요.</string>
+    <string name="auto_kr_0447" formatted="false">알 수 없는 오류</string>
+    <string name="auto_kr_0448" formatted="false">갱신 중</string>
+    <string name="auto_kr_0449" formatted="false">새로고침</string>
+    <string name="auto_kr_0450" formatted="false">Stash 섹션</string>
+    <string name="auto_kr_0451" formatted="false">서버에서 가져온 최근/이어보기 묶음입니다.</string>
+    <string name="auto_kr_0452" formatted="false">서버 영상 섹션이 아직 없습니다</string>
+    <string name="auto_kr_0453" formatted="false">둘러보기나 검색에서 바로 영상을 찾아볼 수 있습니다.</string>
+    <string name="auto_kr_0454">%1$s %2$s개</string>
+    <string name="auto_kr_0455" formatted="false">새 영상을 훑거나 조건을 정해서 바로 찾아보세요.</string>
+    <string name="auto_kr_0456" formatted="false">-10초</string>
+    <string name="auto_kr_0457" formatted="false">재생/일시정지</string>
+    <string name="auto_kr_0458" formatted="false">+10초</string>
+    <string name="auto_kr_0459">현재 %1$s</string>
+    <string name="auto_kr_0460">현재 %1$s</string>
+    <string name="auto_kr_0461">현재 %1$s</string>
+    <string name="auto_kr_0462">%1$s 시트</string>
+    <string name="auto_kr_0463" formatted="false">재생목록 순서대로 다음 영상을 엽니다.</string>
+    <string name="auto_kr_0464" formatted="false">재생목록 순서를 섞어 지금 보이는 순서대로 재생합니다.</string>
+    <string name="auto_kr_0465" formatted="false">재생목록이 2개 이상일 때 사용할 수 있습니다.</string>
+    <string name="auto_kr_0466" formatted="false">현재 재생 순서</string>
+    <string name="auto_kr_0467" formatted="false">재생목록 시트</string>
+    <string name="auto_kr_0468" formatted="false">영상</string>
+    <string name="auto_kr_0469" formatted="false">플레이어 평점</string>
+    <string name="auto_kr_0470" formatted="false">Stash 서버 설정이 없습니다. 설정 화면에서 서버 주소와 API Key를 저장해 주세요.</string>
+    <string name="auto_kr_0471">재생 정보를 가져오지 못했습니다.
+%1$s</string>
+    <string name="auto_kr_0472" formatted="false">Stash에서 영상 정보를 가져오는 중</string>
+    <string name="auto_kr_0473" formatted="false">추천 영상을 불러오지 못했습니다.</string>
+    <string name="auto_kr_0474" formatted="false">Stash가 평점 저장 완료를 반환하지 않았습니다.</string>
+    <string name="auto_kr_0475" formatted="false">Stash Hybrid 추천</string>
+    <string name="auto_kr_0476" formatted="false">재생목록 순서 변경됨</string>
+    <string name="auto_kr_0477" formatted="false">재생목록에서 제거됨</string>
+    <string name="auto_kr_0478" formatted="false">재생목록에서 제거할 수 없음</string>
+    <string name="auto_kr_0479" formatted="false">재생 대기열 추가 실패</string>
+    <string name="auto_kr_0480" formatted="false">밝기 제어 불가</string>
+    <string name="auto_kr_0481" formatted="false">처음으로</string>
+    <string name="auto_kr_0482" formatted="false">재생목록 섞은 순서 적용</string>
+    <string name="auto_kr_0483" formatted="false">순차 재생 적용</string>
+    <string name="auto_kr_0484" formatted="false">이미 재생 대기열에 있음</string>
+    <string name="auto_kr_0485" formatted="false">즐겨찾기 추가됨</string>
+    <string name="auto_kr_0486" formatted="false">나중에 보기 추가됨</string>
+    <string name="auto_kr_0487" formatted="false">나중에 보기 해제됨</string>
+    <string name="auto_kr_0488" formatted="false">이전 위치에서 이어볼까요?</string>
+    <string name="auto_kr_0489" formatted="false">처음부터</string>
+    <string name="auto_kr_0490" formatted="false">스트림</string>
+    <string name="auto_kr_0491" formatted="false">섞은 순서</string>
+    <string name="auto_kr_0492" formatted="false">순차</string>
+    <string name="auto_kr_0493">현재 평점 %1$s</string>
+    <string name="auto_kr_0494" formatted="false">재생 중</string>
+    <string name="auto_kr_0495">%1$s 위로 이동</string>
+    <string name="auto_kr_0496">%1$s 아래로 이동</string>
+    <string name="auto_kr_0497" formatted="false">전체 재생</string>
+    <string name="auto_kr_0498" formatted="false">재생 대기열 전체 재생</string>
+    <string name="auto_kr_0499" formatted="false">재생 대기열 셔플 재생</string>
+    <string name="auto_kr_0500" formatted="false">비우기</string>
+    <string name="auto_kr_0501" formatted="false">재생 대기열 비우기</string>
+    <string name="auto_kr_0502" formatted="false">전체 대기열 추가</string>
+    <string name="auto_kr_0503" formatted="false">나중에 보기 전체 대기열 추가</string>
+    <string name="auto_kr_0504" formatted="false">제거</string>
+    <string name="auto_kr_0505" formatted="false">둘러보기/검색 카드에서 대기열 추가 또는 나중에 보기로 보낸 로컬 재생 목록입니다.</string>
+    <string name="auto_kr_0506" formatted="false">다음 재생 대기열</string>
+    <string name="auto_kr_0507" formatted="false">재생 대기열이 비어 있습니다</string>
+    <string name="auto_kr_0508" formatted="false">둘러보기에서 영상을 골라 바로 이어 볼 대기열을 만들어 보세요.</string>
+    <string name="auto_kr_0509" formatted="false">둘러보기로 이동</string>
+    <string name="auto_kr_0510" formatted="false">언젠가 볼 후보를 모아 두고, 준비되면 재생 대기열로 보냅니다.</string>
+    <string name="auto_kr_0511" formatted="false">나중에 볼 영상이 없습니다</string>
+    <string name="auto_kr_0512" formatted="false">검색에서 마음에 드는 영상을 나중에 보기로 저장해 두세요.</string>
+    <string name="auto_kr_0513" formatted="false">검색으로 이동</string>
+    <string name="auto_kr_0514" formatted="false">즐겨찾기 영상이 없습니다</string>
+    <string name="auto_kr_0515" formatted="false">둘러보기에서 자주 보는 영상을 즐겨찾기로 저장해 두세요.</string>
+    <string name="auto_kr_0516" formatted="false">나중에 보기 항목을 지금 볼 대기열로 보냅니다.</string>
+    <string name="auto_kr_0517" formatted="false">모든 나중에 보기 항목이 이미 대기열에 있습니다.</string>
+    <string name="auto_kr_0518" formatted="false">검색 실패</string>
+    <string name="auto_kr_0519" formatted="false">검색·필터·정렬·보기 작업을 도구막대에서 한 번에 조정합니다.</string>
+    <string name="auto_kr_0520" formatted="false">없음</string>
+    <string name="auto_kr_0521">검색어: %1$s · 필터 %2$s개 · 정렬: %3$s %4$s · 페이지 크기: %5$s</string>
+    <string name="auto_kr_0522" formatted="false">검색 결과를 가져오려면 서버 주소와 API Key가 필요합니다.</string>
+    <string name="auto_kr_0523" formatted="false">검색을 시작해 보세요</string>
+    <string name="auto_kr_0524" formatted="false">검색어를 입력하거나 필터를 설정하면 Stash 영상 결과가 여기에 표시됩니다.</string>
+    <string name="auto_kr_0525" formatted="false">검색 결과를 가져오지 못했습니다</string>
+    <string name="auto_kr_0526" formatted="false">검색 결과가 없습니다</string>
+    <string name="auto_kr_0527" formatted="false">검색어를 바꾸거나 필터를 줄여 보세요.</string>
+    <string name="auto_kr_0528" formatted="false">마지막 결과입니다.</string>
+    <string name="auto_kr_0529" formatted="false">실기기에서는 127.0.0.1 대신 Mac/서버의 LAN IP나 도메인을 입력하세요. Android Emulator는 10.0.2.2:9999를 사용합니다.</string>
+    <string name="auto_kr_0530" formatted="false">서버 이름</string>
+    <string name="auto_kr_0531" formatted="false">서버 주소 예: http://192.168.0.10:9999</string>
+    <string name="auto_kr_0532" formatted="false">서버 주소를 입력해 주세요.</string>
+    <string name="auto_kr_0533" formatted="false">연결 확인 중...</string>
+    <string name="auto_kr_0534">연결 성공: Stash %1$s</string>
+    <string name="auto_kr_0535" formatted="false">연결 실패</string>
+    <string name="auto_kr_0536" formatted="false">연결 테스트 후 저장</string>
+    <string name="auto_kr_0537" formatted="false">테스트 생략하고 저장</string>
+    <string name="player_o_counter_label" formatted="false">싼 횟수</string>
+    <string name="player_o_counter_value_label">%1$d회</string>
+    <string name="player_o_counter_add_content_description">싼 횟수 추가, 현재 %1$s</string>
+    <string name="player_o_counter_saving_content_description">싼 횟수 저장 중, 현재 %1$s</string>
+    <string name="player_o_counter_saved">싼 횟수 %1$d회 저장됨</string>
+    <string name="player_o_counter_save_failed">싼 횟수 저장 실패: %1$s</string>
+</resources>
+
