@@ -9,11 +9,13 @@
     <string name="scene_card_queue_remove_content_description">Remove from queue</string>
     <string name="scene_card_queue_removed_feedback">Removed from queue.</string>
     <string name="settings_title">Settings</string>
-    <string name="settings_subtitle">Adjust server, playback, appearance, interface, support, and developer options.</string>
+    <string name="settings_subtitle">Adjust server, security, playback, appearance, interface, support, and developer options.</string>
     <string name="settings_back_button">Back</string>
     <string name="settings_row_open_indicator">&gt;</string>
     <string name="settings_category_server_title">Server</string>
     <string name="settings_category_server_description">Manage the Stash server connection and Hybrid recommendation status.</string>
+    <string name="settings_category_security_title">Security</string>
+    <string name="settings_category_security_description">Protect app access with device authentication.</string>
     <string name="settings_category_playback_title">Playback</string>
     <string name="settings_category_playback_description">Choose the default stream mode and what happens when playback ends.</string>
     <string name="settings_category_appearance_title">Appearance</string>
@@ -176,6 +178,10 @@
     <string name="settings_open_onboarding_button">Open onboarding again</string>
     <string name="settings_insecure_local_http_api_key_acknowledgement">I understand that credentials sent to a local HTTP server can be exposed by packet capture.</string>
     <string name="settings_insecure_auth_blocked">This auth method is blocked by the security policy. Use HTTPS or confirm the local HTTP exception.</string>
+    <string name="settings_biometric_app_lock_title">Device authentication app lock</string>
+    <string name="settings_biometric_app_lock_description">Unlock the app on a fresh start with fingerprint, face, PIN, pattern, or device credential.</string>
+    <string name="settings_biometric_app_lock_enabled_status">App lock is on.</string>
+    <string name="settings_biometric_app_lock_disabled_status">App lock is off.</string>
     <string name="setup_auth_mode_api_key_label">Connect with API Key</string>
     <string name="setup_auth_mode_api_key_description">Store an API Key and use it for Stash API and stream requests.</string>
     <string name="setup_auth_mode_password_label">Log in with ID/password</string>
@@ -184,6 +190,23 @@
     <string name="setup_password_label">Password</string>
     <string name="setup_password_https_only_warning">HTTPS is safest. Local HTTP login can expose the ID and password to packet capture, so it is only used after explicit confirmation.</string>
     <string name="setup_username_password_required">Enter both ID and password.</string>
+    <string name="setup_biometric_offer_title">Protect the app with device lock</string>
+    <string name="setup_biometric_offer_description">Require the device fingerprint, face, PIN, pattern, or device credential before opening the saved Stash connection.</string>
+    <string name="setup_biometric_offer_enable_button">Turn on</string>
+    <string name="setup_biometric_offer_later_button">Later</string>
+    <string name="biometric_prompt_title">Unlock Stash Player</string>
+    <string name="biometric_prompt_failed">Authentication did not match.</string>
+    <string name="biometric_lock_title">App locked</string>
+    <string name="biometric_lock_description">Device authentication is required before opening your saved Stash connection.</string>
+    <string name="biometric_unlock_button">Unlock</string>
+    <string name="biometric_availability_available">Device authentication is available.</string>
+    <string name="biometric_availability_none_enrolled">No biometrics are enrolled. Add a fingerprint or face in device settings.</string>
+    <string name="biometric_availability_no_device_credential">No device lock is set. Set a PIN, pattern, or screen lock first.</string>
+    <string name="biometric_availability_no_hardware">This device does not have supported biometric hardware.</string>
+    <string name="biometric_availability_hardware_unavailable">Biometric hardware is temporarily unavailable.</string>
+    <string name="biometric_availability_security_update_required">A device security update is required before biometric authentication can be used.</string>
+    <string name="biometric_availability_unsupported">This device does not support the requested authentication method.</string>
+    <string name="biometric_availability_unknown">Device authentication status could not be checked.</string>
     <string name="auto_kr_0001" formatted="false">Home</string>
     <string name="auto_kr_0002" formatted="false">Browse</string>
     <string name="auto_kr_0003" formatted="false">Search</string>

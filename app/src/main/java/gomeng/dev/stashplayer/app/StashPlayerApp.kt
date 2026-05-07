@@ -8,9 +8,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -24,6 +27,7 @@ import gomeng.dev.stashplayer.core.ui.i18n.updateStashStringContext
 import gomeng.dev.stashplayer.core.ui.i18n.withStashAppLanguage
 import gomeng.dev.stashplayer.core.ui.theme.StashPlayerTheme
 import gomeng.dev.stashplayer.core.ui.theme.resolveStashDarkTheme
+import gomeng.dev.stashplayer.feature.security.BiometricAppLockGate
 
 class StashPlayerApp : Application() {
     override fun onCreate() {
@@ -54,6 +58,15 @@ fun StashPlayerAppRoot() {
     val uiScale by repository.uiScale.collectAsState(
         initial = StashSettingsRepository.DEFAULT_UI_SCALE,
     )
+    val savedProfile by repository.serverProfile.collectAsState(initial = null)
+    val biometricAppLockEnabledState = repository.biometricAppLockEnabled.collectAsState(initial = null as Boolean?)
+    val biometricAppLockEnabled = biometricAppLockEnabledState.value
+    var appSessionUnlocked by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    LaunchedEffect(biometricAppLockEnabled) {
+        if (biometricAppLockEnabled == false) {
+            appSessionUnlocked = true
+        }
+    }
     val localizedContext = remember(context, appLanguage) {
         context.withStashAppLanguage(appLanguage)
     }
@@ -87,10 +100,19 @@ fun StashPlayerAppRoot() {
                 color = Color.Transparent,
             ) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    StashNavHost(
-                        isFoldLikeLayout = maxWidth.value >= 600f,
-                        uiScale = uiScale,
-                    )
+                    biometricAppLockEnabled?.let { appLockEnabled ->
+                        BiometricAppLockGate(
+                            hasSavedProfile = savedProfile != null,
+                            appLockEnabled = appLockEnabled,
+                            appSessionUnlocked = appSessionUnlocked,
+                            onUnlocked = { appSessionUnlocked = true },
+                        ) {
+                            StashNavHost(
+                                isFoldLikeLayout = maxWidth.value >= 600f,
+                                uiScale = uiScale,
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -43,6 +43,10 @@ class StashSettingsRepository(private val context: Context) {
         prefs[Keys.PlayerDebugOverlayEnabled] ?: DEFAULT_PLAYER_DEBUG_OVERLAY_ENABLED
     }
 
+    val biometricAppLockEnabled: Flow<Boolean> = context.stashSettingsDataStore.data.map { prefs ->
+        prefs[Keys.BiometricAppLockEnabled] ?: DEFAULT_BIOMETRIC_APP_LOCK_ENABLED
+    }
+
     val themeMode: Flow<StashThemeMode> = context.stashSettingsDataStore.data.map { prefs ->
         themeModeFromPersistedValue(prefs[Keys.ThemeMode])
     }
@@ -109,6 +113,12 @@ class StashSettingsRepository(private val context: Context) {
     suspend fun setPlayerDebugOverlayEnabled(enabled: Boolean) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.PlayerDebugOverlayEnabled] = enabled
+        }
+    }
+
+    suspend fun setBiometricAppLockEnabled(enabled: Boolean) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.BiometricAppLockEnabled] = enabled
         }
     }
 
@@ -209,6 +219,7 @@ class StashSettingsRepository(private val context: Context) {
         val SessionCookie = stringPreferencesKey("server_session_cookie")
         val AllowInsecureLocalApiKey = booleanPreferencesKey("server_allow_insecure_local_api_key")
         val PlayerDebugOverlayEnabled = booleanPreferencesKey("player_debug_overlay_enabled")
+        val BiometricAppLockEnabled = booleanPreferencesKey("biometric_app_lock_enabled")
         val ThemeMode = stringPreferencesKey("theme_mode")
         val AppLanguage = stringPreferencesKey("app_language")
         val AccentColor = stringPreferencesKey("accent_color")
@@ -226,6 +237,7 @@ class StashSettingsRepository(private val context: Context) {
 
     companion object {
         const val DEFAULT_PLAYER_DEBUG_OVERLAY_ENABLED = false
+        const val DEFAULT_BIOMETRIC_APP_LOCK_ENABLED = false
         val DEFAULT_THEME_MODE: StashThemeMode = StashThemeMode.default
         val DEFAULT_APP_LANGUAGE: StashAppLanguage = StashAppLanguage.default
         val DEFAULT_ACCENT_COLOR: StashAccentColor = StashAccentColor.default

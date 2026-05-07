@@ -2,12 +2,12 @@ package gomeng.dev.stashplayer
 
 import android.content.res.Configuration
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.fragment.app.FragmentActivity
 import gomeng.dev.stashplayer.app.StashPlayerAppRoot
 import gomeng.dev.stashplayer.core.player.StashPictureInPictureController
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         StashPictureInPictureController.setActive(isInPictureInPictureMode)

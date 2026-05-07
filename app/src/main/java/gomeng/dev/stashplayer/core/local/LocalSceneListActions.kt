@@ -25,6 +25,20 @@ data class LocalWatchLaterQueueActionState(
     val enabled: Boolean,
 )
 
+const val LOCAL_PLAYBACK_HISTORY_LIMIT = 500
+
+fun localPlaybackHistoryDisplayLimit(): Int = LOCAL_PLAYBACK_HISTORY_LIMIT
+
+fun promoteLocalPlaybackHistoryScenes(
+    existing: List<gomeng.dev.stashplayer.core.model.SceneCardModel>,
+    played: gomeng.dev.stashplayer.core.model.SceneCardModel,
+    limit: Int = LOCAL_PLAYBACK_HISTORY_LIMIT,
+): List<gomeng.dev.stashplayer.core.model.SceneCardModel> {
+    val normalizedLimit = limit.coerceAtLeast(1)
+    return (listOf(played) + existing.filterNot { it.id == played.id })
+        .take(normalizedLimit)
+}
+
 fun buildLocalFavoriteToggleDecision(
     sceneId: String,
     favoriteSceneIds: Set<String>,

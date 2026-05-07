@@ -2,6 +2,7 @@ package gomeng.dev.stashplayer.app.navigation
 
 import androidx.annotation.StringRes
 import gomeng.dev.stashplayer.R
+import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.ui.designsystem.StashTouch
 import java.net.URLEncoder
 
@@ -65,6 +66,11 @@ internal fun shouldShowNavigationRail(
 ): Boolean = isFoldLikeLayout && !isPlayerRoute(route)
 
 internal fun shouldApplyScaffoldChromePadding(route: String?): Boolean = !isPlayerRoute(route)
+
+internal fun resolvePlayerPresentationModeForOpenedScene(
+    openedFromActivePlayer: Boolean,
+    currentMode: PlayerPresentationMode,
+): PlayerPresentationMode = if (openedFromActivePlayer) currentMode else PlayerPresentationMode.WatchPage
 
 internal const val SetupRoute = "setup"
 internal const val SetupResetRoute = "setup/reset"

@@ -205,7 +205,9 @@ fun PlayerRoute(
     sceneId: String,
     isFoldLikeLayout: Boolean,
     playbackQueue: PlayerPlaybackQueue = buildSingleScenePlaybackQueue(sceneId),
+    initialPresentationMode: PlayerPresentationMode = PlayerPresentationMode.WatchPage,
     onPlaybackQueueChange: (PlayerPlaybackQueue) -> Unit = {},
+    onPresentationModeChange: (PlayerPresentationMode) -> Unit = {},
     onOpenScene: (String) -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onExitPlayer: () -> Unit = {},
@@ -308,7 +310,9 @@ fun PlayerRoute(
             client = client,
             isFoldLikeLayout = isFoldLikeLayout,
             playbackQueue = playbackQueue.withCurrent(sceneId),
+            initialPresentationMode = initialPresentationMode,
             onPlaybackQueueChange = onPlaybackQueueChange,
+            onPresentationModeChange = onPresentationModeChange,
             onOpenScene = onOpenScene,
             onOpenSettings = onOpenSettings,
             onExitPlayer = onExitPlayer,
@@ -335,7 +339,9 @@ private fun RealPlayerRoute(
     client: StashGraphQlClient,
     isFoldLikeLayout: Boolean,
     playbackQueue: PlayerPlaybackQueue,
+    initialPresentationMode: PlayerPresentationMode,
     onPlaybackQueueChange: (PlayerPlaybackQueue) -> Unit,
+    onPresentationModeChange: (PlayerPresentationMode) -> Unit,
     onOpenScene: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onExitPlayer: () -> Unit,
@@ -401,8 +407,8 @@ private fun RealPlayerRoute(
 
     var controlsVisible by remember { mutableStateOf(true) }
     var locked by remember { mutableStateOf(false) }
-    var presentationSettledMode by remember(sceneId) { mutableStateOf(PlayerPresentationMode.WatchPage) }
-    var presentationTargetMode by remember(sceneId) { mutableStateOf(PlayerPresentationMode.WatchPage) }
+    var presentationSettledMode by remember(sceneId) { mutableStateOf(initialPresentationMode) }
+    var presentationTargetMode by remember(sceneId) { mutableStateOf(initialPresentationMode) }
     var presentationDragUpdate by remember(sceneId) { mutableStateOf<PlayerPresentationDragUpdate?>(null) }
     var presentationReleaseProgress by remember(sceneId) { mutableStateOf<Float?>(null) }
     var presentationMotionGestureMode by remember(sceneId) { mutableStateOf(PlayerPresentationGestureMode.None) }
@@ -417,6 +423,9 @@ private fun RealPlayerRoute(
     }
     val presentationProgressAnimation = remember(sceneId) {
         Animatable(if (presentationTargetMode == PlayerPresentationMode.Fullscreen) 1f else 0f)
+    }
+    LaunchedEffect(presentationTargetMode) {
+        onPresentationModeChange(presentationTargetMode)
     }
     LaunchedEffect(sceneId, presentationTargetMode, presentationDragUpdate) {
         val dragUpdate = presentationDragUpdate
@@ -539,6 +548,9 @@ private fun RealPlayerRoute(
             durationMs = durationMs,
             isInWatchLater = sceneId in watchLaterSceneIds,
         )
+    }
+    LaunchedEffect(stream.sceneId) {
+        localRepository.recordPlaybackHistory(currentSceneCard)
     }
     val quickActions = buildPlayerOverlayQuickActionStates(
         isQueued = sceneId in queueSceneIds,
@@ -2191,7 +2203,7 @@ private fun StashStream.toSceneCardModel(
         studio = "Stash",
         progress = progress,
         isInWatchLater = isInWatchLater,
-        thumbnailUrl = null,
+        thumbnailUrl = thumbnailUrl ?: spriteImageUrl,
         playCount = playCount,
     )
 }

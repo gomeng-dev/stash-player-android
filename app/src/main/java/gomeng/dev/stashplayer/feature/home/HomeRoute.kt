@@ -82,6 +82,7 @@ fun HomeRoute(
     val queueScenes by localRepository.queueScenes.collectAsState(initial = emptyList())
     val watchLaterScenes by localRepository.watchLaterScenes.collectAsState(initial = emptyList())
     val favoriteScenes by localRepository.favoriteScenes.collectAsState(initial = emptyList())
+    val playbackHistoryScenes by localRepository.playbackHistoryScenes.collectAsState(initial = emptyList())
     var sections by remember(profile) { mutableStateOf<List<StashMainTabSection>>(emptyList()) }
     var isLoading by remember(profile) { mutableStateOf(false) }
     var error by remember(profile) { mutableStateOf<String?>(null) }
@@ -125,6 +126,7 @@ fun HomeRoute(
         queueScenes = queueScenes,
         watchLaterScenes = watchLaterScenes,
         favoriteScenes = favoriteScenes,
+        playbackHistoryScenes = playbackHistoryScenes,
         isRefreshing = isLoading,
         error = error,
         onRefresh = { reloadToken++ },
@@ -148,6 +150,7 @@ private fun HomeHubContent(
     queueScenes: List<SceneCardModel>,
     watchLaterScenes: List<SceneCardModel>,
     favoriteScenes: List<SceneCardModel>,
+    playbackHistoryScenes: List<SceneCardModel>,
     isRefreshing: Boolean,
     error: String?,
     onRefresh: () -> Unit,
@@ -165,17 +168,15 @@ private fun HomeHubContent(
     val thumbnailHeight = if (isFoldLikeLayout) 212.dp else 190.dp
     val hasProfile = !hubState.requiresSetup
     val serverScenes = sections.flatMap { it.scenes }
-    val heroScene = queueScenes.firstOrNull()
-        ?: watchLaterScenes.firstOrNull()
-        ?: serverScenes.firstOrNull()
-        ?: favoriteScenes.firstOrNull()
-    val heroScenes = when {
-        queueScenes.isNotEmpty() -> queueScenes
-        watchLaterScenes.isNotEmpty() -> watchLaterScenes
-        serverScenes.isNotEmpty() -> serverScenes
-        favoriteScenes.isNotEmpty() -> favoriteScenes
-        else -> emptyList()
-    }
+    val heroSelection = selectHomeHeroScene(
+        playbackHistoryScenes = playbackHistoryScenes,
+        queueScenes = queueScenes,
+        watchLaterScenes = watchLaterScenes,
+        serverScenes = serverScenes,
+        favoriteScenes = favoriteScenes,
+    )
+    val heroScene = heroSelection?.scene
+    val heroScenes = heroSelection?.playbackScenes.orEmpty()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),

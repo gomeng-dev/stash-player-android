@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
+import gomeng.dev.stashplayer.core.local.localPlaybackHistoryDisplayLimit
 import gomeng.dev.stashplayer.core.local.queueClearUndoFeedback
 import gomeng.dev.stashplayer.core.local.watchLaterAddedToQueueFeedback
 import gomeng.dev.stashplayer.core.local.watchLaterRemoveUndoFeedback
@@ -58,6 +59,7 @@ fun QueueRoute(
     val queueScenes by repository.queueScenes.collectAsState(initial = emptyList())
     val watchLaterScenes by repository.watchLaterScenes.collectAsState(initial = emptyList())
     val favoriteScenes by repository.favoriteScenes.collectAsState(initial = emptyList())
+    val playbackHistoryScenes by repository.playbackHistoryScenes.collectAsState(initial = emptyList())
     val serverProfile by settingsRepository.serverProfile.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,6 +80,18 @@ fun QueueRoute(
     }
 
     fun addWatchLaterToQueue(scene: SceneCardModel) {
+        if (!buildWatchLaterItemQueueActionState(scene.id, queueScenes).enabled) return
+        scope.launch {
+            repository.addToQueue(scene)
+            val feedback = watchLaterAddedToQueueFeedback(count = 1)
+            snackbarHostState.showSnackbar(
+                message = feedback.message,
+                withDismissAction = feedback.withDismissAction,
+            )
+        }
+    }
+
+    fun addHistoryToQueue(scene: SceneCardModel) {
         if (!buildWatchLaterItemQueueActionState(scene.id, queueScenes).enabled) return
         scope.launch {
             repository.addToQueue(scene)
@@ -158,6 +172,40 @@ fun QueueRoute(
                 title = stashString(R.string.auto_kr_0004),
                 subtitle = stashString(R.string.auto_kr_0505),
             )
+        }
+
+        item {
+            StashSectionHeader(
+                state = StashSectionHeaderModel(
+                    title = "최근 재생 기록",
+                    itemCount = playbackHistoryScenes.size,
+                    subtitle = "최근 ${localPlaybackHistoryDisplayLimit()}개까지 자동 기록됩니다",
+                ),
+            )
+        }
+        if (playbackHistoryScenes.isEmpty()) {
+            item {
+                StashEmptyState(
+                    state = StashEmptyStateModel(
+                        title = "아직 재생 기록이 없어요",
+                        message = "영상을 재생하면 가장 최근 항목부터 여기에 쌓입니다.",
+                        primaryActionLabel = stashString(R.string.auto_kr_0509),
+                    ),
+                    onPrimaryAction = onOpenBrowse,
+                )
+            }
+        } else {
+            items(playbackHistoryScenes, key = { "history-${it.id}" }) { scene ->
+                val queueAction = buildWatchLaterItemQueueActionState(scene.id, queueScenes)
+                QueueSceneRow(
+                    scene = scene,
+                    onOpenScene = { sceneId -> onOpenScene(sceneId, playbackHistoryScenes, false) },
+                    serverProfile = serverProfile,
+                    actionLabel = queueAction.label,
+                    actionEnabled = queueAction.enabled,
+                    onAction = { addHistoryToQueue(scene) },
+                )
+            }
         }
 
         item {

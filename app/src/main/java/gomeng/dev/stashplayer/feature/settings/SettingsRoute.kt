@@ -59,7 +59,6 @@ import gomeng.dev.stashplayer.core.network.StashCredentialTransportDecision
 import gomeng.dev.stashplayer.core.network.resolveStashCredentialTransportDecision
 import gomeng.dev.stashplayer.core.network.toSettingsStatusCopy
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
-import gomeng.dev.stashplayer.core.network.toSettingsStatusCopy
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_DEFAULT
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_MAX
@@ -68,17 +67,22 @@ import gomeng.dev.stashplayer.core.player.SubtitleLanguagePreference
 import gomeng.dev.stashplayer.core.player.SubtitlePosition
 import gomeng.dev.stashplayer.core.player.SubtitleTextAlignment
 import gomeng.dev.stashplayer.core.player.coerceSubtitleFontScale
+import gomeng.dev.stashplayer.core.security.DeviceAuthenticationAvailability
 import gomeng.dev.stashplayer.core.ui.i18n.StashAppLanguage
 import gomeng.dev.stashplayer.core.ui.theme.StashAccentColor
 import gomeng.dev.stashplayer.core.ui.theme.StashThemeMode
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScale
 import gomeng.dev.stashplayer.core.ui.theme.stashThemeColorSnapshot
+import gomeng.dev.stashplayer.feature.security.deviceAuthenticationAvailabilityDescriptionRes
+import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationAvailability
+import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationLauncher
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 object SettingsDestinations {
     const val Root = "settings"
     const val Server = "settings/server"
+    const val Security = "settings/security"
     const val Playback = "settings/playback"
     const val Appearance = "settings/appearance"
     const val Interface = "settings/interface"
@@ -97,6 +101,11 @@ enum class SettingsSection(
         SettingsDestinations.Server,
         R.string.settings_category_server_title,
         R.string.settings_category_server_description,
+    ),
+    Security(
+        SettingsDestinations.Security,
+        R.string.settings_category_security_title,
+        R.string.settings_category_security_description,
     ),
     Playback(
         SettingsDestinations.Playback,
@@ -133,6 +142,12 @@ object PlayerDebugOverlaySettingCopy {
     @StringRes val sectionTitle = R.string.settings_category_development_title
     @StringRes val title = R.string.settings_player_debug_overlay_title
     @StringRes val description = R.string.settings_player_debug_overlay_description
+}
+
+object BiometricAppLockSettingCopy {
+    @StringRes val sectionTitle = R.string.settings_category_security_title
+    @StringRes val title = R.string.settings_biometric_app_lock_title
+    @StringRes val description = R.string.settings_biometric_app_lock_description
 }
 
 object SupportSettingCopy {
@@ -558,6 +573,7 @@ fun SettingsDetailRoute(
         )
         when (section) {
             SettingsSection.Server -> ServerSettingsContent(onOpenOnboarding = onOpenOnboarding)
+            SettingsSection.Security -> SecuritySettingsContent()
             SettingsSection.Playback -> PlaybackSettingsContent()
             SettingsSection.Appearance -> AppearanceSettingsContent()
             SettingsSection.Interface -> InterfaceSettingsContent()
@@ -821,6 +837,78 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(HybridRecommendationSettingCopy.testButton)) }
+        }
+    }
+}
+
+@Composable
+private fun SecuritySettingsContent() {
+    val context = LocalContext.current
+    val repository = remember(context) { StashSettingsRepository(context) }
+    val biometricAppLockEnabled by repository.biometricAppLockEnabled.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_BIOMETRIC_APP_LOCK_ENABLED,
+    )
+    val availability = rememberDeviceAuthenticationAvailability()
+    val coroutineScope = rememberCoroutineScope()
+    var statusMessage by remember { mutableStateOf<String?>(null) }
+    val authenticate = rememberDeviceAuthenticationLauncher(
+        onAuthenticated = {
+            coroutineScope.launch {
+                repository.setBiometricAppLockEnabled(true)
+                statusMessage = context.getString(R.string.settings_biometric_app_lock_enabled_status)
+            }
+        },
+        onAuthenticationError = { message ->
+            statusMessage = message.toString()
+        },
+    )
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(stringResource(BiometricAppLockSettingCopy.title), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(BiometricAppLockSettingCopy.description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    statusMessage ?: stringResource(deviceAuthenticationAvailabilityDescriptionRes(availability)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (availability == DeviceAuthenticationAvailability.Available) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                )
+            }
+            Switch(
+                checked = biometricAppLockEnabled,
+                enabled = biometricAppLockEnabled || availability == DeviceAuthenticationAvailability.Available,
+                onCheckedChange = { enabled ->
+                    if (enabled) {
+                        if (availability == DeviceAuthenticationAvailability.Available) {
+                            authenticate?.invoke()
+                        } else {
+                            statusMessage = context.getString(deviceAuthenticationAvailabilityDescriptionRes(availability))
+                        }
+                    } else {
+                        coroutineScope.launch {
+                            repository.setBiometricAppLockEnabled(false)
+                            statusMessage = context.getString(R.string.settings_biometric_app_lock_disabled_status)
+                        }
+                    }
+                },
+            )
         }
     }
 }

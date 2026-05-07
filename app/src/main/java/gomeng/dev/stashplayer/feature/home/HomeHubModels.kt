@@ -1,5 +1,6 @@
 package gomeng.dev.stashplayer.feature.home
 
+import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.network.redactStashCredentialText
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
@@ -60,6 +61,29 @@ data class HomeDiscoveryEntryModel(
     val subtitle: String,
     val action: HomeHubAction,
 )
+
+data class HomeHeroSelection(
+    val scene: SceneCardModel,
+    val playbackScenes: List<SceneCardModel>,
+)
+
+fun selectHomeHeroScene(
+    playbackHistoryScenes: List<SceneCardModel>,
+    queueScenes: List<SceneCardModel>,
+    watchLaterScenes: List<SceneCardModel>,
+    serverScenes: List<SceneCardModel>,
+    favoriteScenes: List<SceneCardModel>,
+): HomeHeroSelection? {
+    val orderedBuckets = listOf(
+        playbackHistoryScenes,
+        queueScenes,
+        watchLaterScenes,
+        serverScenes,
+        favoriteScenes,
+    )
+    val scenes = orderedBuckets.firstOrNull { it.isNotEmpty() } ?: return null
+    return HomeHeroSelection(scene = scenes.first(), playbackScenes = scenes)
+}
 
 fun buildHomeDashboardStats(
     queueCount: Int,

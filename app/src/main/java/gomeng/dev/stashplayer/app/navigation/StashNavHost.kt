@@ -43,6 +43,7 @@ import gomeng.dev.stashplayer.core.local.applyLocalFavoriteFilter
 import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueueContinuation
+import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.player.appendLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.handOffLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.shouldLoadMorePlayerPlaylistItems
@@ -90,6 +91,7 @@ fun StashNavHost(
     val currentRoute = currentDestination?.route
     var playbackQueue by remember { mutableStateOf(PlayerPlaybackQueue.Empty) }
     var playbackQueueContinuation by remember { mutableStateOf<PlayerPlaybackQueueContinuation?>(null) }
+    var playerPresentationMode by remember { mutableStateOf(PlayerPresentationMode.WatchPage) }
     val navigationChromePolicy = stashNavigationChromeVisualPolicy()
     val activeUiScale = if (isPlayerRoute(currentRoute)) StashUiScale.Default else uiScale
 
@@ -113,6 +115,10 @@ fun StashNavHost(
             scenes = scenes,
             selectedSceneId = sceneId,
             randomShuffle = randomShuffle,
+        )
+        playerPresentationMode = resolvePlayerPresentationModeForOpenedScene(
+            openedFromActivePlayer = isPlayerRoute(currentRoute),
+            currentMode = playerPresentationMode,
         )
         playbackQueueContinuation = continuation
         navController.navigate(playerRouteForScene(sceneId))
@@ -184,6 +190,10 @@ fun StashNavHost(
     }
 
     fun replaceCurrentPlayerScene(sceneId: String) {
+        playerPresentationMode = resolvePlayerPresentationModeForOpenedScene(
+            openedFromActivePlayer = true,
+            currentMode = playerPresentationMode,
+        )
         navController.navigate(playerRouteForScene(sceneId)) {
             popUpTo("player/{sceneId}") { inclusive = true }
             launchSingleTop = true
@@ -382,7 +392,9 @@ fun StashNavHost(
                             sceneId = backStackEntry.arguments?.getString("sceneId") ?: "demo",
                             isFoldLikeLayout = isFoldLikeLayout,
                             playbackQueue = playbackQueue,
+                            initialPresentationMode = playerPresentationMode,
                             onPlaybackQueueChange = { playbackQueue = it },
+                            onPresentationModeChange = { playerPresentationMode = it },
                             onOpenScene = { sceneId -> replaceCurrentPlayerScene(sceneId) },
                             onOpenSettings = { navController.navigate(TopLevelDestination.Settings.route) },
                             onExitPlayer = ::exitPlayer,

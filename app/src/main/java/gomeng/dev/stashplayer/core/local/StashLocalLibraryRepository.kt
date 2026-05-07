@@ -39,6 +39,7 @@ private val Context.stashLocalFilterDataStore by preferencesDataStore(name = "st
 enum class LocalSceneListType(val id: String, val label: String) {
     Queue("queue", stashString(R.string.auto_kr_0004)),
     WatchLater("watch_later", stashString(R.string.auto_kr_0016)),
+    PlaybackHistory("playback_history", "최근 재생 기록"),
 }
 
 data class LocalSavedVideoFilter(
@@ -119,6 +120,9 @@ interface StashLocalLibraryDao {
     @Query("DELETE FROM local_scene_list_items WHERE listType = :listType")
     suspend fun clearSceneList(listType: String)
 
+    @Query("DELETE FROM local_scene_list_items WHERE listType = :listType AND sceneId NOT IN (SELECT sceneId FROM local_scene_list_items WHERE listType = :listType ORDER BY position DESC, updatedAt DESC LIMIT :limit)")
+    suspend fun trimSceneListToLimit(listType: String, limit: Int)
+
     @Query("SELECT COUNT(*) FROM local_scene_list_items WHERE listType = :listType")
     suspend fun sceneListCount(listType: String): Int
 
@@ -174,6 +178,9 @@ class StashLocalLibraryRepository(context: Context) {
     val watchLaterScenes: Flow<List<SceneCardModel>> = dao.observeSceneListItems(LocalSceneListType.WatchLater.id).map { items ->
         items.map { it.toSceneCardModel(isInWatchLater = true) }
     }
+    val playbackHistoryScenes: Flow<List<SceneCardModel>> = dao.observeSceneListItems(LocalSceneListType.PlaybackHistory.id).map { items ->
+        items.map { it.toSceneCardModel(isInWatchLater = false) }
+    }
     val savedVideoFilters: Flow<List<LocalSavedVideoFilter>> = dao.observeSavedVideoFilters().map { filters ->
         filters.map { it.toModel() }
     }
@@ -212,6 +219,11 @@ class StashLocalLibraryRepository(context: Context) {
 
     suspend fun addToQueue(scene: SceneCardModel, nowMillis: Long = System.currentTimeMillis()) {
         dao.upsertSceneListItem(scene.toListItemEntity(LocalSceneListType.Queue, nowMillis))
+    }
+
+    suspend fun recordPlaybackHistory(scene: SceneCardModel, nowMillis: Long = System.currentTimeMillis()) {
+        dao.upsertSceneListItem(scene.toListItemEntity(LocalSceneListType.PlaybackHistory, nowMillis))
+        dao.trimSceneListToLimit(LocalSceneListType.PlaybackHistory.id, localPlaybackHistoryDisplayLimit())
     }
 
     suspend fun addAllToQueue(scenes: List<SceneCardModel>, nowMillis: Long = System.currentTimeMillis()) {

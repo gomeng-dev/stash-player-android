@@ -2,6 +2,7 @@ package gomeng.dev.stashplayer.feature.setup
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -24,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -37,7 +39,12 @@ import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.canAttemptStashCredentialTransport
 import gomeng.dev.stashplayer.core.network.resolveStashCredentialTransportDecision
+import gomeng.dev.stashplayer.core.security.DeviceAuthenticationAvailability
+import gomeng.dev.stashplayer.core.security.shouldShowBiometricOnboardingPrompt
 import gomeng.dev.stashplayer.core.ui.StashUxCopy
+import gomeng.dev.stashplayer.feature.security.deviceAuthenticationAvailabilityDescriptionRes
+import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationAvailability
+import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationLauncher
 import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
@@ -50,7 +57,11 @@ fun ServerSetupRoute(
     val context = LocalContext.current
     val repository = remember(context) { StashSettingsRepository(context) }
     val savedProfile by repository.serverProfile.collectAsState(initial = null)
+    val biometricAppLockEnabled by repository.biometricAppLockEnabled.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_BIOMETRIC_APP_LOCK_ENABLED,
+    )
     val coroutineScope = rememberCoroutineScope()
+    val deviceAuthenticationAvailability = rememberDeviceAuthenticationAvailability()
 
     var serverName by remember { mutableStateOf("Home") }
     var serverUrl by remember { mutableStateOf("") }
@@ -62,7 +73,34 @@ fun ServerSetupRoute(
     var isSaving by remember { mutableStateOf(false) }
     var statusText by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
+    var showBiometricOffer by remember { mutableStateOf(false) }
+    var biometricOfferDismissed by remember { mutableStateOf(false) }
+    var biometricOfferStatus by remember { mutableStateOf<String?>(null) }
     val scrollState = rememberScrollState()
+    val authenticateForBiometricOffer = rememberDeviceAuthenticationLauncher(
+        onAuthenticated = {
+            coroutineScope.launch {
+                repository.setBiometricAppLockEnabled(true)
+                onContinue()
+            }
+        },
+        onAuthenticationError = { message ->
+            biometricOfferStatus = message.toString()
+        },
+    )
+
+    fun continueOrOfferBiometricAppLock() {
+        val shouldOffer = !biometricOfferDismissed && shouldShowBiometricOnboardingPrompt(
+            connectionSaved = true,
+            appLockEnabled = biometricAppLockEnabled,
+            deviceAuthenticationAvailability = deviceAuthenticationAvailability,
+        )
+        if (shouldOffer) {
+            showBiometricOffer = true
+        } else {
+            onContinue()
+        }
+    }
 
     LaunchedEffect(savedProfile) {
         savedProfile?.let {
@@ -230,7 +268,7 @@ fun ServerSetupRoute(
                                 }
                                 .onSuccess { version ->
                                     statusText = stashString(R.string.auto_kr_0534, version)
-                                    onContinue()
+                                    continueOrOfferBiometricAppLock()
                                 }
                                 .onFailure {
                                     StashDebugLogBuffer.record("Onboarding", "Connection failed", it)
@@ -263,6 +301,26 @@ fun ServerSetupRoute(
                     Text(stashString(R.string.auto_kr_0537))
                 }
             }
+        }
+        if (showBiometricOffer) {
+            BiometricOnboardingOfferCard(
+                availability = deviceAuthenticationAvailability,
+                statusMessage = biometricOfferStatus,
+                onEnable = {
+                    if (deviceAuthenticationAvailability == DeviceAuthenticationAvailability.Available) {
+                        authenticateForBiometricOffer?.invoke()
+                    } else {
+                        biometricOfferStatus = context.getString(
+                            deviceAuthenticationAvailabilityDescriptionRes(deviceAuthenticationAvailability),
+                        )
+                    }
+                },
+                onLater = {
+                    biometricOfferDismissed = true
+                    showBiometricOffer = false
+                    onContinue()
+                },
+            )
         }
     }
 }
@@ -318,5 +376,55 @@ private fun SetupInsecureLocalHttpAcknowledgement(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+private fun BiometricOnboardingOfferCard(
+    availability: DeviceAuthenticationAvailability,
+    statusMessage: String?,
+    onEnable: () -> Unit,
+    onLater: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(stashString(R.string.setup_biometric_offer_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stashString(R.string.setup_biometric_offer_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                statusMessage ?: stashString(deviceAuthenticationAvailabilityDescriptionRes(availability)),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (availability == DeviceAuthenticationAvailability.Available) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.error
+                },
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Button(
+                    onClick = onEnable,
+                    enabled = availability == DeviceAuthenticationAvailability.Available,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stashString(R.string.setup_biometric_offer_enable_button))
+                }
+                Button(
+                    onClick = onLater,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stashString(R.string.setup_biometric_offer_later_button))
+                }
+            }
+        }
     }
 }

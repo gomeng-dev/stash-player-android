@@ -9,11 +9,13 @@
     <string name="scene_card_queue_remove_content_description">대기열에서 제거</string>
     <string name="scene_card_queue_removed_feedback">재생 대기열에서 제거했습니다.</string>
     <string name="settings_title">설정</string>
-    <string name="settings_subtitle">서버, 재생, 모양, 인터페이스, 개발, 지원 옵션을 조정합니다.</string>
+    <string name="settings_subtitle">서버, 보안, 재생, 모양, 인터페이스, 개발, 지원 옵션을 조정합니다.</string>
     <string name="settings_back_button">뒤로</string>
     <string name="settings_row_open_indicator">&gt;</string>
     <string name="settings_category_server_title">서버</string>
     <string name="settings_category_server_description">Stash 서버 연결과 Hybrid 추천 상태를 관리합니다.</string>
+    <string name="settings_category_security_title">보안</string>
+    <string name="settings_category_security_description">기기 인증으로 앱 접근을 보호합니다.</string>
     <string name="settings_category_playback_title">재생</string>
     <string name="settings_category_playback_description">기본 스트림 방식과 재생 종료 동작을 정합니다.</string>
     <string name="settings_category_appearance_title">모양</string>
@@ -176,6 +178,10 @@
     <string name="settings_open_onboarding_button">온보딩 다시 열기</string>
     <string name="settings_insecure_local_http_api_key_acknowledgement">로컬 HTTP 서버에서는 인증 정보가 패킷 캡처에 노출될 수 있음을 이해했습니다.</string>
     <string name="settings_insecure_auth_blocked">이 인증 방식은 보안 정책상 사용할 수 없습니다. HTTPS를 사용하거나 로컬 HTTP 예외를 확인해 주세요.</string>
+    <string name="settings_biometric_app_lock_title">기기 인증 앱 잠금</string>
+    <string name="settings_biometric_app_lock_description">앱을 새로 열 때 지문, 얼굴, PIN, 패턴 또는 비밀번호로 잠금을 해제합니다.</string>
+    <string name="settings_biometric_app_lock_enabled_status">앱 잠금을 켰습니다.</string>
+    <string name="settings_biometric_app_lock_disabled_status">앱 잠금을 껐습니다.</string>
     <string name="setup_auth_mode_api_key_label">API Key로 연결</string>
     <string name="setup_auth_mode_api_key_description">API Key를 저장해 Stash API와 스트림 요청에 사용합니다.</string>
     <string name="setup_auth_mode_password_label">ID/비밀번호로 로그인</string>
@@ -184,6 +190,23 @@
     <string name="setup_password_label">비밀번호</string>
     <string name="setup_password_https_only_warning">HTTPS가 가장 안전합니다. 로컬 HTTP 로그인은 패킷 캡처에 ID/비밀번호가 노출될 수 있어 명시 확인 후에만 사용합니다.</string>
     <string name="setup_username_password_required">아이디와 비밀번호를 입력해 주세요.</string>
+    <string name="setup_biometric_offer_title">기기 잠금으로 앱 보호</string>
+    <string name="setup_biometric_offer_description">저장된 Stash 연결을 열 때 기기에 등록된 지문, 얼굴, PIN, 패턴 또는 비밀번호로 확인합니다.</string>
+    <string name="setup_biometric_offer_enable_button">켜기</string>
+    <string name="setup_biometric_offer_later_button">나중에</string>
+    <string name="biometric_prompt_title">Stash Player 잠금 해제</string>
+    <string name="biometric_prompt_failed">인증이 일치하지 않습니다.</string>
+    <string name="biometric_lock_title">앱 잠김</string>
+    <string name="biometric_lock_description">저장된 Stash 연결을 열려면 기기 인증이 필요합니다.</string>
+    <string name="biometric_unlock_button">잠금 해제</string>
+    <string name="biometric_availability_available">기기 인증을 사용할 수 있습니다.</string>
+    <string name="biometric_availability_none_enrolled">등록된 생체 인증이 없습니다. 기기 설정에서 지문이나 얼굴을 등록해 주세요.</string>
+    <string name="biometric_availability_no_device_credential">기기 잠금이 설정되어 있지 않습니다. PIN, 패턴 또는 비밀번호를 먼저 설정해 주세요.</string>
+    <string name="biometric_availability_no_hardware">이 기기에는 지원되는 생체 인증 하드웨어가 없습니다.</string>
+    <string name="biometric_availability_hardware_unavailable">생체 인증 하드웨어를 일시적으로 사용할 수 없습니다.</string>
+    <string name="biometric_availability_security_update_required">생체 인증을 사용하려면 기기 보안 업데이트가 필요합니다.</string>
+    <string name="biometric_availability_unsupported">이 기기에서는 요청한 인증 방식을 지원하지 않습니다.</string>
+    <string name="biometric_availability_unknown">기기 인증 상태를 확인할 수 없습니다.</string>
     <string name="auto_kr_0001" formatted="false">홈</string>
     <string name="auto_kr_0002" formatted="false">둘러보기</string>
     <string name="auto_kr_0003" formatted="false">검색</string>
