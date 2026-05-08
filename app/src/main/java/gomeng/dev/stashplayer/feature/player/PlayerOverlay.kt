@@ -82,7 +82,6 @@ fun PlayerOverlay(
     playlistItems: List<PlayerPlaylistUiItem>,
     infoDrawerState: PlayerInfoDrawerState,
     infoDrawerLayout: PlayerInfoDrawerLayout,
-    previewRequestHeadersFor: (StashSpriteFrame) -> Map<String, String>,
     previewFrameFor: (Long) -> StashSpriteFrame?,
     onSeekPreview: (PlayerSeekPreview?) -> Unit,
     onExitPlayer: () -> Unit,
@@ -236,13 +235,12 @@ fun PlayerOverlay(
         if (!visibilityPolicy.showUnlockOnly) {
             PlayerStatusOverlay(
                 hudText = hudText,
-                seekPreview = seekPreview,
+                hasSeekPreview = seekPreview != null,
                 playbackStatus = playbackStatus,
                 playbackErrorText = playbackErrorText,
                 canTryAlternateSource = canTryAlternateSource,
                 canOpenSettings = canOpenSettings,
                 canOpenNextScene = canOpenNextScene,
-                previewRequestHeadersFor = previewRequestHeadersFor,
                 onRetryPlayback = onRetryPlayback,
                 onTryAlternateSource = onTryAlternateSource,
                 onOpenNextScene = onNextTransport,

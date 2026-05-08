@@ -117,7 +117,6 @@ data class PlayerErrorActionUiModel(
 )
 
 enum class PlayerStatusOverlayContent {
-    SeekPreview,
     PlaybackStatus,
     Hud,
     Hidden,
@@ -454,7 +453,7 @@ fun resolvePlayerStatusOverlayContent(
     hasSeekPreview: Boolean,
     hasHudText: Boolean,
 ): PlayerStatusOverlayContent = when {
-    hasSeekPreview -> PlayerStatusOverlayContent.SeekPreview
+    hasSeekPreview -> PlayerStatusOverlayContent.Hidden
     status in setOf(
         PlayerPlaybackUiStatus.Error,
         PlayerPlaybackUiStatus.Buffering,

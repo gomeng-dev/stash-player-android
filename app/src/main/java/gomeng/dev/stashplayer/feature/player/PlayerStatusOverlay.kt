@@ -26,7 +26,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import gomeng.dev.stashplayer.core.network.StashSpriteFrame
 import gomeng.dev.stashplayer.core.player.PlayerErrorRecoveryAction
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackUiStatus
 import gomeng.dev.stashplayer.core.player.PlayerStatusOverlayContent
@@ -41,13 +40,12 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashRadii
 @Composable
 fun PlayerStatusOverlay(
     hudText: String?,
-    seekPreview: PlayerSeekPreview?,
+    hasSeekPreview: Boolean,
     playbackStatus: PlayerPlaybackUiStatus,
     playbackErrorText: String?,
     canTryAlternateSource: Boolean,
     canOpenSettings: Boolean,
     canOpenNextScene: Boolean,
-    previewRequestHeadersFor: (StashSpriteFrame) -> Map<String, String>,
     onRetryPlayback: () -> Unit,
     onTryAlternateSource: () -> Unit,
     onOpenNextScene: () -> Unit,
@@ -61,16 +59,10 @@ fun PlayerStatusOverlay(
         when (
             resolvePlayerStatusOverlayContent(
                 status = playbackStatus,
-                hasSeekPreview = seekPreview != null,
+                hasSeekPreview = hasSeekPreview,
                 hasHudText = hudText != null,
             )
         ) {
-            PlayerStatusOverlayContent.SeekPreview -> seekPreview?.let { preview ->
-                PlayerSeekPreviewOverlay(
-                    preview = preview,
-                    requestHeadersFor = previewRequestHeadersFor,
-                )
-            }
             PlayerStatusOverlayContent.PlaybackStatus -> {
                 PlaybackStatusCard(
                     status = playbackStatus,

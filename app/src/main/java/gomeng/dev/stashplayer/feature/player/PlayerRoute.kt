@@ -1683,7 +1683,6 @@ private fun RealPlayerRoute(
             playlistItems = playlistItems,
             infoDrawerState = infoDrawerState,
             infoDrawerLayout = infoDrawerLayout,
-            previewRequestHeadersFor = profile::spritePreviewHeadersFor,
             previewFrameFor = previewFrameFor,
             onSeekPreview = updateSeekPreview,
             onExitPlayer = {
