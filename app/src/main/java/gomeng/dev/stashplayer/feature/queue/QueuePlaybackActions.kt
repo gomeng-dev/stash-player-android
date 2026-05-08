@@ -37,6 +37,16 @@ data class QueueAddDecision(
     val feedbackText: String,
 )
 
+data class PlaybackHistoryOverviewModel(
+    val title: String,
+    val itemCount: Int,
+    val subtitle: String,
+    val actionLabel: String,
+    val actionContentDescription: String,
+    val actionEnabled: Boolean,
+    val showInlineRows: Boolean,
+)
+
 enum class QueueVisualActionStyle {
     CompactPill,
     Ghost,
@@ -61,6 +71,19 @@ data class QueueSceneVisualModel(
     val current: Boolean,
     val accessibilityLabel: String,
     val actions: List<QueueVisualActionState>,
+)
+
+fun buildPlaybackHistoryOverviewModel(
+    historyCount: Int,
+    displayLimit: Int,
+): PlaybackHistoryOverviewModel = PlaybackHistoryOverviewModel(
+    title = "최근 재생 기록",
+    itemCount = historyCount,
+    subtitle = "최근 ${displayLimit}개까지 자동 기록됩니다",
+    actionLabel = "기록 보기",
+    actionContentDescription = "최근 재생 기록 보기",
+    actionEnabled = historyCount > 0,
+    showInlineRows = false,
 )
 
 fun buildQueuePlaybackRequest(

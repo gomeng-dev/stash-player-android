@@ -180,12 +180,13 @@ fun StashNavHost(
     }
 
     fun navigateTopLevel(destination: TopLevelDestination) {
+        val statePolicy = resolveTopLevelNavigationStatePolicy(destination.route)
         navController.navigate(destination.route) {
             popUpTo(navController.graph.startDestinationId) {
-                saveState = true
+                saveState = statePolicy.saveState
             }
             launchSingleTop = true
-            restoreState = true
+            restoreState = statePolicy.restoreState
         }
     }
 

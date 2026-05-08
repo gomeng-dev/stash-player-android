@@ -56,17 +56,22 @@ fun selectPreferredStashStream(
 fun rankStashStreamCandidates(
     candidates: List<StashStreamCandidate>,
     preference: StashStreamPreference = StashStreamPreference.Auto,
-): List<StashStreamCandidate> =
-    candidates
-        .mapIndexedNotNull { index, candidate ->
-            candidate.takeIf { it.url.isNotBlank() }?.let { IndexedStreamCandidate(index, it) }
-        }
-        .sortedWith(
-            compareBy<IndexedStreamCandidate> { streamCandidateRank(it.candidate, preference) }
-                .thenBy { streamCandidateOriginRank(it.candidate, preference) }
-                .thenBy { it.index },
-        )
-        .map { it.candidate }
+): List<StashStreamCandidate> = rankStashStreamCandidateIndexes(candidates, preference)
+    .mapNotNull(candidates::getOrNull)
+
+fun rankStashStreamCandidateIndexes(
+    candidates: List<StashStreamCandidate>,
+    preference: StashStreamPreference = StashStreamPreference.Auto,
+): List<Int> = candidates
+    .mapIndexedNotNull { index, candidate ->
+        candidate.takeIf { it.url.isNotBlank() }?.let { IndexedStreamCandidate(index, it) }
+    }
+    .sortedWith(
+        compareBy<IndexedStreamCandidate> { streamCandidateRank(it.candidate, preference) }
+            .thenBy { streamCandidateOriginRank(it.candidate, preference) }
+            .thenBy { it.index },
+    )
+    .map { it.index }
 
 fun classifyStashStreamSourceCategory(
     url: String,

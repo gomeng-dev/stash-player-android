@@ -33,6 +33,11 @@ internal data class StashNavigationChromeVisualPolicy(
     val minItemTouchTargetDp: Int,
 )
 
+internal data class TopLevelNavigationStatePolicy(
+    val saveState: Boolean,
+    val restoreState: Boolean,
+)
+
 internal fun stashNavigationChromeVisualPolicy(): StashNavigationChromeVisualPolicy = StashNavigationChromeVisualPolicy(
     containerRole = StashNavigationColorRole.Surface,
     selectedIconRole = StashNavigationColorRole.Primary,
@@ -71,6 +76,13 @@ internal fun resolvePlayerPresentationModeForOpenedScene(
     openedFromActivePlayer: Boolean,
     currentMode: PlayerPresentationMode,
 ): PlayerPresentationMode = if (openedFromActivePlayer) currentMode else PlayerPresentationMode.WatchPage
+
+internal fun resolveTopLevelNavigationStatePolicy(destinationRoute: String): TopLevelNavigationStatePolicy =
+    if (destinationRoute == "settings") {
+        TopLevelNavigationStatePolicy(saveState = true, restoreState = false)
+    } else {
+        TopLevelNavigationStatePolicy(saveState = true, restoreState = true)
+    }
 
 internal const val SetupRoute = "setup"
 internal const val SetupResetRoute = "setup/reset"

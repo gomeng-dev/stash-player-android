@@ -353,7 +353,7 @@ private fun RealPlayerRoute(
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val activity = remember(context, localView) { context.findActivity() ?: localView.context.findActivity() }
-    val resolvedCandidates = stream.resolvedCandidates.ifEmpty {
+    val baseResolvedCandidates = stream.resolvedCandidates.ifEmpty {
         listOf(
             ResolvedStashStreamCandidate(
                 uri = stream.uri,
@@ -368,11 +368,18 @@ private fun RealPlayerRoute(
     }
     var activeCandidateIndex by remember(stream) { mutableStateOf(0) }
     var streamPreference by remember(stream, defaultStreamPreference) { mutableStateOf(defaultStreamPreference) }
+    var prepareRequestKey by remember(stream) { mutableLongStateOf(0L) }
+    val resolvedCandidates = PlayerStreamSelectionController.orderResolvedCandidatesForPreference(
+        resolvedCandidates = baseResolvedCandidates,
+        streamCandidates = stream.streamCandidates,
+        preference = streamPreference,
+    )
     var reprepareStartPositionMs by remember(stream) { mutableStateOf<Long?>(null) }
     var seekPreviewState by remember(stream) { mutableStateOf(PlayerSeekPreviewControllerState()) }
     val activeCandidate = resolvedCandidates[
         PlayerStreamSelectionController.coerceCandidateIndex(activeCandidateIndex, resolvedCandidates.size),
     ]
+    val activeCandidateKey = PlayerStreamSelectionController.candidateKey(activeCandidate)
     val controller = remember(stream.sceneId, stream.requestHeaders) {
         StashPlayerController(
             context = context,
@@ -741,6 +748,7 @@ private fun RealPlayerRoute(
                 controller.clearLastError()
                 activeCandidateIndex = decision.nextIndex
                 reprepareStartPositionMs = decision.startPositionMs
+                prepareRequestKey += 1
                 seekPreviewState = seekPreviewState.copy(pendingSeekTargetMs = null, pendingSeekStartedAtMs = 0L)
                 playbackStatus = PlayerPlaybackUiStatus.Loading
                 playbackErrorText = null
@@ -823,13 +831,13 @@ private fun RealPlayerRoute(
         }
     }
 
-    LaunchedEffect(activeCandidate.uri, activeCandidateIndex, resumeStartPositionMs) {
-        val startPositionMs = reprepareStartPositionMs
-            ?: if (activeCandidateIndex == 0) {
-                resumeStartPositionMs ?: return@LaunchedEffect
-            } else {
-                controller.player.currentPosition.coerceAtLeast(0L)
-            }
+    LaunchedEffect(activeCandidateKey, prepareRequestKey, resumeStartPositionMs) {
+        val startPositionMs = PlayerStreamSelectionController.resolvePrepareStartPosition(
+            reprepareStartPositionMs = reprepareStartPositionMs,
+            playbackPrepared = playbackPrepared,
+            resumeStartPositionMs = resumeStartPositionMs,
+            currentPositionMs = controller.player.currentPosition,
+        ) ?: return@LaunchedEffect
         playbackStatus = PlayerPlaybackUiStatus.Loading
         playbackErrorText = null
         controller.clearLastError()
@@ -1309,6 +1317,7 @@ private fun RealPlayerRoute(
         if (decision.shouldReprepare) {
             activeCandidateIndex = decision.selectedIndex
             reprepareStartPositionMs = decision.reprepareStartPositionMs
+            prepareRequestKey += 1
             if (decision.shouldClearPendingSeek) {
                 seekPreviewState = seekPreviewState.copy(pendingSeekTargetMs = null, pendingSeekStartedAtMs = 0L)
             }
@@ -1318,19 +1327,26 @@ private fun RealPlayerRoute(
         hudText = decision.hudText
     }
     val selectStreamPreference: (String) -> Unit = { preferenceId ->
-        val decision = PlayerStreamSelectionController.selectPreference(
+        val nextPreference = StashStreamPreference.entries.firstOrNull { it.id == preferenceId }
+            ?: StashStreamPreference.Auto
+        val nextResolvedCandidates = PlayerStreamSelectionController.orderResolvedCandidatesForPreference(
+            resolvedCandidates = baseResolvedCandidates,
+            streamCandidates = stream.streamCandidates,
+            preference = nextPreference,
+        )
+        val decision = PlayerStreamSelectionController.selectPreferenceFromOrderedCandidates(
             preferenceId = preferenceId,
-            candidates = stream.streamCandidates,
-            candidateCount = resolvedCandidates.size,
-            activeCandidateIndex = activeCandidateIndex,
+            activeCandidateKey = activeCandidateKey,
+            preferredCandidateKey = PlayerStreamSelectionController.candidateKey(nextResolvedCandidates.firstOrNull()),
             currentPositionMs = controller.player.currentPosition,
         )
         markPlayerInteraction()
         controlsVisible = true
         streamPreference = decision.preference
+        activeCandidateIndex = decision.selectedIndex
         if (decision.shouldReprepare) {
-            activeCandidateIndex = decision.selectedIndex
             reprepareStartPositionMs = decision.reprepareStartPositionMs
+            prepareRequestKey += 1
             if (decision.shouldClearPendingSeek) {
                 seekPreviewState = seekPreviewState.copy(pendingSeekTargetMs = null, pendingSeekStartedAtMs = 0L)
             }
@@ -1930,7 +1946,7 @@ private fun RealPlayerRoute(
                     positionMs = 0L
                     resumePromptVisible = false
                 },
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier.align(Alignment.BottomStart),
             )
         }
         }
@@ -2037,6 +2053,29 @@ private fun RealPlayerRoute(
     }
 }
 
+enum class PlayerResumePromptPlacement {
+    BottomStart,
+}
+
+data class ResumePlaybackPromptState(
+    val resumePositionMs: Long,
+    val placement: PlayerResumePromptPlacement,
+    val restartLabel: String,
+    val showResumeButton: Boolean,
+    val defaultActionResumesPlayback: Boolean,
+)
+
+fun buildResumePlaybackPromptState(
+    resumePositionMs: Long,
+    restartLabel: String = "처음부터",
+): ResumePlaybackPromptState = ResumePlaybackPromptState(
+    resumePositionMs = resumePositionMs,
+    placement = PlayerResumePromptPlacement.BottomStart,
+    restartLabel = restartLabel,
+    showResumeButton = false,
+    defaultActionResumesPlayback = true,
+)
+
 @Composable
 private fun ResumePlaybackPrompt(
     resumePositionMs: Long,
@@ -2044,14 +2083,17 @@ private fun ResumePlaybackPrompt(
     onRestart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val state = buildResumePlaybackPromptState(
+        resumePositionMs = resumePositionMs,
+        restartLabel = stashString(R.string.auto_kr_0489),
+    )
     Column(
         modifier = modifier
             .padding(24.dp)
             .widthIn(max = 360.dp)
-            .fillMaxWidth()
             .background(Color.Black.copy(alpha = 0.78f), MaterialTheme.shapes.medium)
             .padding(horizontal = 18.dp, vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
@@ -2073,10 +2115,12 @@ private fun ResumePlaybackPrompt(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedButton(onClick = onRestart) {
-                Text(stashString(R.string.auto_kr_0489))
+                Text(state.restartLabel)
             }
-            Button(onClick = onResume) {
-                Text(stashString(R.string.auto_kr_0059))
+            if (state.showResumeButton) {
+                Button(onClick = onResume) {
+                    Text(stashString(R.string.auto_kr_0059))
+                }
             }
         }
     }
