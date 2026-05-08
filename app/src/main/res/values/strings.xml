@@ -182,6 +182,8 @@
     <string name="settings_biometric_app_lock_description">앱을 새로 열 때 지문, 얼굴, PIN, 패턴 또는 비밀번호로 잠금을 해제합니다.</string>
     <string name="settings_biometric_app_lock_enabled_status">앱 잠금을 켰습니다.</string>
     <string name="settings_biometric_app_lock_disabled_status">앱 잠금을 껐습니다.</string>
+    <string name="setup_auth_mode_link_only_label">링크만으로 연결</string>
+    <string name="setup_auth_mode_link_only_description">인증이 꺼진 Stash 서버에 API Key나 ID/비밀번호 없이 접속합니다.</string>
     <string name="setup_auth_mode_api_key_label">API Key로 연결</string>
     <string name="setup_auth_mode_api_key_description">API Key를 저장해 Stash API와 스트림 요청에 사용합니다.</string>
     <string name="setup_auth_mode_password_label">ID/비밀번호로 로그인</string>
@@ -696,7 +698,7 @@
     <string name="auto_kr_0486" formatted="false">나중에 보기 추가됨</string>
     <string name="auto_kr_0487" formatted="false">나중에 보기 해제됨</string>
     <string name="auto_kr_0488" formatted="false">이전 위치에서 이어볼까요?</string>
-    <string name="auto_kr_0489" formatted="false">처음부터</string>
+    <string name="auto_kr_0489" formatted="false">처음부터 재생</string>
     <string name="auto_kr_0490" formatted="false">스트림</string>
     <string name="auto_kr_0491" formatted="false">섞은 순서</string>
     <string name="auto_kr_0492" formatted="false">순차</string>
@@ -725,6 +727,14 @@
     <string name="auto_kr_0515" formatted="false">둘러보기에서 자주 보는 영상을 즐겨찾기로 저장해 두세요.</string>
     <string name="auto_kr_0516" formatted="false">나중에 보기 항목을 지금 볼 대기열로 보냅니다.</string>
     <string name="auto_kr_0517" formatted="false">모든 나중에 보기 항목이 이미 대기열에 있습니다.</string>
+    <string name="queue_playback_history_title" formatted="false">최근 재생 기록</string>
+    <string name="queue_playback_history_subtitle">최근 %1$d개까지 자동 기록됩니다</string>
+    <string name="queue_playback_history_action_label" formatted="false">기록 보기</string>
+    <string name="queue_playback_history_action_content_description" formatted="false">최근 재생 기록 보기</string>
+    <string name="queue_playback_history_collapse_label" formatted="false">기록 접기</string>
+    <string name="queue_playback_history_collapse_content_description" formatted="false">최근 재생 기록 접기</string>
+    <string name="queue_playback_history_empty_title" formatted="false">아직 재생 기록이 없어요</string>
+    <string name="queue_playback_history_empty_message" formatted="false">영상을 재생하면 가장 최근 항목부터 여기에 쌓입니다.</string>
     <string name="auto_kr_0518" formatted="false">검색 실패</string>
     <string name="auto_kr_0519" formatted="false">검색·필터·정렬·보기 작업을 도구막대에서 한 번에 조정합니다.</string>
     <string name="auto_kr_0520" formatted="false">없음</string>
@@ -751,5 +761,34 @@
     <string name="player_o_counter_saving_content_description">싼 횟수 저장 중, 현재 %1$s</string>
     <string name="player_o_counter_saved">싼 횟수 %1$d회 저장됨</string>
     <string name="player_o_counter_save_failed">싼 횟수 저장 실패: %1$s</string>
+    <string name="player_seek_target_badge_content_description">이동 위치 %1$s</string>
+    <string name="player_seek_bar_content_description" formatted="false">재생 위치</string>
+    <string name="player_seek_bar_state_description">%1$d%%</string>
+    <string name="stash_sort_bitrate_label" formatted="false">비트레이트</string>
+    <string name="stash_sort_code_label" formatted="false">코드</string>
+    <string name="stash_sort_file_count_label" formatted="false">파일 수</string>
+    <string name="stash_sort_filesize_label" formatted="false">파일 크기</string>
+    <string name="stash_sort_file_mod_time_label" formatted="false">파일 수정일</string>
+    <string name="stash_sort_framerate_label" formatted="false">프레임레이트</string>
+    <string name="stash_sort_group_scene_number_label" formatted="false">그룹 내 번호</string>
+    <string name="stash_sort_id_label" formatted="false">ID</string>
+    <string name="stash_sort_interactive_label" formatted="false">인터랙티브</string>
+    <string name="stash_sort_interactive_speed_label" formatted="false">인터랙티브 속도</string>
+    <string name="stash_sort_last_o_at_label" formatted="false">최근 O 기록</string>
+    <string name="stash_sort_last_played_at_label" formatted="false">최근 재생</string>
+    <string name="stash_sort_movie_scene_number_label" formatted="false">영화 내 번호</string>
+    <string name="stash_sort_o_counter_label" formatted="false">O 카운트</string>
+    <string name="stash_sort_organized_label" formatted="false">정리됨</string>
+    <string name="stash_sort_performer_count_label" formatted="false">출연자 수</string>
+    <string name="stash_sort_play_duration_label" formatted="false">재생 시간</string>
+    <string name="stash_sort_resume_time_label" formatted="false">이어보기 위치</string>
+    <string name="stash_sort_path_label" formatted="false">경로</string>
+    <string name="stash_sort_perceptual_similarity_label" formatted="false">pHash 유사도</string>
+    <string name="stash_sort_random_label" formatted="false">랜덤</string>
+    <string name="stash_sort_rating_label" formatted="false">평점</string>
+    <string name="stash_sort_resolution_label" formatted="false">해상도</string>
+    <string name="stash_sort_studio_label" formatted="false">스튜디오</string>
+    <string name="stash_sort_tag_count_label" formatted="false">태그 수</string>
+    <string name="stash_sort_performer_age_label" formatted="false">출연자 나이</string>
 </resources>
 

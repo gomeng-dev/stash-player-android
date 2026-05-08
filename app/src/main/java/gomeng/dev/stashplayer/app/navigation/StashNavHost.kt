@@ -1,15 +1,19 @@
 package gomeng.dev.stashplayer.app.navigation
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.ActivityInfo
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
@@ -18,6 +22,7 @@ import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,6 +54,7 @@ import gomeng.dev.stashplayer.core.player.handOffLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.shouldLoadMorePlayerPlaylistItems
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
+import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScale
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScaleProvider
 import gomeng.dev.stashplayer.feature.browse.BrowseRoute
@@ -83,6 +89,9 @@ fun StashNavHost(
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val savedProfile by settingsRepository.serverProfile.collectAsState(initial = null)
+    val playbackOrientationMode by settingsRepository.playbackOrientationMode.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_PLAYBACK_ORIENTATION_MODE,
+    )
     val favoriteSceneIds by localRepository.favoriteSceneIds.collectAsState(initial = emptySet())
     val navController = rememberNavController()
     val topLevelDestinations = TopLevelDestination.entries
@@ -94,6 +103,16 @@ fun StashNavHost(
     var playerPresentationMode by remember { mutableStateOf(PlayerPresentationMode.WatchPage) }
     val navigationChromePolicy = stashNavigationChromeVisualPolicy()
     val activeUiScale = if (isPlayerRoute(currentRoute)) StashUiScale.Default else uiScale
+    val activity = remember(context) { context.findActivity() }
+    AppOrientationEffect(
+        activity = activity,
+        request = resolveAppOrientationRequest(
+            isFoldLikeLayout = isFoldLikeLayout,
+            route = currentRoute,
+            playerPresentationMode = playerPresentationMode,
+            playbackOrientationMode = playbackOrientationMode,
+        ),
+    )
 
     LaunchedEffect(savedProfile, currentRoute) {
         if (shouldRedirectSetupWithSavedProfile(savedProfile != null, currentRoute)) {
@@ -222,7 +241,6 @@ fun StashNavHost(
                     .copy(alpha = navigationChromePolicy.containerAlpha)
                 NavigationBar(
                     modifier = Modifier
-                        .height(74.dp)
                         .drawBehind {
                             drawLine(
                                 color = navigationDividerColor,
@@ -230,9 +248,10 @@ fun StashNavHost(
                                 end = Offset(size.width, 0f),
                                 strokeWidth = 1.dp.toPx(),
                             )
-                        },
+                    },
                     containerColor = navigationContainerColor,
                     tonalElevation = 0.dp,
+                    windowInsets = NavigationBarDefaults.windowInsets,
                 ) {
                     topLevelDestinations.forEach { destination ->
                         val destinationLabel = stringResource(destination.labelRes)
@@ -406,6 +425,36 @@ fun StashNavHost(
             }
         }
     }
+}
+
+@Composable
+private fun AppOrientationEffect(
+    activity: Activity?,
+    request: AppOrientationRequest,
+) {
+    DisposableEffect(activity, request) {
+        val previousOrientation = activity?.requestedOrientation
+        if (activity != null) {
+            activity.requestedOrientation = request.toActivityInfoOrientation()
+        }
+        onDispose {
+            if (activity != null && previousOrientation != null) {
+                activity.requestedOrientation = previousOrientation
+            }
+        }
+    }
+}
+
+private fun AppOrientationRequest.toActivityInfoOrientation(): Int = when (this) {
+    AppOrientationRequest.Portrait -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    AppOrientationRequest.Sensor -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
+    AppOrientationRequest.Unspecified -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 private fun isTopLevelDestinationSelected(

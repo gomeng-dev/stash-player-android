@@ -182,6 +182,8 @@
     <string name="settings_biometric_app_lock_description">Unlock the app on a fresh start with fingerprint, face, PIN, pattern, or device credential.</string>
     <string name="settings_biometric_app_lock_enabled_status">App lock is on.</string>
     <string name="settings_biometric_app_lock_disabled_status">App lock is off.</string>
+    <string name="setup_auth_mode_link_only_label">Connect with link only</string>
+    <string name="setup_auth_mode_link_only_description">Connect to a Stash server with auth disabled, without an API Key or ID/password.</string>
     <string name="setup_auth_mode_api_key_label">Connect with API Key</string>
     <string name="setup_auth_mode_api_key_description">Store an API Key and use it for Stash API and stream requests.</string>
     <string name="setup_auth_mode_password_label">Log in with ID/password</string>
@@ -695,7 +697,7 @@
     <string name="auto_kr_0486" formatted="false">Added to Watch Later</string>
     <string name="auto_kr_0487" formatted="false">Removed from Watch Later</string>
     <string name="auto_kr_0488" formatted="false">Resume from previous position?</string>
-    <string name="auto_kr_0489" formatted="false">From beginning</string>
+    <string name="auto_kr_0489" formatted="false">Play from beginning</string>
     <string name="auto_kr_0490" formatted="false">Stream</string>
     <string name="auto_kr_0491" formatted="false">Shuffled order</string>
     <string name="auto_kr_0492" formatted="false">Sequential</string>
@@ -724,6 +726,14 @@
     <string name="auto_kr_0515" formatted="false">Save frequently watched videos as favorites from Browse.</string>
     <string name="auto_kr_0516" formatted="false">Send Watch Later items to the queue to watch now.</string>
     <string name="auto_kr_0517" formatted="false">All Watch Later items are already in the queue.</string>
+    <string name="queue_playback_history_title" formatted="false">Recent playback history</string>
+    <string name="queue_playback_history_subtitle">Automatically keeps up to the most recent %1$d items</string>
+    <string name="queue_playback_history_action_label" formatted="false">View history</string>
+    <string name="queue_playback_history_action_content_description" formatted="false">View recent playback history</string>
+    <string name="queue_playback_history_collapse_label" formatted="false">Hide history</string>
+    <string name="queue_playback_history_collapse_content_description" formatted="false">Hide recent playback history</string>
+    <string name="queue_playback_history_empty_title" formatted="false">No playback history yet</string>
+    <string name="queue_playback_history_empty_message" formatted="false">Play videos and the most recent items will appear here.</string>
     <string name="auto_kr_0518" formatted="false">Search failed</string>
     <string name="auto_kr_0519" formatted="false">Adjust search, filters, sort, and view actions from the toolbar.</string>
     <string name="auto_kr_0520" formatted="false">None</string>
@@ -750,4 +760,33 @@
     <string name="player_o_counter_saving_content_description">Saving O-count, current %1$s</string>
     <string name="player_o_counter_saved">Saved O-count %1$d times</string>
     <string name="player_o_counter_save_failed">Failed to save O-count: %1$s</string>
+    <string name="player_seek_target_badge_content_description">Seek target %1$s</string>
+    <string name="player_seek_bar_content_description" formatted="false">Playback position</string>
+    <string name="player_seek_bar_state_description">%1$d%%</string>
+    <string name="stash_sort_bitrate_label" formatted="false">Bit Rate</string>
+    <string name="stash_sort_code_label" formatted="false">Code</string>
+    <string name="stash_sort_file_count_label" formatted="false">File Count</string>
+    <string name="stash_sort_filesize_label" formatted="false">File Size</string>
+    <string name="stash_sort_file_mod_time_label" formatted="false">File Modification Time</string>
+    <string name="stash_sort_framerate_label" formatted="false">Frame Rate</string>
+    <string name="stash_sort_group_scene_number_label" formatted="false">Group Scene Number</string>
+    <string name="stash_sort_id_label" formatted="false">ID</string>
+    <string name="stash_sort_interactive_label" formatted="false">Interactive</string>
+    <string name="stash_sort_interactive_speed_label" formatted="false">Interactive Speed</string>
+    <string name="stash_sort_last_o_at_label" formatted="false">Last O At</string>
+    <string name="stash_sort_last_played_at_label" formatted="false">Last Played At</string>
+    <string name="stash_sort_movie_scene_number_label" formatted="false">Movie Scene Number</string>
+    <string name="stash_sort_o_counter_label" formatted="false">O Count</string>
+    <string name="stash_sort_organized_label" formatted="false">Organized</string>
+    <string name="stash_sort_performer_count_label" formatted="false">Performer Count</string>
+    <string name="stash_sort_play_duration_label" formatted="false">Play Duration</string>
+    <string name="stash_sort_resume_time_label" formatted="false">Resume Time</string>
+    <string name="stash_sort_path_label" formatted="false">Path</string>
+    <string name="stash_sort_perceptual_similarity_label" formatted="false">Perceptual Similarity</string>
+    <string name="stash_sort_random_label" formatted="false">Random</string>
+    <string name="stash_sort_rating_label" formatted="false">Rating</string>
+    <string name="stash_sort_resolution_label" formatted="false">Resolution</string>
+    <string name="stash_sort_studio_label" formatted="false">Studio</string>
+    <string name="stash_sort_tag_count_label" formatted="false">Tag Count</string>
+    <string name="stash_sort_performer_age_label" formatted="false">Performer Age</string>
 </resources>

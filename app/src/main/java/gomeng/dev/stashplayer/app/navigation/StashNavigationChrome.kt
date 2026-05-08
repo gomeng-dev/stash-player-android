@@ -2,6 +2,7 @@ package gomeng.dev.stashplayer.app.navigation
 
 import androidx.annotation.StringRes
 import gomeng.dev.stashplayer.R
+import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.ui.designsystem.StashTouch
 import java.net.URLEncoder
@@ -31,12 +32,19 @@ internal data class StashNavigationChromeVisualPolicy(
     val dividerAlpha: Float,
     val disabledContentAlpha: Float,
     val minItemTouchTargetDp: Int,
+    val bottomBarUsesSystemNavigationInsets: Boolean,
 )
 
 internal data class TopLevelNavigationStatePolicy(
     val saveState: Boolean,
     val restoreState: Boolean,
 )
+
+internal enum class AppOrientationRequest {
+    Portrait,
+    Sensor,
+    Unspecified,
+}
 
 internal fun stashNavigationChromeVisualPolicy(): StashNavigationChromeVisualPolicy = StashNavigationChromeVisualPolicy(
     containerRole = StashNavigationColorRole.Surface,
@@ -53,6 +61,7 @@ internal fun stashNavigationChromeVisualPolicy(): StashNavigationChromeVisualPol
     dividerAlpha = 0.18f,
     disabledContentAlpha = 0.42f,
     minItemTouchTargetDp = StashTouch.MinTarget.value.toInt(),
+    bottomBarUsesSystemNavigationInsets = true,
 )
 
 internal fun isPlayerRoute(route: String?): Boolean = route == PlayerRoutePattern || route?.startsWith("player/") == true
@@ -71,6 +80,20 @@ internal fun shouldShowNavigationRail(
 ): Boolean = isFoldLikeLayout && !isPlayerRoute(route)
 
 internal fun shouldApplyScaffoldChromePadding(route: String?): Boolean = !isPlayerRoute(route)
+
+internal fun isFoldLikeLayoutBySmallestWidthDp(smallestScreenWidthDp: Int): Boolean = smallestScreenWidthDp >= 600
+
+internal fun resolveAppOrientationRequest(
+    isFoldLikeLayout: Boolean,
+    route: String?,
+    playerPresentationMode: PlayerPresentationMode,
+    playbackOrientationMode: PlaybackOrientationMode,
+): AppOrientationRequest = when {
+    isPlayerRoute(route) && playbackOrientationMode == PlaybackOrientationMode.Sensor -> AppOrientationRequest.Sensor
+    !isFoldLikeLayout && (!isPlayerRoute(route) || playerPresentationMode != PlayerPresentationMode.Fullscreen) ->
+        AppOrientationRequest.Portrait
+    else -> AppOrientationRequest.Unspecified
+}
 
 internal fun resolvePlayerPresentationModeForOpenedScene(
     openedFromActivePlayer: Boolean,

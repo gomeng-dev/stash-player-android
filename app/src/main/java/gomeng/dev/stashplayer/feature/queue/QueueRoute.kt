@@ -1,6 +1,5 @@
 package gomeng.dev.stashplayer.feature.queue
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.local.localPlaybackHistoryDisplayLimit
@@ -66,15 +66,12 @@ fun QueueRoute(
     val serverProfile by settingsRepository.serverProfile.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var playbackHistoryDetailOpen by remember { mutableStateOf(false) }
+    var playbackHistoryExpanded by remember { mutableStateOf(false) }
     val playbackHistoryOverview = buildPlaybackHistoryOverviewModel(
         historyCount = playbackHistoryScenes.size,
         displayLimit = localPlaybackHistoryDisplayLimit(),
+        expanded = playbackHistoryExpanded,
     )
-
-    BackHandler(enabled = playbackHistoryDetailOpen) {
-        playbackHistoryDetailOpen = false
-    }
 
     fun openQueue(shuffle: Boolean, selectedSceneId: String? = null) {
         val request = buildQueuePlaybackRequest(
@@ -195,26 +192,19 @@ fun QueueRoute(
                     actionLabel = if (playbackHistoryOverview.actionEnabled) playbackHistoryOverview.actionLabel else null,
                 ),
                 onActionClick = if (playbackHistoryOverview.actionEnabled) {
-                    { playbackHistoryDetailOpen = true }
+                    { playbackHistoryExpanded = !playbackHistoryExpanded }
                 } else {
                     null
                 },
             )
         }
-        if (playbackHistoryDetailOpen) {
-            item {
-                StashGhostButton(
-                    text = "← 재생 대기열로",
-                    onClick = { playbackHistoryDetailOpen = false },
-                    contentDescription = "재생 대기열로 돌아가기",
-                )
-            }
+        if (playbackHistoryOverview.showInlineRows) {
             if (playbackHistoryScenes.isEmpty()) {
                 item {
                     StashEmptyState(
                         state = StashEmptyStateModel(
-                            title = "아직 재생 기록이 없어요",
-                            message = "영상을 재생하면 가장 최근 항목부터 여기에 쌓입니다.",
+                            title = stringResource(R.string.queue_playback_history_empty_title),
+                            message = stringResource(R.string.queue_playback_history_empty_message),
                             primaryActionLabel = stashString(R.string.auto_kr_0509),
                         ),
                         onPrimaryAction = onOpenBrowse,
@@ -237,8 +227,8 @@ fun QueueRoute(
             item {
                 StashEmptyState(
                     state = StashEmptyStateModel(
-                        title = "아직 재생 기록이 없어요",
-                        message = "영상을 재생하면 가장 최근 항목부터 여기에 쌓입니다.",
+                        title = stringResource(R.string.queue_playback_history_empty_title),
+                        message = stringResource(R.string.queue_playback_history_empty_message),
                         primaryActionLabel = stashString(R.string.auto_kr_0509),
                     ),
                     onPrimaryAction = onOpenBrowse,
@@ -246,7 +236,6 @@ fun QueueRoute(
             }
         }
 
-        if (!playbackHistoryDetailOpen) {
         item {
             StashSectionHeader(
                 state = StashSectionHeaderModel(
@@ -374,7 +363,6 @@ fun QueueRoute(
                 )
             }
         }
-    }
 }
 
 }

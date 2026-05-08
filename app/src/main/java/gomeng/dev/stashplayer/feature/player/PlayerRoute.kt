@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.util.Rational
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -61,7 +60,6 @@ import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteConfirmationState
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteResult
-import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.GraphQlStashStreamResolver
@@ -80,7 +78,6 @@ import gomeng.dev.stashplayer.core.player.AspectRatioMode
 import gomeng.dev.stashplayer.core.player.BrightnessController
 import gomeng.dev.stashplayer.core.player.PLAYER_CONTROLS_AUTO_HIDE_MS
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
-import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlayerAutoAdvanceDecision
 import gomeng.dev.stashplayer.core.player.PlayerBackAction
 import gomeng.dev.stashplayer.core.player.PlayerNextAction
@@ -88,12 +85,13 @@ import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackUiStatus
 import gomeng.dev.stashplayer.core.player.PlayerPresentationDragRelease
 import gomeng.dev.stashplayer.core.player.PlayerPresentationDragUpdate
-import gomeng.dev.stashplayer.core.player.PlayerPresentationGestureMode
 import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.player.PlayerFastPlaybackHoldState
 import gomeng.dev.stashplayer.core.player.PlayerGestureExclusionBounds
 import gomeng.dev.stashplayer.core.player.PlayerInfoDrawerState
 import gomeng.dev.stashplayer.core.player.PlayerPlaylistDrawerHostScope
+import gomeng.dev.stashplayer.core.player.PlayerPresentationRouteState
+import gomeng.dev.stashplayer.core.player.PlayerPictureInPictureAspectRatio
 import gomeng.dev.stashplayer.core.player.PlayerPreviousAction
 import gomeng.dev.stashplayer.core.player.PlayerRatingState
 import gomeng.dev.stashplayer.core.player.PlayerSimilarRecommendationsRequestKey
@@ -120,9 +118,11 @@ import gomeng.dev.stashplayer.core.player.applyPlayerPlaylistDeleteResult
 import gomeng.dev.stashplayer.core.player.buildPlayerPlaylistUiItems
 import gomeng.dev.stashplayer.core.player.buildPlayerOverlayQuickActionStates
 import gomeng.dev.stashplayer.core.player.buildPlayerPresentationMotionState
+import gomeng.dev.stashplayer.core.player.buildPlayerOverlayTitle
 import gomeng.dev.stashplayer.core.player.appendSimilarSceneToPlaybackQueue
 import gomeng.dev.stashplayer.core.player.buildPlayerDebugInfoUiState
 import gomeng.dev.stashplayer.core.player.buildPlayerInfoDrawerContentState
+import gomeng.dev.stashplayer.core.player.buildResumePlaybackPromptState
 import gomeng.dev.stashplayer.core.player.buildPlayerStreamPreferenceOptions
 import gomeng.dev.stashplayer.core.player.buildPlayerStreamSourceOptions
 import gomeng.dev.stashplayer.core.player.buildSingleScenePlaybackQueue
@@ -133,6 +133,7 @@ import gomeng.dev.stashplayer.core.player.playerAspectRatioHudText
 import gomeng.dev.stashplayer.core.player.playerPlaybackInfoLoadStartLogMessage
 import gomeng.dev.stashplayer.core.player.playerPlaybackInfoLoadSuccessLogMessage
 import gomeng.dev.stashplayer.core.player.playerPlaybackSpeedHudText
+import gomeng.dev.stashplayer.core.player.resolvePlayerPictureInPictureAspectRatio
 import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationClickLogMessage
 import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationQueueLogMessage
 import gomeng.dev.stashplayer.core.player.playerSimilarRecommendationsLoadedLogMessage
@@ -150,14 +151,15 @@ import gomeng.dev.stashplayer.core.player.shouldAutoFallbackPlaybackSource
 import gomeng.dev.stashplayer.core.player.shouldHidePlayerSystemBars
 import gomeng.dev.stashplayer.core.player.shouldPausePlayerForLifecycleStop
 import gomeng.dev.stashplayer.core.player.shouldExposePictureInPictureButton
-import gomeng.dev.stashplayer.core.player.shouldRequestSimilarRecommendations
 import gomeng.dev.stashplayer.core.player.shouldRequestSimilarRecommendationsForWatchPage
+import gomeng.dev.stashplayer.core.player.shouldPromptForPlayerResumePosition
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestCancelled
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestCompleted
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestStarted
 import gomeng.dev.stashplayer.core.player.nextPlayerMediaSessionId
 import gomeng.dev.stashplayer.core.player.togglePlayerLockState
 import gomeng.dev.stashplayer.core.player.subtitleTrackLanguageCode
+import gomeng.dev.stashplayer.core.player.toPlayerSceneCardModel
 import gomeng.dev.stashplayer.core.ui.components.SceneBulkDeleteConfirmationDialog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -167,7 +169,6 @@ import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
-private val RESUME_PROMPT_MIN_POSITION_MS = 10_000L
 private val RESUME_PROMPT_TIMEOUT_MS = 4_000L
 private val PLAYER_PLAYLIST_TRAILING_ITEM_COUNT = 30
 private val PLAYER_PRESENTATION_MOTION_DURATION_MS = 240
@@ -230,9 +231,6 @@ fun PlayerRoute(
     )
     val pictureInPictureEnabled by settingsRepository.pictureInPictureEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PICTURE_IN_PICTURE_ENABLED,
-    )
-    val playbackOrientationMode by settingsRepository.playbackOrientationMode.collectAsState(
-        initial = StashSettingsRepository.DEFAULT_PLAYBACK_ORIENTATION_MODE,
     )
     val subtitleLanguage by settingsRepository.subtitleLanguage.collectAsState(
         initial = StashSettingsRepository.DEFAULT_SUBTITLE_LANGUAGE,
@@ -302,7 +300,6 @@ fun PlayerRoute(
             playbackEndAction = playbackEndAction,
             backgroundPlaybackEnabled = backgroundPlaybackEnabled,
             pictureInPictureEnabled = pictureInPictureEnabled,
-            playbackOrientationMode = playbackOrientationMode,
             subtitleLanguage = subtitleLanguage,
             subtitleFontScale = subtitleFontScale,
             subtitlePosition = subtitlePosition,
@@ -331,7 +328,6 @@ private fun RealPlayerRoute(
     playbackEndAction: PlaybackEndAction,
     backgroundPlaybackEnabled: Boolean,
     pictureInPictureEnabled: Boolean,
-    playbackOrientationMode: PlaybackOrientationMode,
     subtitleLanguage: SubtitleLanguagePreference,
     subtitleFontScale: Float,
     subtitlePosition: SubtitlePosition,
@@ -414,38 +410,32 @@ private fun RealPlayerRoute(
 
     var controlsVisible by remember { mutableStateOf(true) }
     var locked by remember { mutableStateOf(false) }
-    var presentationSettledMode by remember(sceneId) { mutableStateOf(initialPresentationMode) }
-    var presentationTargetMode by remember(sceneId) { mutableStateOf(initialPresentationMode) }
-    var presentationDragUpdate by remember(sceneId) { mutableStateOf<PlayerPresentationDragUpdate?>(null) }
-    var presentationReleaseProgress by remember(sceneId) { mutableStateOf<Float?>(null) }
-    var presentationMotionGestureMode by remember(sceneId) { mutableStateOf(PlayerPresentationGestureMode.None) }
-    val fullscreenPlayerActive = presentationTargetMode == PlayerPresentationMode.Fullscreen
-    val presentationTransitionActive = presentationDragUpdate != null ||
-        presentationSettledMode != presentationTargetMode
-    val fullscreenChromeActive = fullscreenPlayerActive || presentationTransitionActive
-    val playerSurfacePresentationMode = if (presentationTransitionActive && presentationDragUpdate == null) {
-        null
-    } else {
-        PlayerWatchPageController.playerSurfacePresentationGestureMode(fullscreenPlayerActive)
+    var presentationRouteState by remember(sceneId) {
+        mutableStateOf(PlayerPresentationRouteState.initial(initialPresentationMode))
     }
+    val fullscreenPlayerActive = presentationRouteState.fullscreenPlayerActive
+    val presentationTransitionActive = presentationRouteState.presentationTransitionActive
+    val fullscreenChromeActive = presentationRouteState.fullscreenChromeActive
+    val playerSurfacePresentationMode = presentationRouteState.playerSurfacePresentationMode
+    val presentationDragUpdate = presentationRouteState.dragUpdate
     val presentationProgressAnimation = remember(sceneId) {
-        Animatable(if (presentationTargetMode == PlayerPresentationMode.Fullscreen) 1f else 0f)
+        Animatable(if (presentationRouteState.targetMode == PlayerPresentationMode.Fullscreen) 1f else 0f)
     }
-    LaunchedEffect(presentationTargetMode) {
-        onPresentationModeChange(presentationTargetMode)
+    LaunchedEffect(presentationRouteState.targetMode) {
+        onPresentationModeChange(presentationRouteState.targetMode)
     }
-    LaunchedEffect(sceneId, presentationTargetMode, presentationDragUpdate) {
+    LaunchedEffect(sceneId, presentationRouteState.targetMode, presentationDragUpdate) {
         val dragUpdate = presentationDragUpdate
         if (dragUpdate != null) {
             presentationProgressAnimation.snapTo(dragUpdate.progress.coerceIn(0f, 1f))
         } else {
-            presentationReleaseProgress?.let { releaseProgress ->
+            presentationRouteState.releaseProgress?.let { releaseProgress ->
                 presentationProgressAnimation.snapTo(releaseProgress.coerceIn(0f, 1f))
-                presentationReleaseProgress = null
+                presentationRouteState = presentationRouteState.copy(releaseProgress = null)
             }
-            val targetMode = presentationTargetMode
+            val targetMode = presentationRouteState.targetMode
             val targetProgress = if (targetMode == PlayerPresentationMode.Fullscreen) 1f else 0f
-            if (presentationSettledMode != targetMode || presentationProgressAnimation.value != targetProgress) {
+            if (presentationRouteState.settledMode != targetMode || presentationProgressAnimation.value != targetProgress) {
                 presentationProgressAnimation.animateTo(
                     targetValue = targetProgress,
                     animationSpec = tween(
@@ -454,15 +444,14 @@ private fun RealPlayerRoute(
                     ),
                 )
             }
-            presentationSettledMode = targetMode
-            presentationMotionGestureMode = PlayerPresentationGestureMode.None
+            presentationRouteState = presentationRouteState.settleAnimation()
         }
     }
     val panelMaxTranslationYPx = with(LocalDensity.current) { 360.dp.toPx() }
     val presentationMotionState = buildPlayerPresentationMotionState(
         transitionProgress = presentationProgressAnimation.value,
         maxWatchPageContentTranslationYPx = panelMaxTranslationYPx,
-        presentationGestureMode = presentationMotionGestureMode,
+        presentationGestureMode = presentationRouteState.gestureMode,
         dragUpdate = presentationDragUpdate,
     )
     val fullscreenInfoPolicy = PlayerWatchPageController.resolveFullscreenOverlayInfoPolicy(
@@ -490,26 +479,30 @@ private fun RealPlayerRoute(
         initial = activity?.isInPictureInPictureMode == true,
     )
 
-    fun exitFullscreenToWatchPage() {
-        presentationTargetMode = PlayerPresentationMode.WatchPage
-        controlsVisible = true
+    fun markPlayerInteraction() {
         lastControlInteractionAtMs = System.currentTimeMillis()
     }
 
-    fun updatePresentationDrag(update: PlayerPresentationDragUpdate?) {
-        if (update != null) {
-            presentationMotionGestureMode = update.gestureMode
-            presentationDragUpdate = update
+    fun exitFullscreenToWatchPage() {
+        val update = presentationRouteState.exitFullscreenToWatchPage()
+        presentationRouteState = update.state
+        if (update.refreshControls) {
+            controlsVisible = true
+            lastControlInteractionAtMs = System.currentTimeMillis()
         }
     }
 
+    fun updatePresentationDrag(update: PlayerPresentationDragUpdate?) {
+        presentationRouteState = presentationRouteState.withDragUpdate(update)
+    }
+
     fun releasePresentationDrag(release: PlayerPresentationDragRelease) {
-        presentationMotionGestureMode = release.gestureMode
-        presentationReleaseProgress = release.progress
-        presentationTargetMode = release.targetMode
-        presentationDragUpdate = null
-        controlsVisible = true
-        lastControlInteractionAtMs = System.currentTimeMillis()
+        val update = presentationRouteState.withDragRelease(release)
+        presentationRouteState = update.state
+        if (update.refreshControls) {
+            controlsVisible = true
+            lastControlInteractionAtMs = System.currentTimeMillis()
+        }
     }
 
     fun showSideControlOverlay(kind: PlayerSideControlKind, fraction: Float) {
@@ -550,7 +543,7 @@ private fun RealPlayerRoute(
     var playlistDeleteConfirmation by remember { mutableStateOf(SceneBulkDeleteConfirmationState.Hidden) }
     var pendingPlaylistDeleteSceneIds by remember { mutableStateOf<List<String>>(emptyList()) }
     val currentSceneCard = remember(stream, positionMs, durationMs, watchLaterSceneIds) {
-        stream.toSceneCardModel(
+        stream.toPlayerSceneCardModel(
             currentPositionMs = positionMs,
             durationMs = durationMs,
             isInWatchLater = sceneId in watchLaterSceneIds,
@@ -564,6 +557,41 @@ private fun RealPlayerRoute(
         isFavorite = sceneId in favoriteSceneIds,
         isInWatchLater = sceneId in watchLaterSceneIds,
     )
+    val addCurrentSceneToQueue: () -> Unit = {
+        markPlayerInteraction()
+        controlsVisible = true
+        if (sceneId in queueSceneIds) {
+            hudText = stashString(R.string.auto_kr_0484)
+        } else {
+            scope.launch {
+                localRepository.addToQueue(currentSceneCard)
+                hudText = stashString(R.string.auto_kr_0227)
+            }
+        }
+    }
+    val toggleFavorite: () -> Unit = {
+        markPlayerInteraction()
+        controlsVisible = true
+        val shouldEnable = sceneId !in favoriteSceneIds
+        scope.launch {
+            localRepository.setFavorite(currentSceneCard, shouldEnable)
+            hudText = if (shouldEnable) stashString(R.string.auto_kr_0485) else stashString(R.string.auto_kr_0121)
+        }
+    }
+    val toggleWatchLater: () -> Unit = {
+        markPlayerInteraction()
+        controlsVisible = true
+        val shouldEnable = sceneId !in watchLaterSceneIds
+        scope.launch {
+            localRepository.setWatchLater(currentSceneCard, shouldEnable)
+            hudText = if (shouldEnable) stashString(R.string.auto_kr_0486) else stashString(R.string.auto_kr_0487)
+        }
+    }
+    val retrySimilarRecommendations: () -> Unit = {
+        markPlayerInteraction()
+        controlsVisible = true
+        similarRecommendationsRetryKey += 1L
+    }
     var playCountSynced by remember(sceneId) { mutableStateOf(false) }
     var accumulatedPlaySeconds by remember(sceneId) { mutableFloatStateOf(0f) }
     var resumeSaveState by remember(sceneId) { mutableStateOf(PlayerResumeSaveEffectState()) }
@@ -573,14 +601,14 @@ private fun RealPlayerRoute(
     var playbackPrepared by remember(stream) { mutableStateOf(false) }
     var resumeStartPositionMs by remember(stream) {
         mutableStateOf<Long?>(
-            if (shouldPromptForResumePosition(stream.startPositionMs)) {
+            if (shouldPromptForPlayerResumePosition(stream.startPositionMs)) {
                 null
             } else {
                 stream.startPositionMs
             },
         )
     }
-    var resumePromptVisible by remember(stream) { mutableStateOf(shouldPromptForResumePosition(stream.startPositionMs)) }
+    var resumePromptVisible by remember(stream) { mutableStateOf(shouldPromptForPlayerResumePosition(stream.startPositionMs)) }
 
     BackHandler {
         when (
@@ -609,11 +637,6 @@ private fun RealPlayerRoute(
             (presentationMotionState.hideSystemBars ||
                 (fullscreenPlayerActive && shouldHidePlayerSystemBars(controlsVisible))),
     )
-    PlayerOrientationEffect(
-        activity = activity,
-        mode = playbackOrientationMode,
-    )
-
     LaunchedEffect(controller, subtitleLanguage) {
         controller.applySubtitleLanguagePreference(
             preference = subtitleLanguage,
@@ -715,10 +738,6 @@ private fun RealPlayerRoute(
             similarRecommendationsLoading = false
             throw cancellation
         }
-    }
-
-    fun markPlayerInteraction() {
-        lastControlInteractionAtMs = System.currentTimeMillis()
     }
 
     fun retryPlaybackAt(startPositionMs: Long) {
@@ -1528,7 +1547,7 @@ private fun RealPlayerRoute(
             modalSurfaceOpen = playerGesturesSuspended,
             canPlayPrevious = previousPictureInPictureSceneId != null,
             canPlayNext = nextTransportAction is PlayerNextAction.OpenNext,
-            aspectRatio = playerPictureInPictureAspectRatio(stream.width, stream.height),
+            aspectRatio = resolvePlayerPictureInPictureAspectRatio(stream.width, stream.height).toAndroidRational(),
         )
     }
 
@@ -1558,6 +1577,188 @@ private fun RealPlayerRoute(
             StashPictureInPictureController.unregisterActionHandler(handler)
         }
     }
+
+    val overlayState = PlayerOverlayState(
+        title = buildPlayerOverlayTitle(
+            streamTitle = stream.title,
+            sourceLabel = streamSourceOptions.getOrNull(
+                PlayerStreamSelectionController.coerceCandidateIndex(activeCandidateIndex, streamSourceOptions.size),
+            )?.title ?: PlayerStreamSelectionController.activeSourceHudText(
+                sourceLabel = activeCandidate.sourceLabel,
+                sourceTypeLabel = activeCandidate.sourceType.displayName,
+            ),
+            isFoldLikeLayout = isFoldLikeLayout,
+        ),
+        controlsVisible = controlsVisible,
+        locked = locked,
+        isPlaying = isPlaying,
+        positionMs = positionMs,
+        durationMs = durationMs,
+        playbackSpeed = playbackSpeed,
+        aspectRatioMode = aspectRatioMode,
+        hudText = hudText,
+        seekPreview = seekPreview,
+        playbackStatus = playbackStatus,
+        playbackErrorText = playbackErrorText,
+        canTryAlternateSource = activeCandidateIndex < resolvedCandidates.lastIndex,
+        canOpenSettings = true,
+        canOpenNextScene = nextTransportAction is PlayerNextAction.OpenNext,
+        canEnterPictureInPicture = canEnterPictureInPicture,
+        canShuffleQueue = playbackQueue.hasQueue,
+        shuffleEnabled = playbackQueue.shuffleEnabled,
+        ratingStep = ratingState.ratingStep,
+        ratingMessage = ratingState.message,
+        ratingUpdating = ratingState.isUpdating,
+        currentStreamInfoText = currentStreamInfoText,
+        quickActions = quickActions,
+        fullscreenPlayerActive = fullscreenChromeActive,
+        sceneId = sceneId,
+        infoDrawerContentState = infoDrawerContentState,
+        debugInfoUiState = debugInfoUiState,
+        similarRecommendations = similarRecommendations,
+        similarRecommendationsLoading = similarRecommendationsLoading,
+        similarRecommendationsError = similarRecommendationsError,
+        similarRecommendationsSource = similarRecommendationsSource,
+        serverProfile = profile,
+        streamPreferenceOptions = streamPreferenceOptions,
+        streamSourceOptions = streamSourceOptions,
+        playlistItems = playlistItems,
+        infoDrawerState = infoDrawerState,
+        infoDrawerLayout = infoDrawerLayout,
+        previewFrameFor = previewFrameFor,
+    )
+    val overlayCallbacks = PlayerOverlayCallbacks(
+        onSeekPreview = updateSeekPreview,
+        onExitPlayer = {
+            if (fullscreenPlayerActive) {
+                exitFullscreenToWatchPage()
+            } else {
+                onExitPlayer()
+            }
+        },
+        onPlayPause = {
+            markPlayerInteraction()
+            controlsVisible = true
+            controller.playPause()
+        },
+        onSeekTo = seekTo,
+        onPreviousTransport = handlePreviousTransport,
+        onNextTransport = handleNextTransport,
+        onToggleLock = {
+            markPlayerInteraction()
+            val toggleResult = togglePlayerLockState(locked)
+            locked = toggleResult.locked
+            hudText = toggleResult.hudText
+            controlsVisible = toggleResult.controlsVisible
+        },
+        onToggleFullscreenPlayer = {
+            markPlayerInteraction()
+            controlsVisible = true
+            val nextMode = if (fullscreenPlayerActive) {
+                PlayerPresentationMode.WatchPage
+            } else {
+                PlayerPresentationMode.Fullscreen
+            }
+            presentationRouteState = presentationRouteState.withTargetMode(nextMode).state
+        },
+        onEnterPictureInPicture = {
+            markPlayerInteraction()
+            controlsVisible = false
+            StashPictureInPictureController.enterIfEligible(activity)
+        },
+        onCycleSpeed = {
+            markPlayerInteraction()
+            controlsVisible = true
+            playbackSpeed = when (playbackSpeed) {
+                0.5f -> 1f
+                1f -> 1.25f
+                1.25f -> 1.5f
+                1.5f -> 2f
+                else -> 0.5f
+            }
+            controller.setPlaybackSpeed(playbackSpeed)
+            hudText = playerPlaybackSpeedHudText(playbackSpeed)
+        },
+        onCycleAspectRatio = {
+            markPlayerInteraction()
+            controlsVisible = true
+            aspectRatioMode = aspectRatioMode.next()
+            hudText = playerAspectRatioHudText(aspectRatioMode)
+        },
+        onSelectPlaybackSpeed = { speed ->
+            markPlayerInteraction()
+            controlsVisible = true
+            playbackSpeed = speed
+            controller.setPlaybackSpeed(speed)
+            hudText = playerPlaybackSpeedHudText(speed)
+        },
+        onSelectAspectRatioMode = { mode ->
+            markPlayerInteraction()
+            controlsVisible = true
+            aspectRatioMode = mode
+            hudText = playerAspectRatioHudText(mode)
+        },
+        onSelectShuffleEnabled = { enabled ->
+            markPlayerInteraction()
+            controlsVisible = true
+            val updatedQueue = playbackQueue.withCurrent(sceneId).withShuffleEnabled(enabled)
+            onPlaybackQueueChange(updatedQueue)
+            hudText = if (enabled) stashString(R.string.auto_kr_0482) else stashString(R.string.auto_kr_0483)
+        },
+        onSelectRatingStep = selectRatingStep,
+        onAddCurrentSceneToQueue = addCurrentSceneToQueue,
+        onToggleFavorite = toggleFavorite,
+        onToggleWatchLater = toggleWatchLater,
+        onPlaySimilarScene = playSimilarScene,
+        onAddSimilarSceneToQueue = addSimilarSceneToQueue,
+        onRetrySimilarRecommendations = retrySimilarRecommendations,
+        onSelectStreamPreference = selectStreamPreference,
+        onSelectStreamSource = selectStreamSource,
+        onToggleInfoDrawer = {
+            markPlayerInteraction()
+            controlsVisible = true
+        },
+        onInfoDrawerDrag = { _ ->
+            markPlayerInteraction()
+            controlsVisible = true
+        },
+        onInfoDrawerDragEnd = {
+            markPlayerInteraction()
+            controlsVisible = true
+        },
+        onOpenPlaylistDrawer = {
+            playlistDrawerOpen = true
+            scope.launch {
+                onPlaylistDrawerOpen(sceneId, PLAYER_PLAYLIST_TRAILING_ITEM_COUNT)
+            }
+        },
+        onRetryPlayback = {
+            markPlayerInteraction()
+            controlsVisible = true
+            retryPlaybackAt(
+                if (playbackStatus == PlayerPlaybackUiStatus.Ended) 0L else positionMs,
+            )
+        },
+        onTryAlternateSource = {
+            markPlayerInteraction()
+            controlsVisible = true
+            tryNextPlaybackSource(positionMs)
+        },
+        onOpenSettings = {
+            markPlayerInteraction()
+            controlsVisible = true
+            onOpenSettings()
+        },
+        onBottomControlsGestureBoundsChanged = { bounds ->
+            playerGestureExclusionBounds = bounds
+        },
+        onBottomControlsHeightChanged = { _ ->
+            // Fullscreen chrome no longer measures or reveals an in-player drawer.
+        },
+        onPlayerGestureSuspendedByModalSurfaceChanged = { suspended ->
+            playerGesturesSuspendedByModalSurface = suspended
+        },
+    )
 
     Box(
         modifier = Modifier
@@ -1637,223 +1838,18 @@ private fun RealPlayerRoute(
 
         if (!pictureInPictureActive) {
             PlayerOverlay(
-            title = playerOverlayTitle(
-                stream = stream,
-                sourceLabel = streamSourceOptions.getOrNull(
-                    PlayerStreamSelectionController.coerceCandidateIndex(activeCandidateIndex, streamSourceOptions.size),
-                )?.title ?: PlayerStreamSelectionController.activeSourceHudText(
-                    sourceLabel = activeCandidate.sourceLabel,
-                    sourceTypeLabel = activeCandidate.sourceType.displayName,
-                ),
-                isFoldLikeLayout = isFoldLikeLayout,
-            ),
-            controlsVisible = controlsVisible,
-            locked = locked,
-            isPlaying = isPlaying,
-            positionMs = positionMs,
-            durationMs = durationMs,
-            playbackSpeed = playbackSpeed,
-            aspectRatioMode = aspectRatioMode,
-            hudText = hudText,
-            seekPreview = seekPreview,
-            playbackStatus = playbackStatus,
-            playbackErrorText = playbackErrorText,
-            canTryAlternateSource = activeCandidateIndex < resolvedCandidates.lastIndex,
-            canOpenSettings = true,
-            canOpenNextScene = nextTransportAction is PlayerNextAction.OpenNext,
-            canEnterPictureInPicture = canEnterPictureInPicture,
-            canShuffleQueue = playbackQueue.hasQueue,
-            shuffleEnabled = playbackQueue.shuffleEnabled,
-            ratingStep = ratingState.ratingStep,
-            ratingMessage = ratingState.message,
-            ratingUpdating = ratingState.isUpdating,
-            currentStreamInfoText = currentStreamInfoText,
-            quickActions = quickActions,
-            fullscreenPlayerActive = fullscreenChromeActive,
-            sceneId = sceneId,
-            infoDrawerContentState = infoDrawerContentState,
-            debugInfoUiState = debugInfoUiState,
-            similarRecommendations = similarRecommendations,
-            similarRecommendationsLoading = similarRecommendationsLoading,
-            similarRecommendationsError = similarRecommendationsError,
-            similarRecommendationsSource = similarRecommendationsSource,
-            serverProfile = profile,
-            streamPreferenceOptions = streamPreferenceOptions,
-            streamSourceOptions = streamSourceOptions,
-            playlistItems = playlistItems,
-            infoDrawerState = infoDrawerState,
-            infoDrawerLayout = infoDrawerLayout,
-            previewFrameFor = previewFrameFor,
-            onSeekPreview = updateSeekPreview,
-            onExitPlayer = {
-                if (fullscreenPlayerActive) {
-                    exitFullscreenToWatchPage()
-                } else {
-                    onExitPlayer()
-                }
-            },
-            onPlayPause = {
-                markPlayerInteraction()
-                controlsVisible = true
-                controller.playPause()
-            },
-            onSeekTo = seekTo,
-            onPreviousTransport = handlePreviousTransport,
-            onNextTransport = handleNextTransport,
-            onToggleLock = {
-                markPlayerInteraction()
-                val toggleResult = togglePlayerLockState(locked)
-                locked = toggleResult.locked
-                hudText = toggleResult.hudText
-                controlsVisible = toggleResult.controlsVisible
-            },
-            onToggleFullscreenPlayer = {
-                markPlayerInteraction()
-                controlsVisible = true
-                presentationTargetMode = if (fullscreenPlayerActive) {
-                    PlayerPresentationMode.WatchPage
-                } else {
-                    PlayerPresentationMode.Fullscreen
-                }
-            },
-            onEnterPictureInPicture = {
-                markPlayerInteraction()
-                controlsVisible = false
-                StashPictureInPictureController.enterIfEligible(activity)
-            },
-            onCycleSpeed = {
-                markPlayerInteraction()
-                controlsVisible = true
-                playbackSpeed = when (playbackSpeed) {
-                    0.5f -> 1f
-                    1f -> 1.25f
-                    1.25f -> 1.5f
-                    1.5f -> 2f
-                    else -> 0.5f
-                }
-                controller.setPlaybackSpeed(playbackSpeed)
-                hudText = playerPlaybackSpeedHudText(playbackSpeed)
-            },
-            onCycleAspectRatio = {
-                markPlayerInteraction()
-                controlsVisible = true
-                aspectRatioMode = aspectRatioMode.next()
-                hudText = playerAspectRatioHudText(aspectRatioMode)
-            },
-            onSelectPlaybackSpeed = { speed ->
-                markPlayerInteraction()
-                controlsVisible = true
-                playbackSpeed = speed
-                controller.setPlaybackSpeed(speed)
-                hudText = playerPlaybackSpeedHudText(speed)
-            },
-            onSelectAspectRatioMode = { mode ->
-                markPlayerInteraction()
-                controlsVisible = true
-                aspectRatioMode = mode
-                hudText = playerAspectRatioHudText(mode)
-            },
-            onSelectShuffleEnabled = { enabled ->
-                markPlayerInteraction()
-                controlsVisible = true
-                val updatedQueue = playbackQueue.withCurrent(sceneId).withShuffleEnabled(enabled)
-                onPlaybackQueueChange(updatedQueue)
-                hudText = if (enabled) stashString(R.string.auto_kr_0482) else stashString(R.string.auto_kr_0483)
-            },
-            onSelectRatingStep = selectRatingStep,
-            onAddCurrentSceneToQueue = {
-                markPlayerInteraction()
-                controlsVisible = true
-                if (sceneId in queueSceneIds) {
-                    hudText = stashString(R.string.auto_kr_0484)
-                } else {
-                    scope.launch {
-                        localRepository.addToQueue(currentSceneCard)
-                        hudText = stashString(R.string.auto_kr_0227)
-                    }
-                }
-            },
-            onToggleFavorite = {
-                markPlayerInteraction()
-                controlsVisible = true
-                val shouldEnable = sceneId !in favoriteSceneIds
-                scope.launch {
-                    localRepository.setFavorite(currentSceneCard, shouldEnable)
-                    hudText = if (shouldEnable) stashString(R.string.auto_kr_0485) else stashString(R.string.auto_kr_0121)
-                }
-            },
-            onToggleWatchLater = {
-                markPlayerInteraction()
-                controlsVisible = true
-                val shouldEnable = sceneId !in watchLaterSceneIds
-                scope.launch {
-                    localRepository.setWatchLater(currentSceneCard, shouldEnable)
-                    hudText = if (shouldEnable) stashString(R.string.auto_kr_0486) else stashString(R.string.auto_kr_0487)
-                }
-            },
-            onPlaySimilarScene = playSimilarScene,
-            onAddSimilarSceneToQueue = addSimilarSceneToQueue,
-            onRetrySimilarRecommendations = {
-                markPlayerInteraction()
-                controlsVisible = true
-                similarRecommendationsRetryKey += 1L
-            },
-            onSelectStreamPreference = selectStreamPreference,
-            onSelectStreamSource = selectStreamSource,
-            onToggleInfoDrawer = {
-                markPlayerInteraction()
-                controlsVisible = true
-            },
-            onInfoDrawerDrag = { _ ->
-                markPlayerInteraction()
-                controlsVisible = true
-            },
-            onInfoDrawerDragEnd = {
-                markPlayerInteraction()
-                controlsVisible = true
-            },
-            onOpenPlaylistDrawer = {
-                playlistDrawerOpen = true
-                scope.launch {
-                    onPlaylistDrawerOpen(sceneId, PLAYER_PLAYLIST_TRAILING_ITEM_COUNT)
-                }
-            },
-            onRetryPlayback = {
-                markPlayerInteraction()
-                controlsVisible = true
-                retryPlaybackAt(
-                    if (playbackStatus == PlayerPlaybackUiStatus.Ended) 0L else positionMs,
-                )
-            },
-            onTryAlternateSource = {
-                markPlayerInteraction()
-                controlsVisible = true
-                tryNextPlaybackSource(positionMs)
-            },
-            onOpenSettings = {
-                markPlayerInteraction()
-                controlsVisible = true
-                onOpenSettings()
-            },
-            onBottomControlsGestureBoundsChanged = { bounds ->
-                playerGestureExclusionBounds = bounds
-            },
-            onBottomControlsHeightChanged = { _ ->
-                // Fullscreen chrome no longer measures or reveals an in-player drawer.
-            },
-            onPlayerGestureSuspendedByModalSurfaceChanged = { suspended ->
-                playerGesturesSuspendedByModalSurface = suspended
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    alpha = resolvePlayerPresentationOverlayAlpha(
-                        motionState = presentationMotionState,
-                        fullscreenPlayerActive = fullscreenPlayerActive,
-                        presentationDragActive = presentationTransitionActive,
-                    )
-                    translationY = presentationMotionState.fullscreenChromeTranslationYPx
-                },
+                state = overlayState,
+                callbacks = overlayCallbacks,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        alpha = resolvePlayerPresentationOverlayAlpha(
+                            motionState = presentationMotionState,
+                            fullscreenPlayerActive = fullscreenPlayerActive,
+                            presentationDragActive = presentationTransitionActive,
+                        )
+                        translationY = presentationMotionState.fullscreenChromeTranslationYPx
+                    },
             )
         }
 
@@ -1967,44 +1963,13 @@ private fun RealPlayerRoute(
             queuedSceneIds = queueSceneIds,
             serverProfile = profile,
             onSelectRatingStep = selectRatingStep,
-            onAddCurrentSceneToQueue = {
-                markPlayerInteraction()
-                controlsVisible = true
-                if (sceneId in queueSceneIds) {
-                    hudText = stashString(R.string.auto_kr_0484)
-                } else {
-                    scope.launch {
-                        localRepository.addToQueue(currentSceneCard)
-                        hudText = stashString(R.string.auto_kr_0227)
-                    }
-                }
-            },
+            onAddCurrentSceneToQueue = addCurrentSceneToQueue,
             onIncrementOCounter = incrementOCounter,
-            onToggleFavorite = {
-                markPlayerInteraction()
-                controlsVisible = true
-                val shouldEnable = sceneId !in favoriteSceneIds
-                scope.launch {
-                    localRepository.setFavorite(currentSceneCard, shouldEnable)
-                    hudText = if (shouldEnable) stashString(R.string.auto_kr_0485) else stashString(R.string.auto_kr_0121)
-                }
-            },
-            onToggleWatchLater = {
-                markPlayerInteraction()
-                controlsVisible = true
-                val shouldEnable = sceneId !in watchLaterSceneIds
-                scope.launch {
-                    localRepository.setWatchLater(currentSceneCard, shouldEnable)
-                    hudText = if (shouldEnable) stashString(R.string.auto_kr_0486) else stashString(R.string.auto_kr_0487)
-                }
-            },
+            onToggleFavorite = toggleFavorite,
+            onToggleWatchLater = toggleWatchLater,
             onPlaySimilarScene = playSimilarScene,
             onAddSimilarSceneToQueue = addSimilarSceneToQueue,
-            onRetrySimilarRecommendations = {
-                markPlayerInteraction()
-                controlsVisible = true
-                similarRecommendationsRetryKey += 1L
-            },
+            onRetrySimilarRecommendations = retrySimilarRecommendations,
             onPresentationDragUpdate = { update ->
                 markPlayerInteraction()
                 controlsVisible = true
@@ -2051,29 +2016,6 @@ private fun RealPlayerRoute(
         }
     }
 }
-
-enum class PlayerResumePromptPlacement {
-    BottomStart,
-}
-
-data class ResumePlaybackPromptState(
-    val resumePositionMs: Long,
-    val placement: PlayerResumePromptPlacement,
-    val restartLabel: String,
-    val showResumeButton: Boolean,
-    val defaultActionResumesPlayback: Boolean,
-)
-
-fun buildResumePlaybackPromptState(
-    resumePositionMs: Long,
-    restartLabel: String = "처음부터",
-): ResumePlaybackPromptState = ResumePlaybackPromptState(
-    resumePositionMs = resumePositionMs,
-    placement = PlayerResumePromptPlacement.BottomStart,
-    restartLabel = restartLabel,
-    showResumeButton = false,
-    defaultActionResumesPlayback = true,
-)
 
 @Composable
 private fun ResumePlaybackPrompt(
@@ -2203,66 +2145,11 @@ private fun PlayerSystemBarsEffect(
     }
 }
 
-@Composable
-private fun PlayerOrientationEffect(
-    activity: Activity?,
-    mode: PlaybackOrientationMode,
-) {
-    DisposableEffect(activity, mode) {
-        val previousOrientation = activity?.requestedOrientation
-        if (activity != null && mode == PlaybackOrientationMode.Sensor) {
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
-        }
-        onDispose {
-            if (activity != null && previousOrientation != null) {
-                activity.requestedOrientation = previousOrientation
-            }
-        }
-    }
-}
-
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
 
-private fun StashStream.toSceneCardModel(
-    currentPositionMs: Long,
-    durationMs: Long,
-    isInWatchLater: Boolean,
-): SceneCardModel {
-    val effectiveDurationMs = durationMs.takeIf { it > 0L }
-        ?: ((durationSeconds ?: 0.0) * 1000.0).toLong().coerceAtLeast(0L)
-    val progress = if (effectiveDurationMs > 0L) {
-        (currentPositionMs.toFloat() / effectiveDurationMs.toFloat()).coerceIn(0f, 1f)
-    } else {
-        0f
-    }
-    return SceneCardModel(
-        id = sceneId,
-        title = title,
-        durationText = formatPlayerPosition(effectiveDurationMs),
-        studio = "Stash",
-        progress = progress,
-        isInWatchLater = isInWatchLater,
-        thumbnailUrl = thumbnailUrl ?: spriteImageUrl,
-        playCount = playCount,
-    )
-}
-
-private fun playerOverlayTitle(stream: StashStream, sourceLabel: String, isFoldLikeLayout: Boolean): String =
-    buildList {
-        add(stream.title)
-        add(sourceLabel)
-        if (isFoldLikeLayout) add("Fold layout")
-    }.joinToString(" · ")
-
-private fun playerPictureInPictureAspectRatio(width: Int?, height: Int?): Rational {
-    val normalizedWidth = width?.takeIf { it > 0 } ?: 16
-    val normalizedHeight = height?.takeIf { it > 0 } ?: 9
-    return Rational(normalizedWidth.coerceIn(1, 239), normalizedHeight.coerceIn(1, 239))
-}
-
-private fun shouldPromptForResumePosition(startPositionMs: Long): Boolean =
-    startPositionMs >= RESUME_PROMPT_MIN_POSITION_MS
+private fun PlayerPictureInPictureAspectRatio.toAndroidRational(): Rational =
+    Rational(width, height)

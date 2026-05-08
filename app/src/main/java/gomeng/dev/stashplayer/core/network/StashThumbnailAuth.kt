@@ -20,6 +20,7 @@ fun buildStashThumbnailRequestSpec(
     } ?: normalized
     val requestHeaders = when (serverProfile?.authMode) {
         StashServerAuthMode.SessionCookie -> serverProfile.authHeadersFor(resolvedUrl)
+        StashServerAuthMode.None,
         StashServerAuthMode.ApiKey,
         null,
         -> emptyMap()

@@ -1,7 +1,5 @@
 package gomeng.dev.stashplayer.core.model
 
-import gomeng.dev.stashplayer.R
-import gomeng.dev.stashplayer.core.ui.i18n.stashString
 fun normalizeStashSearchQuery(query: String): String = query.trim()
 
 data class StashSearchSortOption(
@@ -18,32 +16,14 @@ fun defaultStashDiscoveryPageSizeOptions(): List<Int> = listOf(20, 40, 60, 120, 
 
 fun defaultStashSearchPageSizeOptions(): List<Int> = defaultStashDiscoveryPageSizeOptions()
 
-fun defaultStashSearchSortOptions(): List<StashSearchSortOption> = listOf(
+fun defaultStashSearchSortOptions(): List<StashSearchSortOption> = defaultStashSceneSortOptionSpecs().map { spec ->
     StashSearchSortOption(
-        id = "updated",
-        label = stashString(R.string.auto_kr_0048),
-        sort = "updated_at",
-        defaultDirection = StashSortDirection.Desc,
-    ),
-    StashSearchSortOption(
-        id = "released",
-        label = stashString(R.string.auto_kr_0049),
-        sort = "date",
-        defaultDirection = StashSortDirection.Desc,
-    ),
-    StashSearchSortOption(
-        id = "added",
-        label = stashString(R.string.auto_kr_0050),
-        sort = "created_at",
-        defaultDirection = StashSortDirection.Desc,
-    ),
-    StashSearchSortOption(
-        id = "title",
-        label = stashString(R.string.auto_kr_0135),
-        sort = "title",
-        defaultDirection = StashSortDirection.Asc,
-    ),
-)
+        id = spec.id,
+        label = spec.label,
+        sort = spec.sort,
+        defaultDirection = spec.defaultDirection,
+    )
+}
 
 data class StashSearchPageState(
     val sortOption: StashSearchSortOption,

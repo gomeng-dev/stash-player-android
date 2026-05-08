@@ -1,7 +1,5 @@
 package gomeng.dev.stashplayer.core.model
 
-import gomeng.dev.stashplayer.R
-import gomeng.dev.stashplayer.core.ui.i18n.stashString
 data class StashBrowseSortOption(
     val id: String,
     val label: String,
@@ -115,35 +113,11 @@ data class StashBrowseScenePageState(
     }
 }
 
-fun defaultStashBrowseSortOptions(): List<StashBrowseSortOption> = listOf(
+fun defaultStashBrowseSortOptions(): List<StashBrowseSortOption> = defaultStashSceneSortOptionSpecs().map { spec ->
     StashBrowseSortOption(
-        id = "updated",
-        label = stashString(R.string.auto_kr_0048),
-        sort = "updated_at",
-        direction = StashSortDirection.Desc,
-    ),
-    StashBrowseSortOption(
-        id = "released",
-        label = stashString(R.string.auto_kr_0049),
-        sort = "date",
-        direction = StashSortDirection.Desc,
-    ),
-    StashBrowseSortOption(
-        id = "added",
-        label = stashString(R.string.auto_kr_0050),
-        sort = "created_at",
-        direction = StashSortDirection.Desc,
-    ),
-    StashBrowseSortOption(
-        id = "plays",
-        label = stashString(R.string.auto_kr_0051),
-        sort = "play_count",
-        direction = StashSortDirection.Desc,
-    ),
-    StashBrowseSortOption(
-        id = "duration",
-        label = stashString(R.string.auto_kr_0052),
-        sort = "duration",
-        direction = StashSortDirection.Desc,
-    ),
-)
+        id = spec.id,
+        label = spec.label,
+        sort = spec.sort,
+        direction = spec.defaultDirection,
+    )
+}

@@ -3,11 +3,15 @@ package gomeng.dev.stashplayer.feature.player
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -16,8 +20,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
@@ -25,12 +32,15 @@ import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,8 +56,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,9 +76,12 @@ import gomeng.dev.stashplayer.core.player.PlayerDebugInfoUiState
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashAction
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashActionRowItem
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashActionVisualState
+import gomeng.dev.stashplayer.core.player.PlayerFullscreenBottomChromeSection
+import gomeng.dev.stashplayer.core.player.PlayerFullscreenSeekBarVisualPolicy
 import gomeng.dev.stashplayer.core.player.PlayerOverlayAccessibilityPolicy
 import gomeng.dev.stashplayer.core.player.PlayerOverlayQuickAction
 import gomeng.dev.stashplayer.core.player.PlayerOverlayQuickActionState
+import gomeng.dev.stashplayer.core.player.PlayerOverlayTransportUiState
 import gomeng.dev.stashplayer.core.player.PlayerInfoDrawerContentSection
 import gomeng.dev.stashplayer.core.player.PlayerInfoDrawerContentState
 import gomeng.dev.stashplayer.core.player.PlayerInfoDrawerController
@@ -89,6 +108,8 @@ fun PlayerBottomControls(
     displayedPositionMs: Long,
     durationMs: Long,
     sliderFraction: Float,
+    transportState: PlayerOverlayTransportUiState,
+    isPlaying: Boolean,
     ratingStep: Int,
     ratingMessage: String?,
     ratingUpdating: Boolean,
@@ -103,6 +124,9 @@ fun PlayerBottomControls(
     serverProfile: StashServerProfile?,
     onSliderFractionChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit,
+    onPreviousTransport: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNextTransport: () -> Unit,
     onSelectRatingStep: (Int) -> Unit,
     onAddCurrentSceneToQueue: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -158,14 +182,98 @@ fun PlayerBottomControls(
             title = chrome.title,
             ratingLabel = chrome.ratingLabel,
         )
+        if (chrome.sectionOrder.contains(PlayerFullscreenBottomChromeSection.CompactTransport)) {
+            PlayerFullscreenCompactTransportRow(
+                state = transportState,
+                isPlaying = isPlaying,
+                onPreviousTransport = onPreviousTransport,
+                onPlayPause = onPlayPause,
+                onNextTransport = onNextTransport,
+            )
+        }
         PlayerSeekRow(
             displayedPositionMs = displayedPositionMs,
             durationMs = durationMs,
             uiState = seekRowUiState,
+            visualPolicy = chrome.seekBarVisualPolicy,
             onSliderFractionChange = onSliderFractionChange,
             onSliderChangeFinished = onSliderChangeFinished,
         )
     }
+}
+
+@Composable
+private fun PlayerFullscreenCompactTransportRow(
+    state: PlayerOverlayTransportUiState,
+    isPlaying: Boolean,
+    onPreviousTransport: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNextTransport: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        PlayerFullscreenCompactTransportButton(
+            onClick = onPreviousTransport,
+            contentDescription = state.previousContentDescription,
+        ) {
+            Icon(
+                Icons.Outlined.SkipPrevious,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.92f),
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        PlayerFullscreenCompactTransportButton(
+            onClick = onPlayPause,
+            contentDescription = state.playPauseContentDescription,
+            emphasized = true,
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(26.dp),
+            )
+        }
+        PlayerFullscreenCompactTransportButton(
+            onClick = onNextTransport,
+            contentDescription = state.nextContentDescription,
+            enabled = state.nextEnabled,
+        ) {
+            Icon(
+                Icons.Outlined.SkipNext,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = if (state.nextEnabled) 0.92f else 0.38f),
+                modifier = Modifier.size(22.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlayerFullscreenCompactTransportButton(
+    onClick: () -> Unit,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    emphasized: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .size(PlayerOverlayAccessibilityPolicy.MinimumTouchTargetDp.dp)
+            .semantics { this.contentDescription = contentDescription }
+            .background(
+                color = Color.Black.copy(alpha = if (emphasized) 0.34f else 0.20f),
+                shape = CircleShape,
+            ),
+        content = content,
+    )
 }
 
 @Composable
@@ -203,6 +311,7 @@ private fun PlayerSeekRow(
     displayedPositionMs: Long,
     durationMs: Long,
     uiState: PlayerInfoDrawerSeekRowUiState,
+    visualPolicy: PlayerFullscreenSeekBarVisualPolicy,
     onSliderFractionChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit,
 ) {
@@ -225,23 +334,100 @@ private fun PlayerSeekRow(
             style = MaterialTheme.typography.labelSmall,
         )
     }
-    Slider(
-        modifier = Modifier.height(StashPlayerYoutubeVisualTokens.BottomSheetSeekTouchHeightDp.dp),
-        value = uiState.sliderFraction,
+    ThinPlayerSeekBar(
+        fraction = uiState.sliderFraction,
         enabled = uiState.sliderEnabled,
-        onValueChange = onSliderFractionChange,
-        onValueChangeFinished = onSliderChangeFinished,
-        colors = SliderDefaults.colors(
-            thumbColor = StashColors.Primary,
-            activeTrackColor = StashColors.Primary,
-            inactiveTrackColor = StashColors.TextSecondary.copy(
-                alpha = StashPlayerYoutubeVisualTokens.BottomSheetSeekInactiveTrackAlpha,
-            ),
-            disabledThumbColor = Color.White.copy(alpha = 0.38f),
-            disabledActiveTrackColor = Color.White.copy(alpha = 0.20f),
-            disabledInactiveTrackColor = Color.White.copy(alpha = 0.12f),
-        ),
+        visualPolicy = visualPolicy,
+        onFractionChange = onSliderFractionChange,
+        onChangeFinished = onSliderChangeFinished,
     )
+}
+
+@Composable
+private fun ThinPlayerSeekBar(
+    fraction: Float,
+    enabled: Boolean,
+    visualPolicy: PlayerFullscreenSeekBarVisualPolicy,
+    onFractionChange: (Float) -> Unit,
+    onChangeFinished: () -> Unit,
+) {
+    val coercedFraction = fraction.coerceIn(0f, 1f)
+    val accessibilityState = PlayerWatchPageController.buildPlayerSeekBarAccessibilityState(
+        fraction = coercedFraction,
+        enabled = enabled,
+    )
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(visualPolicy.touchTargetHeightDp.dp)
+            .semantics {
+                contentDescription = accessibilityState.contentDescription
+                stateDescription = accessibilityState.stateDescription
+                progressBarRangeInfo = ProgressBarRangeInfo(
+                    current = accessibilityState.progressFraction,
+                    range = 0f..1f,
+                    steps = 0,
+                )
+                if (!accessibilityState.enabled) {
+                    disabled()
+                }
+                if (accessibilityState.enabled) {
+                    setProgress { targetFraction ->
+                        onFractionChange(targetFraction.coerceIn(0f, 1f))
+                        onChangeFinished()
+                        true
+                    }
+                }
+            }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    fun updateFraction(x: Float) {
+                        val widthPx = size.width.toFloat().coerceAtLeast(1f)
+                        onFractionChange((x / widthPx).coerceIn(0f, 1f))
+                    }
+                    updateFraction(down.position.x)
+                    drag(down.id) { change ->
+                        updateFraction(change.position.x)
+                        change.consume()
+                    }
+                    onChangeFinished()
+                }
+            },
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .fillMaxWidth()
+                .height(visualPolicy.restingTrackHeightDp.dp)
+                .clip(CircleShape)
+                .background(
+                    StashColors.TextSecondary.copy(
+                        alpha = StashPlayerYoutubeVisualTokens.BottomSheetSeekInactiveTrackAlpha,
+                    ),
+                ),
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .width(maxWidth * coercedFraction)
+                .height(visualPolicy.activeTrackHeightDp.dp)
+                .clip(CircleShape)
+                .background(StashColors.Primary),
+        )
+        if (enabled) {
+            val thumbSize = visualPolicy.thumbDiameterDp.dp
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .offset(x = maxWidth * coercedFraction - (thumbSize / 2))
+                    .size(thumbSize)
+                    .clip(CircleShape)
+                    .background(StashColors.Primary),
+            )
+        }
+    }
 }
 
 @Composable

@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,7 +20,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.StashServerProfile
@@ -36,12 +44,99 @@ import gomeng.dev.stashplayer.core.player.PlayerPlaylistUiItem
 import gomeng.dev.stashplayer.core.player.PlayerSeparatedPlaybackOptionSheet
 import gomeng.dev.stashplayer.core.player.PlayerStreamPreferenceOption
 import gomeng.dev.stashplayer.core.player.PlayerStreamSourceOption
+import gomeng.dev.stashplayer.core.player.playerSeekPreviewPositionLabel
+import gomeng.dev.stashplayer.core.player.playerSeekTargetBadgeContentDescription
 import gomeng.dev.stashplayer.core.player.resolvePlayerBackAction
 import gomeng.dev.stashplayer.core.player.resolvePlayerOverlayTransportUiState
 import gomeng.dev.stashplayer.core.player.resolvePlayerOverlayVisibilityPolicy
 import gomeng.dev.stashplayer.core.player.shouldShowPlaybackStatusOverlay
+import gomeng.dev.stashplayer.core.ui.designsystem.StashAlpha
+import gomeng.dev.stashplayer.core.ui.designsystem.StashColors
 import gomeng.dev.stashplayer.core.ui.designsystem.StashPlayerYoutubeVisualTokens
+import gomeng.dev.stashplayer.core.ui.designsystem.StashRadii
 import kotlin.math.roundToLong
+
+@Composable
+fun PlayerOverlay(
+    state: PlayerOverlayState,
+    callbacks: PlayerOverlayCallbacks,
+    modifier: Modifier = Modifier,
+) {
+    PlayerOverlay(
+        title = state.title,
+        controlsVisible = state.controlsVisible,
+        locked = state.locked,
+        isPlaying = state.isPlaying,
+        positionMs = state.positionMs,
+        durationMs = state.durationMs,
+        playbackSpeed = state.playbackSpeed,
+        aspectRatioMode = state.aspectRatioMode,
+        hudText = state.hudText,
+        seekPreview = state.seekPreview,
+        playbackStatus = state.playbackStatus,
+        playbackErrorText = state.playbackErrorText,
+        canTryAlternateSource = state.canTryAlternateSource,
+        canOpenSettings = state.canOpenSettings,
+        canOpenNextScene = state.canOpenNextScene,
+        canEnterPictureInPicture = state.canEnterPictureInPicture,
+        canShuffleQueue = state.canShuffleQueue,
+        shuffleEnabled = state.shuffleEnabled,
+        ratingStep = state.ratingStep,
+        ratingMessage = state.ratingMessage,
+        ratingUpdating = state.ratingUpdating,
+        currentStreamInfoText = state.currentStreamInfoText,
+        quickActions = state.quickActions,
+        fullscreenPlayerActive = state.fullscreenPlayerActive,
+        sceneId = state.sceneId,
+        infoDrawerContentState = state.infoDrawerContentState,
+        debugInfoUiState = state.debugInfoUiState,
+        similarRecommendations = state.similarRecommendations,
+        similarRecommendationsLoading = state.similarRecommendationsLoading,
+        similarRecommendationsError = state.similarRecommendationsError,
+        similarRecommendationsSource = state.similarRecommendationsSource,
+        serverProfile = state.serverProfile,
+        streamPreferenceOptions = state.streamPreferenceOptions,
+        streamSourceOptions = state.streamSourceOptions,
+        playlistItems = state.playlistItems,
+        infoDrawerState = state.infoDrawerState,
+        infoDrawerLayout = state.infoDrawerLayout,
+        previewFrameFor = state.previewFrameFor,
+        onSeekPreview = callbacks.onSeekPreview,
+        onExitPlayer = callbacks.onExitPlayer,
+        onPlayPause = callbacks.onPlayPause,
+        onSeekTo = callbacks.onSeekTo,
+        onPreviousTransport = callbacks.onPreviousTransport,
+        onNextTransport = callbacks.onNextTransport,
+        onToggleLock = callbacks.onToggleLock,
+        onToggleFullscreenPlayer = callbacks.onToggleFullscreenPlayer,
+        onEnterPictureInPicture = callbacks.onEnterPictureInPicture,
+        onCycleSpeed = callbacks.onCycleSpeed,
+        onCycleAspectRatio = callbacks.onCycleAspectRatio,
+        onSelectPlaybackSpeed = callbacks.onSelectPlaybackSpeed,
+        onSelectAspectRatioMode = callbacks.onSelectAspectRatioMode,
+        onSelectShuffleEnabled = callbacks.onSelectShuffleEnabled,
+        onSelectRatingStep = callbacks.onSelectRatingStep,
+        onAddCurrentSceneToQueue = callbacks.onAddCurrentSceneToQueue,
+        onToggleFavorite = callbacks.onToggleFavorite,
+        onToggleWatchLater = callbacks.onToggleWatchLater,
+        onPlaySimilarScene = callbacks.onPlaySimilarScene,
+        onAddSimilarSceneToQueue = callbacks.onAddSimilarSceneToQueue,
+        onRetrySimilarRecommendations = callbacks.onRetrySimilarRecommendations,
+        onSelectStreamPreference = callbacks.onSelectStreamPreference,
+        onSelectStreamSource = callbacks.onSelectStreamSource,
+        onToggleInfoDrawer = callbacks.onToggleInfoDrawer,
+        onInfoDrawerDrag = callbacks.onInfoDrawerDrag,
+        onInfoDrawerDragEnd = callbacks.onInfoDrawerDragEnd,
+        onOpenPlaylistDrawer = callbacks.onOpenPlaylistDrawer,
+        onRetryPlayback = callbacks.onRetryPlayback,
+        onTryAlternateSource = callbacks.onTryAlternateSource,
+        onOpenSettings = callbacks.onOpenSettings,
+        onBottomControlsGestureBoundsChanged = callbacks.onBottomControlsGestureBoundsChanged,
+        onBottomControlsHeightChanged = callbacks.onBottomControlsHeightChanged,
+        onPlayerGestureSuspendedByModalSurfaceChanged = callbacks.onPlayerGestureSuspendedByModalSurfaceChanged,
+        modifier = modifier,
+    )
+}
 
 @Composable
 fun PlayerOverlay(
@@ -260,12 +355,27 @@ fun PlayerOverlay(
             )
         }
 
+        seekPreview?.let { preview ->
+            PlayerSeekTargetBadge(
+                targetPositionLabel = playerSeekPreviewPositionLabel(
+                    targetPositionMs = preview.targetPositionMs,
+                    durationMs = preview.durationMs,
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(bottom = if (visibilityPolicy.showBottomControls) 108.dp else 28.dp),
+            )
+        }
+
         if (visibilityPolicy.showBottomControls) {
             PlayerBottomControls(
                 title = title,
                 displayedPositionMs = displayedPositionMs,
                 durationMs = durationMs,
                 sliderFraction = sliderFraction,
+                transportState = transportState,
+                isPlaying = isPlaying,
                 ratingStep = ratingStep,
                 ratingMessage = ratingMessage,
                 ratingUpdating = ratingUpdating,
@@ -298,6 +408,9 @@ fun PlayerOverlay(
                     sliderDragging = false
                     onSeekPreview(null)
                 },
+                onPreviousTransport = onPreviousTransport,
+                onPlayPause = onPlayPause,
+                onNextTransport = onNextTransport,
                 onSelectRatingStep = onSelectRatingStep,
                 onAddCurrentSceneToQueue = onAddCurrentSceneToQueue,
                 onToggleFavorite = onToggleFavorite,
@@ -362,4 +475,27 @@ fun PlayerOverlay(
         )
     }
 
+}
+
+@Composable
+private fun PlayerSeekTargetBadge(
+    targetPositionLabel: String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.semantics {
+            contentDescription = playerSeekTargetBadgeContentDescription(targetPositionLabel)
+        },
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(StashRadii.Pill),
+        color = StashColors.ScrimStrong.copy(alpha = StashAlpha.PlayerHudSurface),
+        contentColor = StashColors.TextPrimary,
+        border = androidx.compose.foundation.BorderStroke(1.dp, StashColors.PlayerChromeBorder),
+    ) {
+        Text(
+            text = targetPositionLabel,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
 }

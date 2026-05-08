@@ -1,0 +1,45 @@
+# Changelog
+
+All notable changes to Stash Android Player are documented here.
+
+When bumping `versionName`, add a new section for the release version and summarize the changes since the previous version. The public release workflow uses the matching section for GitHub Release notes.
+
+## [Unreleased]
+
+- No unreleased changes yet.
+
+## [1.2.0] - 2026-05-09
+
+### English
+
+- Redesigned the fullscreen player chrome with a video-first MX Player-style layout that keeps the center of the video clear.
+- Restored accessible adjustable/progress semantics for the custom thin seek bar.
+- Added the full upstream Stash scene sort criteria to Browse and Search.
+- Made player automatic orientation control follow the Settings value without requiring an app restart.
+
+### 한국어
+
+- 전체화면 플레이어 크롬을 영상 중심의 MX Player 스타일로 재설계해 영상 중앙을 가리지 않도록 개선했습니다.
+- 커스텀 얇은 탐색 바에 접근성용 조절/진행률 semantics를 복구했습니다.
+- Browse와 Search에 Stash 원본 Scene 정렬 기준 전체를 추가했습니다.
+- 플레이어 자동 화면 방향 제어가 앱 재시작 없이 설정값을 따르도록 수정했습니다.
+
+## [1.1.0] - 2026-05-08
+
+### English
+
+- Added server setup support for link-only connections without an API key or username/password.
+- Improved server settings so onboarding-style connection options are available from Settings.
+- Removed the small preview overlay shown during player timeline seek gestures.
+- Added playback history localization for the Queue tab.
+- Fixed bottom navigation clipping above Android system navigation.
+- Kept compact bar phones in portrait outside fullscreen player mode while preserving fullscreen sensor rotation.
+
+### 한국어
+
+- API Key나 ID/비밀번호 없이 링크만으로 접속하는 서버 설정을 추가했습니다.
+- 설정 화면에서도 온보딩처럼 서버 연결 방식을 선택할 수 있도록 개선했습니다.
+- 플레이어 타임라인 제스처 이동 중 작게 표시되던 프리뷰 오버레이를 제거했습니다.
+- Queue 탭의 재생 기록 문구가 영어 설정에서 한글로 나오던 문제를 수정했습니다.
+- Android 시스템 내비게이션 위에서 하단 네비게이션 바가 잘리던 문제를 수정했습니다.
+- 바형 스마트폰은 전체화면 플레이어가 아닐 때 세로 화면을 유지하고, 전체화면에서는 기존 센서 회전을 보존했습니다.

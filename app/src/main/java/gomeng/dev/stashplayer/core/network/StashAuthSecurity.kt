@@ -16,6 +16,16 @@ fun resolveStashCredentialTransportDecision(
     allowInsecureLocalApiKey: Boolean,
 ): StashCredentialTransportDecision {
     val uri = parseStashAuthUri(baseUrl) ?: return StashCredentialTransportDecision.Blocked
+    if (authMode == StashServerAuthMode.None) {
+        return if (
+            uri.scheme.equals("https", ignoreCase = true) ||
+            uri.scheme.equals("http", ignoreCase = true)
+        ) {
+            StashCredentialTransportDecision.Secure
+        } else {
+            StashCredentialTransportDecision.Blocked
+        }
+    }
     if (uri.scheme.equals("https", ignoreCase = true)) return StashCredentialTransportDecision.Secure
     if (!uri.scheme.equals("http", ignoreCase = true)) return StashCredentialTransportDecision.Blocked
     if (!uri.isLocalHttpHost()) return StashCredentialTransportDecision.Blocked

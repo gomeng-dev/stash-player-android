@@ -27,7 +27,10 @@ fun playerSeekPreviewDeltaLabel(deltaMs: Long): String {
 }
 
 fun playerSeekPreviewPositionLabel(targetPositionMs: Long, durationMs: Long): String =
-    "${formatPlayerPosition(targetPositionMs)} / ${formatPlayerPosition(durationMs)}"
+    formatPlayerPosition(targetPositionMs.coerceIn(0L, durationMs.coerceAtLeast(0L)))
+
+fun playerSeekTargetBadgeContentDescription(targetPositionLabel: String): String =
+    stashString(R.string.player_seek_target_badge_content_description, targetPositionLabel)
 
 enum class PlayerOverlayQuickAction {
     Queue,
@@ -257,7 +260,7 @@ fun resolvePlayerOverlayTransportUiState(
     seekPreviewActive: Boolean = false,
     playbackStatusVisible: Boolean = false,
 ): PlayerOverlayTransportUiState = PlayerOverlayTransportUiState(
-    visible = controlsVisible && !locked && !seekPreviewActive && !playbackStatusVisible,
+    visible = false,
     previousContentDescription = stashString(R.string.auto_kr_0223),
     playPauseContentDescription = if (isPlaying) stashString(R.string.auto_kr_0224) else stashString(R.string.auto_kr_0039),
     nextContentDescription = if (canOpenNextScene) stashString(R.string.auto_kr_0225) else stashString(R.string.auto_kr_0226),
@@ -396,7 +399,7 @@ fun resolvePlayerOverlayVisibilityPolicy(
     )
     controlsVisible -> PlayerOverlayVisibilityPolicy(
         showTopControls = true,
-        showQuickActions = false,
+        showQuickActions = true,
         showBottomControls = true,
         showUnlockOnly = false,
     )

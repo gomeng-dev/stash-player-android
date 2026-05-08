@@ -76,14 +76,23 @@ data class QueueSceneVisualModel(
 fun buildPlaybackHistoryOverviewModel(
     historyCount: Int,
     displayLimit: Int,
+    expanded: Boolean = false,
 ): PlaybackHistoryOverviewModel = PlaybackHistoryOverviewModel(
-    title = "최근 재생 기록",
+    title = stashString(R.string.queue_playback_history_title),
     itemCount = historyCount,
-    subtitle = "최근 ${displayLimit}개까지 자동 기록됩니다",
-    actionLabel = "기록 보기",
-    actionContentDescription = "최근 재생 기록 보기",
+    subtitle = stashString(R.string.queue_playback_history_subtitle, displayLimit),
+    actionLabel = if (expanded) {
+        stashString(R.string.queue_playback_history_collapse_label)
+    } else {
+        stashString(R.string.queue_playback_history_action_label)
+    },
+    actionContentDescription = if (expanded) {
+        stashString(R.string.queue_playback_history_collapse_content_description)
+    } else {
+        stashString(R.string.queue_playback_history_action_content_description)
+    },
     actionEnabled = historyCount > 0,
-    showInlineRows = false,
+    showInlineRows = expanded && historyCount > 0,
 )
 
 fun buildQueuePlaybackRequest(

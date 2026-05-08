@@ -546,8 +546,11 @@ internal fun serverSortForStashVideoFilters(
     randomSeed: Int? = null,
     supportsRandomSort: Boolean = true,
 ): String {
-    if (!supportsRandomSort || !videoFilter.randomShuffle) return baseSort
-    val seed = normalizeStashRandomSortSeed(randomSeed ?: videoFilter.randomShuffleSeed ?: nextStashRandomSortSeed())
+    val isRandomRequested = videoFilter.randomShuffle || baseSort == "random"
+    if (!supportsRandomSort || !isRandomRequested) return baseSort
+    val seed = normalizeStashRandomSortSeed(
+        randomSeed ?: videoFilter.randomShuffleSeed ?: if (baseSort == "random") 0 else nextStashRandomSortSeed(),
+    )
     return "random_$seed"
 }
 

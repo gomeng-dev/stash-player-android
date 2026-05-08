@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
+import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashPluginRecommendationStatusClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
@@ -645,7 +646,11 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var serverName by remember { mutableStateOf("Home") }
     var serverUrl by remember { mutableStateOf("") }
     var apiKey by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var authMode by remember { mutableStateOf(SettingsServerAuthModeOption.LinkOnly) }
     var allowInsecureLocalApiKey by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
     var recommendationStatusText by remember { mutableStateOf<String?>(null) }
     var recommendationStatusIsSuccess by remember { mutableStateOf(true) }
     var statusText by remember { mutableStateOf<String?>(null) }
@@ -657,6 +662,11 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             serverUrl = it.baseUrl
             apiKey = it.apiKey
             allowInsecureLocalApiKey = it.allowInsecureLocalApiKey
+            authMode = when (it.authMode) {
+                StashServerAuthMode.None -> SettingsServerAuthModeOption.LinkOnly
+                StashServerAuthMode.ApiKey -> SettingsServerAuthModeOption.ApiKey
+                StashServerAuthMode.SessionCookie -> SettingsServerAuthModeOption.Password
+            }
         }
     }
 
@@ -680,17 +690,58 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
-            OutlinedTextField(
-                value = apiKey,
-                onValueChange = { apiKey = it },
-                label = { Text(stringResource(R.string.settings_api_key_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
+            SettingsServerAuthModeRow(
+                selected = authMode == SettingsServerAuthModeOption.LinkOnly,
+                label = R.string.setup_auth_mode_link_only_label,
+                description = R.string.setup_auth_mode_link_only_description,
+                onClick = { authMode = SettingsServerAuthModeOption.LinkOnly },
             )
+            SettingsServerAuthModeRow(
+                selected = authMode == SettingsServerAuthModeOption.ApiKey,
+                label = R.string.setup_auth_mode_api_key_label,
+                description = R.string.setup_auth_mode_api_key_description,
+                onClick = { authMode = SettingsServerAuthModeOption.ApiKey },
+            )
+            SettingsServerAuthModeRow(
+                selected = authMode == SettingsServerAuthModeOption.Password,
+                label = R.string.setup_auth_mode_password_label,
+                description = R.string.setup_auth_mode_password_description,
+                onClick = { authMode = SettingsServerAuthModeOption.Password },
+            )
+            if (authMode == SettingsServerAuthModeOption.ApiKey) {
+                OutlinedTextField(
+                    value = apiKey,
+                    onValueChange = { apiKey = it },
+                    label = { Text(stringResource(R.string.settings_api_key_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                )
+            } else if (authMode == SettingsServerAuthModeOption.Password) {
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text(stringResource(R.string.setup_username_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text(stringResource(R.string.setup_password_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                )
+                Text(
+                    stringResource(R.string.setup_password_https_only_warning),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             val transportDecision = resolveStashCredentialTransportDecision(
                 baseUrl = serverUrl,
-                authMode = StashServerAuthMode.ApiKey,
+                authMode = authMode.toServerAuthMode(),
                 allowInsecureLocalApiKey = allowInsecureLocalApiKey,
             )
             if (transportDecision == StashCredentialTransportDecision.InsecureNeedsExplicitLocalConfirmation ||
@@ -717,45 +768,100 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val profile = StashServerProfile(
-                            name = serverName,
-                            baseUrl = serverUrl,
+                        val profile = buildSettingsServerProfile(
+                            serverName = serverName,
+                            serverUrl = serverUrl,
                             apiKey = apiKey,
-                            authMode = StashServerAuthMode.ApiKey,
+                            authMode = authMode,
                             allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                         )
                         errorText = null
+                        if (!profile.isConfigured()) {
+                            statusText = null
+                            errorText = context.getString(R.string.auto_kr_0532)
+                            return@launch
+                        }
                         if (!canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey)) {
                             statusText = null
                             errorText = context.getString(R.string.settings_insecure_auth_blocked)
                             return@launch
                         }
+                        isSaving = true
                         statusText = context.getString(R.string.settings_save_in_progress)
-                        repository.saveServerProfile(profile)
-                        statusText = context.getString(R.string.settings_save_complete)
+                        val saveResult = if (authMode == SettingsServerAuthModeOption.Password) {
+                            if (username.isBlank() || password.isBlank()) {
+                                Result.failure(IllegalArgumentException(context.getString(R.string.setup_username_password_required)))
+                            } else {
+                                runCatching {
+                                    val login = StashLoginClient().loginWithPassword(serverUrl, username, password)
+                                    profile.copy(
+                                        apiKey = "",
+                                        authMode = StashServerAuthMode.SessionCookie,
+                                        sessionCookie = login.sessionCookie,
+                                    )
+                                }
+                            }
+                        } else {
+                            Result.success(profile)
+                        }
+                        saveResult
+                            .onSuccess { authenticatedProfile ->
+                                repository.saveServerProfile(authenticatedProfile)
+                                password = ""
+                                statusText = context.getString(R.string.settings_save_complete)
+                            }
+                            .onFailure {
+                                StashDebugLogBuffer.record("Settings", "Stash server save failed", it)
+                                statusText = null
+                                errorText = it.message ?: context.getString(R.string.settings_connection_failed)
+                            }
+                        isSaving = false
                     }
                 },
-                enabled = serverUrl.isNotBlank(),
+                enabled = !isSaving && serverUrl.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(R.string.settings_save_button)) }
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val profile = StashServerProfile(
-                            name = serverName,
-                            baseUrl = serverUrl,
+                        val profile = buildSettingsServerProfile(
+                            serverName = serverName,
+                            serverUrl = serverUrl,
                             apiKey = apiKey,
-                            authMode = StashServerAuthMode.ApiKey,
+                            authMode = authMode,
                             allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                         )
                         errorText = null
+                        if (!profile.isConfigured()) {
+                            statusText = null
+                            errorText = context.getString(R.string.auto_kr_0532)
+                            return@launch
+                        }
                         if (!canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey)) {
                             statusText = null
                             errorText = context.getString(R.string.settings_insecure_auth_blocked)
                             return@launch
                         }
+                        isSaving = true
                         statusText = context.getString(R.string.settings_connection_testing)
-                        runCatching { StashGraphQlClient(profile).testConnection() }
+                        val testProfileResult = if (authMode == SettingsServerAuthModeOption.Password) {
+                            if (username.isBlank() || password.isBlank()) {
+                                Result.failure(IllegalArgumentException(context.getString(R.string.setup_username_password_required)))
+                            } else {
+                                runCatching {
+                                    val login = StashLoginClient().loginWithPassword(serverUrl, username, password)
+                                    profile.copy(
+                                        apiKey = "",
+                                        authMode = StashServerAuthMode.SessionCookie,
+                                        sessionCookie = login.sessionCookie,
+                                    )
+                                }
+                            }
+                        } else {
+                            Result.success(profile)
+                        }
+                        testProfileResult
+                            .mapCatching { StashGraphQlClient(it).testConnection() }
                             .onSuccess {
                                 statusText = context.getString(R.string.settings_connection_success, it)
                             }
@@ -764,9 +870,10 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                                 statusText = null
                                 errorText = it.message ?: context.getString(R.string.settings_connection_failed)
                             }
+                        isSaving = false
                     }
                 },
-                enabled = serverUrl.isNotBlank(),
+                enabled = !isSaving && serverUrl.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(R.string.settings_connection_test_button)) }
             Button(
@@ -779,6 +886,10 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                         repository.clearServerProfile()
                         serverUrl = ""
                         apiKey = ""
+                        username = ""
+                        password = ""
+                        authMode = SettingsServerAuthModeOption.LinkOnly
+                        allowInsecureLocalApiKey = false
                         statusText = context.getString(R.string.settings_server_clear_complete)
                         errorText = null
                     }
@@ -837,6 +948,55 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(HybridRecommendationSettingCopy.testButton)) }
+        }
+    }
+}
+
+private enum class SettingsServerAuthModeOption {
+    LinkOnly,
+    ApiKey,
+    Password,
+}
+
+private fun SettingsServerAuthModeOption.toServerAuthMode(): StashServerAuthMode = when (this) {
+    SettingsServerAuthModeOption.LinkOnly -> StashServerAuthMode.None
+    SettingsServerAuthModeOption.ApiKey -> StashServerAuthMode.ApiKey
+    SettingsServerAuthModeOption.Password -> StashServerAuthMode.SessionCookie
+}
+
+private fun buildSettingsServerProfile(
+    serverName: String,
+    serverUrl: String,
+    apiKey: String,
+    authMode: SettingsServerAuthModeOption,
+    allowInsecureLocalApiKey: Boolean,
+): StashServerProfile = StashServerProfile(
+    name = serverName,
+    baseUrl = serverUrl,
+    apiKey = if (authMode == SettingsServerAuthModeOption.ApiKey) apiKey else "",
+    authMode = authMode.toServerAuthMode(),
+    allowInsecureLocalApiKey = allowInsecureLocalApiKey,
+)
+
+@Composable
+private fun SettingsServerAuthModeRow(
+    selected: Boolean,
+    @StringRes label: Int,
+    @StringRes description: Int,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(stringResource(label), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

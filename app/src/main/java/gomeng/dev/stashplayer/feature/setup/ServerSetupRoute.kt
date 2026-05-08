@@ -108,7 +108,11 @@ fun ServerSetupRoute(
             serverUrl = it.baseUrl
             apiKey = it.apiKey
             allowInsecureLocalApiKey = it.allowInsecureLocalApiKey
-            authMode = if (it.authMode == StashServerAuthMode.SessionCookie) SetupAuthMode.Password else SetupAuthMode.ApiKey
+            authMode = when (it.authMode) {
+                StashServerAuthMode.None -> SetupAuthMode.LinkOnly
+                StashServerAuthMode.ApiKey -> SetupAuthMode.ApiKey
+                StashServerAuthMode.SessionCookie -> SetupAuthMode.Password
+            }
         }
     }
 
@@ -142,6 +146,12 @@ fun ServerSetupRoute(
                     label = { Text(stashString(R.string.auto_kr_0531)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                )
+                SetupAuthModeRow(
+                    selected = authMode == SetupAuthMode.LinkOnly,
+                    label = R.string.setup_auth_mode_link_only_label,
+                    description = R.string.setup_auth_mode_link_only_description,
+                    onClick = { authMode = SetupAuthMode.LinkOnly },
                 )
                 SetupAuthModeRow(
                     selected = authMode == SetupAuthMode.ApiKey,
@@ -225,6 +235,7 @@ fun ServerSetupRoute(
                                 serverName = serverName,
                                 serverUrl = serverUrl,
                                 apiKey = apiKey,
+                                authMode = authMode,
                                 allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                             )
                             if (!profile.isConfigured()) {
@@ -233,6 +244,8 @@ fun ServerSetupRoute(
                             }
                             val requestedAuthMode = if (authMode == SetupAuthMode.Password) {
                                 StashServerAuthMode.SessionCookie
+                            } else if (authMode == SetupAuthMode.LinkOnly) {
+                                StashServerAuthMode.None
                             } else {
                                 StashServerAuthMode.ApiKey
                             }
@@ -286,7 +299,13 @@ fun ServerSetupRoute(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            val profile = buildSetupProfile(serverName, serverUrl, apiKey, allowInsecureLocalApiKey)
+                            val profile = buildSetupProfile(
+                                serverName = serverName,
+                                serverUrl = serverUrl,
+                                apiKey = apiKey,
+                                allowInsecureLocalApiKey = allowInsecureLocalApiKey,
+                                authMode = authMode,
+                            )
                             if (!canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey)) {
                                 errorText = stashString(R.string.settings_insecure_auth_blocked)
                                 return@launch
@@ -330,11 +349,16 @@ private fun buildSetupProfile(
     serverUrl: String,
     apiKey: String,
     allowInsecureLocalApiKey: Boolean,
+    authMode: SetupAuthMode = SetupAuthMode.ApiKey,
 ): StashServerProfile = StashServerProfile(
     name = serverName,
     baseUrl = serverUrl,
-    apiKey = apiKey,
-    authMode = StashServerAuthMode.ApiKey,
+    apiKey = if (authMode == SetupAuthMode.ApiKey) apiKey else "",
+    authMode = when (authMode) {
+        SetupAuthMode.LinkOnly -> StashServerAuthMode.None
+        SetupAuthMode.ApiKey -> StashServerAuthMode.ApiKey
+        SetupAuthMode.Password -> StashServerAuthMode.SessionCookie
+    },
     allowInsecureLocalApiKey = allowInsecureLocalApiKey,
 )
 

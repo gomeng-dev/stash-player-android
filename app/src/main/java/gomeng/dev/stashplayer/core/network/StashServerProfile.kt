@@ -6,6 +6,7 @@ import java.net.URLEncoder
 private const val DEFAULT_SCHEME = "http://"
 
 enum class StashServerAuthMode(val persistedValue: String) {
+    None("none"),
     ApiKey("api_key"),
     SessionCookie("session_cookie");
 
@@ -57,6 +58,7 @@ data class StashServerProfile(
     fun authHeadersFor(url: String): Map<String, String> {
         if (!isSameOrigin(url)) return emptyMap()
         return when (authMode) {
+            StashServerAuthMode.None -> emptyMap()
             StashServerAuthMode.ApiKey -> if (apiKey.isNotBlank()) mapOf("ApiKey" to apiKey) else emptyMap()
             StashServerAuthMode.SessionCookie -> if (sessionCookie.isNotBlank()) mapOf("Cookie" to sessionCookie) else emptyMap()
         }

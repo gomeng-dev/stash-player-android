@@ -3,6 +3,7 @@ package gomeng.dev.stashplayer.core.player
 import gomeng.dev.stashplayer.core.model.SceneCardTagChip
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
+import kotlin.math.roundToInt
 
 /**
  * Policy seam for the YouTube-like split between fullscreen player chrome and
@@ -26,6 +27,7 @@ enum class PlayerFullscreenChromeSection {
 
 enum class PlayerFullscreenBottomChromeSection {
     MinimalSceneLabel,
+    CompactTransport,
     TimeLabels,
     SlimSeekBar,
 }
@@ -58,6 +60,21 @@ data class PlayerFullscreenBottomChromeState(
     val expandedActionsVisible: Boolean,
     val similarRecommendationsVisible: Boolean,
     val appliedRevealFraction: Float,
+    val seekBarVisualPolicy: PlayerFullscreenSeekBarVisualPolicy,
+)
+
+data class PlayerFullscreenSeekBarVisualPolicy(
+    val touchTargetHeightDp: Int,
+    val restingTrackHeightDp: Int,
+    val activeTrackHeightDp: Int,
+    val thumbDiameterDp: Int,
+)
+
+data class PlayerSeekBarAccessibilityState(
+    val contentDescription: String,
+    val stateDescription: String,
+    val progressFraction: Float,
+    val enabled: Boolean,
 )
 
 data class SceneWatchPageContentState(
@@ -103,6 +120,7 @@ object PlayerWatchPageController {
         val sections = if (controlsVisible) {
             listOf(
                 PlayerFullscreenBottomChromeSection.MinimalSceneLabel,
+                PlayerFullscreenBottomChromeSection.CompactTransport,
                 PlayerFullscreenBottomChromeSection.TimeLabels,
                 PlayerFullscreenBottomChromeSection.SlimSeekBar,
             )
@@ -123,6 +141,12 @@ object PlayerWatchPageController {
             expandedActionsVisible = false,
             similarRecommendationsVisible = false,
             appliedRevealFraction = 0f,
+            seekBarVisualPolicy = PlayerFullscreenSeekBarVisualPolicy(
+                touchTargetHeightDp = 48,
+                restingTrackHeightDp = 2,
+                activeTrackHeightDp = 4,
+                thumbDiameterDp = 8,
+            ),
         )
     }
 
@@ -131,6 +155,20 @@ object PlayerWatchPageController {
         isLoading: Boolean,
         errorMessage: String?,
     ): Boolean = isLoading || !errorMessage.isNullOrBlank() || recommendationCount > 0
+
+    fun buildPlayerSeekBarAccessibilityState(
+        fraction: Float,
+        enabled: Boolean,
+    ): PlayerSeekBarAccessibilityState {
+        val progressFraction = fraction.coerceIn(0f, 1f)
+        val progressPercent = (progressFraction * 100f).roundToInt().coerceIn(0, 100)
+        return PlayerSeekBarAccessibilityState(
+            contentDescription = stashString(R.string.player_seek_bar_content_description),
+            stateDescription = stashString(R.string.player_seek_bar_state_description, progressPercent),
+            progressFraction = progressFraction,
+            enabled = enabled,
+        )
+    }
 
     fun sceneWatchPageHeaderSubtitle(): String? = null
 
