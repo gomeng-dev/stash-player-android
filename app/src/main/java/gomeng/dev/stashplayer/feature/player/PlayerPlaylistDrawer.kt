@@ -82,6 +82,8 @@ import gomeng.dev.stashplayer.core.player.resolvePlayerPlaylistOverflowRemoveTap
 import gomeng.dev.stashplayer.core.player.resolvePlayerPlaylistRowMotionPolicy
 import gomeng.dev.stashplayer.core.player.resolvePlayerPlaylistRowTap
 import gomeng.dev.stashplayer.core.player.resolvePlayerPlaylistSwipeEnd
+import gomeng.dev.stashplayer.core.network.StashServerProfile
+import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashAlpha
 import gomeng.dev.stashplayer.core.ui.designsystem.StashBottomSheetContainer
 import gomeng.dev.stashplayer.core.ui.designsystem.StashRadii
@@ -100,6 +102,7 @@ import gomeng.dev.stashplayer.core.ui.i18n.stashString
 fun PlayerPlaylistDrawer(
     items: List<PlayerPlaylistUiItem>,
     shuffleEnabled: Boolean,
+    serverProfile: StashServerProfile?,
     onDismiss: () -> Unit,
     onSelectScene: (String) -> Unit,
     onReorderScene: (String, Int) -> Unit = { _, _ -> },
@@ -169,6 +172,7 @@ fun PlayerPlaylistDrawer(
                     PlayerPlaylistDrawerItem(
                         modifier = Modifier.animateItem(),
                         item = item,
+                        serverProfile = serverProfile,
                         visibleItems = items,
                         shuffleEnabled = shuffleEnabled,
                         swipeRevealState = swipeRevealState,
@@ -201,6 +205,7 @@ fun PlayerPlaylistDrawer(
 private fun PlayerPlaylistDrawerItem(
     modifier: Modifier = Modifier,
     item: PlayerPlaylistUiItem,
+    serverProfile: StashServerProfile?,
     visibleItems: List<PlayerPlaylistUiItem>,
     shuffleEnabled: Boolean,
     swipeRevealState: PlayerPlaylistSwipeRevealState,
@@ -322,6 +327,7 @@ private fun PlayerPlaylistDrawerItem(
                     )
                     PlayerPlaylistThumbnail(
                         thumbnailUrl = item.thumbnailUrl,
+                        serverProfile = serverProfile,
                         title = item.title,
                     )
                 }
@@ -452,8 +458,10 @@ private fun PlayerPlaylistDragHandle(
 @Composable
 private fun PlayerPlaylistThumbnail(
     thumbnailUrl: String?,
+    serverProfile: StashServerProfile?,
     title: String,
 ) {
+    val thumbnailModel = rememberStashThumbnailModel(thumbnailUrl, serverProfile)
     Box(
         modifier = Modifier
             .size(width = 86.dp, height = 48.dp)
@@ -461,9 +469,9 @@ private fun PlayerPlaylistThumbnail(
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = StashAlpha.GlassStrong)),
         contentAlignment = Alignment.Center,
     ) {
-        if (!thumbnailUrl.isNullOrBlank()) {
+        if (thumbnailModel != null) {
             AsyncImage(
-                model = thumbnailUrl,
+                model = thumbnailModel,
                 contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,

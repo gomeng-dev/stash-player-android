@@ -186,6 +186,8 @@
     <string name="settings_biometric_app_lock_description">Unlock the app on a fresh start with fingerprint, face, PIN, pattern, or device credential.</string>
     <string name="settings_biometric_app_lock_enabled_status">App lock is on.</string>
     <string name="settings_biometric_app_lock_disabled_status">App lock is off.</string>
+    <string name="settings_recent_apps_privacy_title">Hide recent apps preview</string>
+    <string name="settings_recent_apps_privacy_description">Hide the Stash Player preview from Android recent apps. On Android 12 and below, screenshots and screen recording may also be blocked.</string>
     <string name="setup_auth_mode_link_only_label">Connect with link only</string>
     <string name="setup_auth_mode_link_only_description">Connect to a Stash server with auth disabled, without an API Key or ID/password.</string>
     <string name="setup_auth_mode_api_key_label">Connect with API Key</string>

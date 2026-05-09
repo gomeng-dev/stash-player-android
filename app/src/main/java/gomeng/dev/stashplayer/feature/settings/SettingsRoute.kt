@@ -148,6 +148,12 @@ object BiometricAppLockSettingCopy {
     @StringRes val description = R.string.settings_biometric_app_lock_description
 }
 
+object RecentAppsPrivacySettingCopy {
+    @StringRes val sectionTitle = R.string.settings_category_security_title
+    @StringRes val title = R.string.settings_recent_apps_privacy_title
+    @StringRes val description = R.string.settings_recent_apps_privacy_description
+}
+
 object SupportSettingCopy {
     const val releasesUrl = "https://github.com/gomeng-dev/stash-player-android/releases"
     const val issuesUrl = "https://github.com/gomeng-dev/stash-player-android/issues"
@@ -989,6 +995,9 @@ private fun SecuritySettingsContent() {
     val biometricAppLockEnabled by repository.biometricAppLockEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_BIOMETRIC_APP_LOCK_ENABLED,
     )
+    val recentAppsPrivacyEnabled by repository.recentAppsPrivacyEnabled.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_RECENT_APPS_PRIVACY_ENABLED,
+    )
     val availability = rememberDeviceAuthenticationAvailability()
     val coroutineScope = rememberCoroutineScope()
     var statusMessage by remember { mutableStateOf<String?>(null) }
@@ -1052,6 +1061,17 @@ private fun SecuritySettingsContent() {
             )
         }
     }
+
+    SettingsSwitchCard(
+        title = RecentAppsPrivacySettingCopy.title,
+        description = RecentAppsPrivacySettingCopy.description,
+        checked = recentAppsPrivacyEnabled,
+        onCheckedChange = { enabled ->
+            coroutineScope.launch {
+                repository.setRecentAppsPrivacyEnabled(enabled)
+            }
+        },
+    )
 }
 
 @Composable

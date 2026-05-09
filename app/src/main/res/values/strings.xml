@@ -186,6 +186,8 @@
     <string name="settings_biometric_app_lock_description">앱을 새로 열 때 지문, 얼굴, PIN, 패턴 또는 비밀번호로 잠금을 해제합니다.</string>
     <string name="settings_biometric_app_lock_enabled_status">앱 잠금을 켰습니다.</string>
     <string name="settings_biometric_app_lock_disabled_status">앱 잠금을 껐습니다.</string>
+    <string name="settings_recent_apps_privacy_title">최근 앱 화면 숨기기</string>
+    <string name="settings_recent_apps_privacy_description">Android 최근 앱 목록에서 Stash Player 화면 미리보기를 숨깁니다. Android 12 이하에서는 스크린샷과 화면 녹화도 함께 차단될 수 있습니다.</string>
     <string name="setup_auth_mode_link_only_label">링크만으로 연결</string>
     <string name="setup_auth_mode_link_only_description">인증이 꺼진 Stash 서버에 API Key나 ID/비밀번호 없이 접속합니다.</string>
     <string name="setup_auth_mode_api_key_label">API Key로 연결</string>

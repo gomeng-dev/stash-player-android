@@ -347,7 +347,7 @@ class StashGraphQlClient(
                   resume_time
                   play_count
                   studio { name }
-                  files { duration width height path }
+                  files { duration width height path basename }
                   paths { screenshot preview webp sprite }
                   tags { id name }
                 }
@@ -365,7 +365,7 @@ class StashGraphQlClient(
                 play_count
                 o_counter
                 studio { name }
-                files { duration width height path }
+                files { duration width height path basename }
                 paths { stream screenshot vtt sprite caption }
                 captions { language_code caption_type }
                 tags { id name }

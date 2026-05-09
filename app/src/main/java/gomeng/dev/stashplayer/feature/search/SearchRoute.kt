@@ -80,11 +80,13 @@ import gomeng.dev.stashplayer.core.model.withoutBulkDeletedSceneIds
 import gomeng.dev.stashplayer.core.model.withoutBulkDeletedScenes
 import gomeng.dev.stashplayer.core.network.redactStashCredentialText
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
+import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueueContinuation
 import gomeng.dev.stashplayer.core.ui.components.SceneCard
 import gomeng.dev.stashplayer.core.ui.components.SceneBulkDeleteConfirmationDialog
 import gomeng.dev.stashplayer.core.ui.components.StashActiveVideoFilterChipsRow
+import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashEmptyState
 import gomeng.dev.stashplayer.core.ui.designsystem.StashEmptyStateModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashErrorState
@@ -420,6 +422,7 @@ fun SearchRoute(
             }
         },
         isConfigured = profile != null,
+        serverProfile = profile,
         favoriteSceneIds = favoriteSceneIds,
         watchLaterSceneIds = watchLaterSceneIds,
         queueSceneIds = queueSceneIds,
@@ -549,6 +552,7 @@ private fun SearchContent(
     onToggleSortDirection: () -> Unit,
     onSelectPageSize: (Int) -> Unit,
     isConfigured: Boolean,
+    serverProfile: StashServerProfile?,
     favoriteSceneIds: Set<String>,
     watchLaterSceneIds: Set<String>,
     queueSceneIds: Set<String>,
@@ -795,6 +799,7 @@ private fun SearchContent(
                             SceneCard(
                                 scene = scene,
                                 thumbnailHeight = thumbnailHeight,
+                                thumbnailModel = rememberStashThumbnailModel(scene.thumbnailUrl, serverProfile),
                                 isLocalFavorite = scene.id in favoriteSceneIds,
                                 isInWatchLater = scene.id in watchLaterSceneIds,
                                 isInQueue = scene.id in queueSceneIds,
@@ -831,6 +836,7 @@ private fun SearchContent(
                             SceneCard(
                                 scene = scene,
                                 thumbnailHeight = thumbnailHeight,
+                                thumbnailModel = rememberStashThumbnailModel(scene.thumbnailUrl, serverProfile),
                                 isLocalFavorite = scene.id in favoriteSceneIds,
                                 isInWatchLater = scene.id in watchLaterSceneIds,
                                 isInQueue = scene.id in queueSceneIds,

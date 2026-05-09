@@ -1,5 +1,6 @@
 package gomeng.dev.stashplayer.core.model
 
+import androidx.annotation.StringRes
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 enum class StashScenesToolbarControl(val label: String) {
@@ -43,9 +44,9 @@ data class StashFilterSurfaceDescriptor(
     val editTarget: StashVideoFilterEditTarget? = null,
 )
 
-enum class StashScenesViewMode(val label: String) {
-    Grid(stashString(R.string.auto_kr_0083)),
-    List(stashString(R.string.auto_kr_0084)),
+enum class StashScenesViewMode(@StringRes val labelRes: Int) {
+    Grid(R.string.auto_kr_0083),
+    List(R.string.auto_kr_0084),
 }
 
 fun stashScenesToolbarNormalControls(
@@ -269,7 +270,7 @@ fun stashScenesToolbarRandomActionContentDescription(isRandomShuffleEnabled: Boo
     stashString(R.string.auto_kr_0107)
 }
 
-fun StashScenesViewMode.stashScenesToolbarViewModeLabel(): String = label
+fun StashScenesViewMode.stashScenesToolbarViewModeLabel(): String = stashString(labelRes)
 
 fun StashScenesViewMode.stashScenesToolbarViewModeContentDescription(): String =
     stashScenesToolbarImmediateActionContentDescription(stashString(R.string.auto_kr_0108), stashScenesToolbarViewModeLabel())

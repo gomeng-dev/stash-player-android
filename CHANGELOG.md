@@ -8,6 +8,22 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - No unreleased changes yet.
 
+## [1.4.1] - 2026-05-09
+
+### English
+
+- Refreshed the README for the current app release with new safe-fixture Android screenshots, updated release badges, and copy that reflects the latest player chrome and privacy behavior.
+- Fixed thumbnail loading for authenticated Stash sessions by carrying signed thumbnail requests through Browse, Search, and the player playlist drawer.
+- Improved blank scene title fallback by requesting the primary file basename from Stash before falling back to `Video {id}`.
+- Fixed the Browse/Search grid-list toggle labels so they resolve from the active app language instead of caching Korean text.
+
+### 한국어
+
+- 현재 앱 릴리스에 맞춰 README를 최신 safe-fixture Android 스크린샷, 릴리스 배지, 최신 플레이어 크롬/프라이버시 동작 설명으로 갱신했습니다.
+- 인증된 Stash 세션에서 Browse, Search, 플레이어 재생목록 썸네일 요청에 인증 정보를 유지해 썸네일 로딩 문제를 수정했습니다.
+- 제목이 비어 있는 scene에서 `Video {id}`로 떨어지기 전에 Stash의 기본 파일 basename을 제목 fallback으로 사용하도록 개선했습니다.
+- Browse/Search의 격자/목록 전환 라벨이 한글로 캐싱되지 않고 현재 앱 언어 기준으로 표시되도록 수정했습니다.
+
 ## [1.4.0] - 2026-05-09
 
 ### English

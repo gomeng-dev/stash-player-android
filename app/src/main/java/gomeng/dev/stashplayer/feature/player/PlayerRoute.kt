@@ -2018,6 +2018,7 @@ private fun RealPlayerRoute(
             PlayerPlaylistDrawer(
                 items = playlistItems,
                 shuffleEnabled = playbackQueue.shuffleEnabled,
+                serverProfile = profile,
                 onDismiss = { playlistDrawerOpen = false },
                 onSelectScene = { selectedSceneId ->
                     playlistDrawerOpen = false

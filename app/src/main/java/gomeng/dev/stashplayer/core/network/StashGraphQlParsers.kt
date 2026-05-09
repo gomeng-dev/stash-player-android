@@ -283,7 +283,7 @@ private data class ApiScene(
             playCount = playCount,
             oCounter = oCounter,
             rating100 = rating100,
-            fileName = file?.path?.toStashFileNameOrNull(),
+            fileName = file?.displayFileNameOrNull(),
             path = file?.path?.trim()?.takeIf { it.isNotBlank() },
             width = file?.width,
             height = file?.height,
@@ -319,7 +319,7 @@ private data class ApiScene(
 
     private fun displayTitle(): String {
         return title?.trim()?.takeIf { it.isNotBlank() }
-            ?: files.firstOrNull()?.path?.toStashFileNameOrNull()
+            ?: files.firstOrNull()?.displayFileNameOrNull()
             ?: stashString(R.string.auto_kr_0168, id)
     }
 }
@@ -330,7 +330,12 @@ private data class ApiVideoFile(
     val width: Int? = null,
     val height: Int? = null,
     val path: String? = null,
-)
+    val basename: String? = null,
+) {
+    fun displayFileNameOrNull(): String? =
+        basename?.trim()?.takeIf { it.isNotBlank() }
+            ?: path?.toStashFileNameOrNull()
+}
 private data class ApiScenePaths(
     val stream: String? = null,
     val screenshot: String? = null,

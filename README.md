@@ -7,7 +7,7 @@
 Browse, search, queue, and watch your Stash collection from a phone or tablet with a native Jetpack Compose interface built around fast thumbnails, gesture-first playback, and local privacy.
 
 <p>
-  <a href="https://github.com/gomeng-dev/stash-player-android/releases"><img alt="Latest release" src="https://img.shields.io/badge/release-v1.1.0-7c3aed?style=for-the-badge"></a>
+  <a href="https://github.com/gomeng-dev/stash-player-android/releases"><img alt="Latest release" src="https://img.shields.io/badge/release-v1.4.1-7c3aed?style=for-the-badge"></a>
   <img alt="Android" src="https://img.shields.io/badge/Android-10%2B-34d399?style=for-the-badge&logo=android&logoColor=white">
   <img alt="Built with Kotlin" src="https://img.shields.io/badge/Kotlin%20%2B%20Compose-111827?style=for-the-badge&logo=kotlin&logoColor=white">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-f59e0b?style=for-the-badge"></a>
@@ -45,7 +45,7 @@ No hosted backend. No third-party sync. No library scraping outside your Stash i
 | **Home** | Continue watching, local favorites, Watch Later, queue shortcuts, and library highlights. |
 | **Browse** | Mobile-first scene grid with filters for tags, date, duration, rating, watched state, resolution, file type, shuffle/random, and saved filters. |
 | **Search** | Fast scene search with safe empty/loading/error states and thumbnail-focused results. |
-| **Player** | Media3 playback, fullscreen controls, double-tap seek, horizontal scrub, side brightness/volume gestures, long-press speed hold, and lock mode. |
+| **Player** | Media3 playback, screenshot-style chrome, fullscreen controls, double-tap seek, horizontal scrub, side brightness/volume gestures, long-press speed hold, lock mode, and player-level orientation control. |
 | **Local library tools** | Room-backed local favorites, Watch Later, playback queue, and playback history. |
 | **Recommendations** | Shows Stash Hybrid Recommendations when available, with Stash GraphQL recommendations as a fallback. |
 | **Privacy** | Credentials and local state stay on the device. The app does not operate a hosted service for your library. |
@@ -84,7 +84,7 @@ No hosted backend. No third-party sync. No library scraping outside your Stash i
     <td align="center" width="33%">
       <img src="docs/assets/readme/screenshots/06-player-controls.png" alt="Player controls" width="250"><br>
       <strong>Player</strong><br>
-      Gesture-first playback controls built for phones.
+      Screenshot-style playback chrome with gesture-first controls.
     </td>
   </tr>
 </table>
@@ -96,7 +96,7 @@ No hosted backend. No third-party sync. No library scraping outside your Stash i
 3. If Android asks, allow installs from the browser or file manager you used to download it.
 4. Launch **Stash Android Player** and connect it to your Stash server.
 
-> Current app version: **v1.1.0**.
+> Current app version: **v1.4.1**.
 
 ## Requirements
 
@@ -115,7 +115,7 @@ Supported connection modes include:
 - Login/session-based authentication.
 - Local or trusted direct server connections for private networks.
 
-For best results, use HTTPS when connecting over networks you do not fully control. Treat Stash URLs, API keys, session cookies, and debug logs as private.
+If you omit a URL scheme, the app uses plain HTTP by default, matching common local Stash setups. Treat Stash URLs, API keys, session cookies, and debug logs as private.
 
 ## Player gestures
 
@@ -126,8 +126,8 @@ The player is built around common mobile video gestures:
 - Drag horizontally to scrub.
 - Swipe on the sides for brightness and volume.
 - Long-press for temporary speed hold.
-- Lock controls during fullscreen playback.
-- Restart from the beginning when resuming a partially watched scene.
+- Lock controls during playback.
+- Toggle orientation from the player chrome.
 
 ## Privacy model
 
@@ -135,6 +135,7 @@ Stash Android Player is a direct client for your own Stash server.
 
 - Your server URL, API key, and session data stay on your device.
 - Local favorites, Watch Later, queue, and history are stored locally on the device.
+- The recent-apps preview privacy switch can hide sensitive playback surfaces from Android recents.
 - The app does not send your library metadata to a hosted service controlled by this project.
 - Recommendation data comes from your Stash server/plugin when configured.
 
