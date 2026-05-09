@@ -762,6 +762,7 @@
     <string name="player_o_counter_saved">싼 횟수 %1$d회 저장됨</string>
     <string name="player_o_counter_save_failed">싼 횟수 저장 실패: %1$s</string>
     <string name="player_seek_target_badge_content_description">이동 위치 %1$s</string>
+    <string name="player_seek_preview_timeline_content_description">탐색 중, 이동 위치 %1$s / %2$s, 변화 %3$s</string>
     <string name="player_seek_bar_content_description" formatted="false">재생 위치</string>
     <string name="player_seek_bar_state_description">%1$d%%</string>
     <string name="stash_sort_bitrate_label" formatted="false">비트레이트</string>

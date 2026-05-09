@@ -272,7 +272,7 @@ private data class ApiScene(
         require(candidates.isNotEmpty()) { "Scene $id has no playable stream URL" }
         return StashScene(
             id = id,
-            title = title?.ifBlank { null } ?: stashString(R.string.auto_kr_0168, id),
+            title = displayTitle(),
             streamCandidates = candidates,
             screenshotUrl = paths?.screenshot,
             spriteVttUrl = paths?.vtt?.trim()?.takeIf { it.isNotBlank() },
@@ -301,7 +301,7 @@ private data class ApiScene(
         val durationText = formatPlayerPosition((duration * 1000.0).toLong())
         return SceneCardModel(
             id = id,
-            title = title?.ifBlank { null } ?: stashString(R.string.auto_kr_0168, id),
+            title = displayTitle(),
             durationText = durationText,
             studio = studio?.name ?: "Stash",
             progress = progress,
@@ -315,6 +315,12 @@ private data class ApiScene(
             ),
             tagChips = tags.mapNotNull { it.toSceneCardTagChipOrNull() },
         )
+    }
+
+    private fun displayTitle(): String {
+        return title?.trim()?.takeIf { it.isNotBlank() }
+            ?: files.firstOrNull()?.path?.toStashFileNameOrNull()
+            ?: stashString(R.string.auto_kr_0168, id)
     }
 }
 

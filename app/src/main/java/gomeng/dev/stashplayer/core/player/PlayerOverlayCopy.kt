@@ -32,6 +32,43 @@ fun playerSeekPreviewPositionLabel(targetPositionMs: Long, durationMs: Long): St
 fun playerSeekTargetBadgeContentDescription(targetPositionLabel: String): String =
     stashString(R.string.player_seek_target_badge_content_description, targetPositionLabel)
 
+data class PlayerSeekPreviewTimelineUiState(
+    val visible: Boolean,
+    val targetFraction: Float,
+    val targetLabel: String,
+    val durationLabel: String,
+    val deltaLabel: String,
+    val contentDescription: String,
+)
+
+fun buildPlayerSeekPreviewTimelineUiState(
+    deltaMs: Long,
+    targetPositionMs: Long,
+    durationMs: Long,
+): PlayerSeekPreviewTimelineUiState {
+    val safeDurationMs = durationMs.coerceAtLeast(0L)
+    val targetLabel = playerSeekPreviewPositionLabel(targetPositionMs, safeDurationMs)
+    val durationLabel = formatPlayerPosition(safeDurationMs)
+    val deltaLabel = playerSeekPreviewDeltaLabel(deltaMs)
+    return PlayerSeekPreviewTimelineUiState(
+        visible = safeDurationMs > 0L,
+        targetFraction = if (safeDurationMs > 0L) {
+            targetPositionMs.toFloat().div(safeDurationMs.toFloat()).coerceIn(0f, 1f)
+        } else {
+            0f
+        },
+        targetLabel = targetLabel,
+        durationLabel = durationLabel,
+        deltaLabel = deltaLabel,
+        contentDescription = stashString(
+            R.string.player_seek_preview_timeline_content_description,
+            targetLabel,
+            durationLabel,
+            deltaLabel,
+        ),
+    )
+}
+
 enum class PlayerOverlayQuickAction {
     Queue,
     Favorite,

@@ -761,6 +761,7 @@
     <string name="player_o_counter_saved">Saved O-count %1$d times</string>
     <string name="player_o_counter_save_failed">Failed to save O-count: %1$s</string>
     <string name="player_seek_target_badge_content_description">Seek target %1$s</string>
+    <string name="player_seek_preview_timeline_content_description">Seeking, target %1$s / %2$s, change %3$s</string>
     <string name="player_seek_bar_content_description" formatted="false">Playback position</string>
     <string name="player_seek_bar_state_description">%1$d%%</string>
     <string name="stash_sort_bitrate_label" formatted="false">Bit Rate</string>

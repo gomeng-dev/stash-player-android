@@ -8,6 +8,18 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - No unreleased changes yet.
 
+## [1.3.0] - 2026-05-09
+
+### English
+
+- Added a seek-preview timeline while scrubbing so the target position is visible against the full duration, not only as a time badge.
+- Matched Stash Web title fallback behavior for scenes with blank titles by showing the primary file name instead of `Video {id}` when a file path is available.
+
+### 한국어
+
+- 탐색/스크럽 중 목표 위치가 전체 재생 시간 대비 어디인지 보이도록 seek preview timeline을 추가했습니다.
+- 제목이 비어 있는 scene은 파일 경로가 있을 때 `영상 {id}` 대신 기본 파일명을 표시하도록 Stash Web의 제목 fallback 동작과 맞췄습니다.
+
 ## [1.2.0] - 2026-05-09
 
 ### English

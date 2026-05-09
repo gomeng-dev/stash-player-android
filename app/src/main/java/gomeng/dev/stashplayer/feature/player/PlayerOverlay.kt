@@ -2,7 +2,10 @@ package gomeng.dev.stashplayer.feature.player
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -16,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInParent
@@ -44,8 +48,8 @@ import gomeng.dev.stashplayer.core.player.PlayerPlaylistUiItem
 import gomeng.dev.stashplayer.core.player.PlayerSeparatedPlaybackOptionSheet
 import gomeng.dev.stashplayer.core.player.PlayerStreamPreferenceOption
 import gomeng.dev.stashplayer.core.player.PlayerStreamSourceOption
-import gomeng.dev.stashplayer.core.player.playerSeekPreviewPositionLabel
-import gomeng.dev.stashplayer.core.player.playerSeekTargetBadgeContentDescription
+import gomeng.dev.stashplayer.core.player.PlayerSeekPreviewTimelineUiState
+import gomeng.dev.stashplayer.core.player.buildPlayerSeekPreviewTimelineUiState
 import gomeng.dev.stashplayer.core.player.resolvePlayerBackAction
 import gomeng.dev.stashplayer.core.player.resolvePlayerOverlayTransportUiState
 import gomeng.dev.stashplayer.core.player.resolvePlayerOverlayVisibilityPolicy
@@ -356,16 +360,20 @@ fun PlayerOverlay(
         }
 
         seekPreview?.let { preview ->
-            PlayerSeekTargetBadge(
-                targetPositionLabel = playerSeekPreviewPositionLabel(
-                    targetPositionMs = preview.targetPositionMs,
-                    durationMs = preview.durationMs,
-                ),
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
-                    .padding(bottom = if (visibilityPolicy.showBottomControls) 108.dp else 28.dp),
+            val timelineState = buildPlayerSeekPreviewTimelineUiState(
+                deltaMs = preview.deltaMs,
+                targetPositionMs = preview.targetPositionMs,
+                durationMs = preview.durationMs,
             )
+            if (timelineState.visible) {
+                PlayerSeekPreviewTimelineCard(
+                    state = timelineState,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                        .padding(bottom = if (visibilityPolicy.showBottomControls) 108.dp else 28.dp),
+                )
+            }
         }
 
         if (visibilityPolicy.showBottomControls) {
@@ -478,24 +486,58 @@ fun PlayerOverlay(
 }
 
 @Composable
-private fun PlayerSeekTargetBadge(
-    targetPositionLabel: String,
+private fun PlayerSeekPreviewTimelineCard(
+    state: PlayerSeekPreviewTimelineUiState,
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.semantics {
-            contentDescription = playerSeekTargetBadgeContentDescription(targetPositionLabel)
-        },
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(StashRadii.Pill),
+        modifier = modifier
+            .fillMaxWidth(0.76f)
+            .semantics {
+                contentDescription = state.contentDescription
+            },
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
         color = StashColors.ScrimStrong.copy(alpha = StashAlpha.PlayerHudSurface),
         contentColor = StashColors.TextPrimary,
         border = androidx.compose.foundation.BorderStroke(1.dp, StashColors.PlayerChromeBorder),
     ) {
-        Text(
-            text = targetPositionLabel,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-        )
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = state.deltaLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = StashColors.Primary,
+                )
+                Text(
+                    text = "${state.targetLabel} / ${state.durationLabel}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = StashColors.TextPrimary,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(StashRadii.Pill))
+                    .background(Color.White.copy(alpha = 0.22f)),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(state.targetFraction)
+                        .height(5.dp)
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(StashRadii.Pill))
+                        .background(StashColors.Primary),
+                )
+            }
+        }
     }
 }
