@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -56,8 +55,6 @@ import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.StashStreamPreference
 import gomeng.dev.stashplayer.core.network.canAttemptStashCredentialTransport
 import gomeng.dev.stashplayer.core.network.StashServerAuthMode
-import gomeng.dev.stashplayer.core.network.StashCredentialTransportDecision
-import gomeng.dev.stashplayer.core.network.resolveStashCredentialTransportDecision
 import gomeng.dev.stashplayer.core.network.toSettingsStatusCopy
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
@@ -649,7 +646,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var authMode by remember { mutableStateOf(SettingsServerAuthModeOption.LinkOnly) }
-    var allowInsecureLocalApiKey by remember { mutableStateOf(false) }
+    var allowInsecureLocalApiKey by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
     var recommendationStatusText by remember { mutableStateOf<String?>(null) }
     var recommendationStatusIsSuccess by remember { mutableStateOf(true) }
@@ -733,35 +730,6 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                 )
-                Text(
-                    stringResource(R.string.setup_password_https_only_warning),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            val transportDecision = resolveStashCredentialTransportDecision(
-                baseUrl = serverUrl,
-                authMode = authMode.toServerAuthMode(),
-                allowInsecureLocalApiKey = allowInsecureLocalApiKey,
-            )
-            if (transportDecision == StashCredentialTransportDecision.InsecureNeedsExplicitLocalConfirmation ||
-                transportDecision == StashCredentialTransportDecision.InsecureLocalAllowed
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(
-                        checked = allowInsecureLocalApiKey,
-                        onCheckedChange = { allowInsecureLocalApiKey = it },
-                    )
-                    Text(
-                        stringResource(R.string.settings_insecure_local_http_api_key_acknowledgement),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
             }
             if (statusText != null) Text(statusText!!, color = MaterialTheme.colorScheme.primary)
             if (errorText != null) Text(errorText!!, color = MaterialTheme.colorScheme.error)
@@ -889,7 +857,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                         username = ""
                         password = ""
                         authMode = SettingsServerAuthModeOption.LinkOnly
-                        allowInsecureLocalApiKey = false
+                        allowInsecureLocalApiKey = true
                         statusText = context.getString(R.string.settings_server_clear_complete)
                         errorText = null
                     }

@@ -176,8 +176,7 @@
     <string name="settings_server_clear_complete">서버 설정 삭제 완료</string>
     <string name="settings_server_clear_button">서버 설정 삭제</string>
     <string name="settings_open_onboarding_button">온보딩 다시 열기</string>
-    <string name="settings_insecure_local_http_api_key_acknowledgement">로컬 HTTP 서버에서는 인증 정보가 패킷 캡처에 노출될 수 있음을 이해했습니다.</string>
-    <string name="settings_insecure_auth_blocked">이 인증 방식은 보안 정책상 사용할 수 없습니다. HTTPS를 사용하거나 로컬 HTTP 예외를 확인해 주세요.</string>
+    <string name="settings_insecure_auth_blocked">이 인증 방식은 현재 주소에서 사용할 수 없습니다. 로컬 네트워크 주소를 확인해 주세요.</string>
     <string name="settings_biometric_app_lock_title">기기 인증 앱 잠금</string>
     <string name="settings_biometric_app_lock_description">앱을 새로 열 때 지문, 얼굴, PIN, 패턴 또는 비밀번호로 잠금을 해제합니다.</string>
     <string name="settings_biometric_app_lock_enabled_status">앱 잠금을 켰습니다.</string>
@@ -187,10 +186,9 @@
     <string name="setup_auth_mode_api_key_label">API Key로 연결</string>
     <string name="setup_auth_mode_api_key_description">API Key를 저장해 Stash API와 스트림 요청에 사용합니다.</string>
     <string name="setup_auth_mode_password_label">ID/비밀번호로 로그인</string>
-    <string name="setup_auth_mode_password_description">비밀번호는 저장하지 않습니다. 성공하면 세션 쿠키만 저장하며, HTTP는 로컬 서버에서 명시 확인 후에만 허용합니다.</string>
+    <string name="setup_auth_mode_password_description">비밀번호는 저장하지 않습니다. 성공하면 세션 쿠키만 저장합니다.</string>
     <string name="setup_username_label">아이디</string>
     <string name="setup_password_label">비밀번호</string>
-    <string name="setup_password_https_only_warning">HTTPS가 가장 안전합니다. 로컬 HTTP 로그인은 패킷 캡처에 ID/비밀번호가 노출될 수 있어 명시 확인 후에만 사용합니다.</string>
     <string name="setup_username_password_required">아이디와 비밀번호를 입력해 주세요.</string>
     <string name="setup_biometric_offer_title">기기 잠금으로 앱 보호</string>
     <string name="setup_biometric_offer_description">저장된 Stash 연결을 열 때 기기에 등록된 지문, 얼굴, PIN, 패턴 또는 비밀번호로 확인합니다.</string>

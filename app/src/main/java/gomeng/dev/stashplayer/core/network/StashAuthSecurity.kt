@@ -6,7 +6,6 @@ import java.net.URI
 enum class StashCredentialTransportDecision {
     Secure,
     InsecureLocalAllowed,
-    InsecureNeedsExplicitLocalConfirmation,
     Blocked,
 }
 
@@ -29,11 +28,7 @@ fun resolveStashCredentialTransportDecision(
     if (uri.scheme.equals("https", ignoreCase = true)) return StashCredentialTransportDecision.Secure
     if (!uri.scheme.equals("http", ignoreCase = true)) return StashCredentialTransportDecision.Blocked
     if (!uri.isLocalHttpHost()) return StashCredentialTransportDecision.Blocked
-    return if (allowInsecureLocalApiKey) {
-        StashCredentialTransportDecision.InsecureLocalAllowed
-    } else {
-        StashCredentialTransportDecision.InsecureNeedsExplicitLocalConfirmation
-    }
+    return StashCredentialTransportDecision.InsecureLocalAllowed
 }
 
 fun canAttemptStashCredentialTransport(
@@ -49,7 +44,6 @@ fun canAttemptStashCredentialTransport(
 ) {
     StashCredentialTransportDecision.Secure,
     StashCredentialTransportDecision.InsecureLocalAllowed -> true
-    StashCredentialTransportDecision.InsecureNeedsExplicitLocalConfirmation,
     StashCredentialTransportDecision.Blocked -> false
 }
 

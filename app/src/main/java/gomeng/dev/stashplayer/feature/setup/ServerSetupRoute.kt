@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,14 +30,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
-import gomeng.dev.stashplayer.core.network.StashCredentialTransportDecision
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashServerAuthMode
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.canAttemptStashCredentialTransport
-import gomeng.dev.stashplayer.core.network.resolveStashCredentialTransportDecision
 import gomeng.dev.stashplayer.core.security.DeviceAuthenticationAvailability
 import gomeng.dev.stashplayer.core.security.shouldShowBiometricOnboardingPrompt
 import gomeng.dev.stashplayer.core.ui.StashUxCopy
@@ -69,7 +66,7 @@ fun ServerSetupRoute(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var authMode by remember { mutableStateOf(SetupAuthMode.ApiKey) }
-    var allowInsecureLocalApiKey by remember { mutableStateOf(false) }
+    var allowInsecureLocalApiKey by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
     var statusText by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
@@ -174,19 +171,6 @@ fun ServerSetupRoute(
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                     )
-                    val decision = resolveStashCredentialTransportDecision(
-                        baseUrl = serverUrl,
-                        authMode = StashServerAuthMode.ApiKey,
-                        allowInsecureLocalApiKey = allowInsecureLocalApiKey,
-                    )
-                    if (decision == StashCredentialTransportDecision.InsecureNeedsExplicitLocalConfirmation ||
-                        decision == StashCredentialTransportDecision.InsecureLocalAllowed
-                    ) {
-                        SetupInsecureLocalHttpAcknowledgement(
-                            checked = allowInsecureLocalApiKey,
-                            onCheckedChange = { allowInsecureLocalApiKey = it },
-                        )
-                    }
                 } else {
                     OutlinedTextField(
                         value = username,
@@ -203,24 +187,6 @@ fun ServerSetupRoute(
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                     )
-                    Text(
-                        stashString(R.string.setup_password_https_only_warning),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    val decision = resolveStashCredentialTransportDecision(
-                        baseUrl = serverUrl,
-                        authMode = StashServerAuthMode.SessionCookie,
-                        allowInsecureLocalApiKey = allowInsecureLocalApiKey,
-                    )
-                    if (decision == StashCredentialTransportDecision.InsecureNeedsExplicitLocalConfirmation ||
-                        decision == StashCredentialTransportDecision.InsecureLocalAllowed
-                    ) {
-                        SetupInsecureLocalHttpAcknowledgement(
-                            checked = allowInsecureLocalApiKey,
-                            onCheckedChange = { allowInsecureLocalApiKey = it },
-                        )
-                    }
                 }
                 if (statusText != null) {
                     Text(statusText!!, color = MaterialTheme.colorScheme.primary)
@@ -382,24 +348,6 @@ private fun SetupAuthModeRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-    }
-}
-
-@Composable
-private fun SetupInsecureLocalHttpAcknowledgement(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    androidx.compose.foundation.layout.Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Checkbox(checked = checked, onCheckedChange = onCheckedChange)
-        Text(
-            stashString(R.string.settings_insecure_local_http_api_key_acknowledgement),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

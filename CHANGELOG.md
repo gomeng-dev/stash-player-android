@@ -8,6 +8,16 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - No unreleased changes yet.
 
+## [1.3.1] - 2026-05-09
+
+### English
+
+- Made local HTTP Stash connections the default path for server setup and settings, without extra HTTPS recommendation copy or local HTTP confirmation friction.
+
+### 한국어
+
+- 서버 설정과 설정 화면에서 로컬 HTTP Stash 연결을 기본 흐름으로 두고, HTTPS 권장 문구와 로컬 HTTP 확인 단계를 제거했습니다.
+
 ## [1.3.0] - 2026-05-09
 
 ### English

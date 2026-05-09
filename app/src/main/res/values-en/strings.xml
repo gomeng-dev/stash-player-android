@@ -176,8 +176,7 @@
     <string name="settings_server_clear_complete">Server settings cleared</string>
     <string name="settings_server_clear_button">Clear server settings</string>
     <string name="settings_open_onboarding_button">Open onboarding again</string>
-    <string name="settings_insecure_local_http_api_key_acknowledgement">I understand that credentials sent to a local HTTP server can be exposed by packet capture.</string>
-    <string name="settings_insecure_auth_blocked">This auth method is blocked by the security policy. Use HTTPS or confirm the local HTTP exception.</string>
+    <string name="settings_insecure_auth_blocked">This auth method cannot be used with the current address. Check that it is a local network address.</string>
     <string name="settings_biometric_app_lock_title">Device authentication app lock</string>
     <string name="settings_biometric_app_lock_description">Unlock the app on a fresh start with fingerprint, face, PIN, pattern, or device credential.</string>
     <string name="settings_biometric_app_lock_enabled_status">App lock is on.</string>
@@ -187,10 +186,9 @@
     <string name="setup_auth_mode_api_key_label">Connect with API Key</string>
     <string name="setup_auth_mode_api_key_description">Store an API Key and use it for Stash API and stream requests.</string>
     <string name="setup_auth_mode_password_label">Log in with ID/password</string>
-    <string name="setup_auth_mode_password_description">Never stores the password. On success, only the session cookie is stored. HTTP is only allowed for local servers after explicit confirmation.</string>
+    <string name="setup_auth_mode_password_description">Never stores the password. On success, only the session cookie is stored.</string>
     <string name="setup_username_label">ID</string>
     <string name="setup_password_label">Password</string>
-    <string name="setup_password_https_only_warning">HTTPS is safest. Local HTTP login can expose the ID and password to packet capture, so it is only used after explicit confirmation.</string>
     <string name="setup_username_password_required">Enter both ID and password.</string>
     <string name="setup_biometric_offer_title">Protect the app with device lock</string>
     <string name="setup_biometric_offer_description">Require the device fingerprint, face, PIN, pattern, or device credential before opening the saved Stash connection.</string>
