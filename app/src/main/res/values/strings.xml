@@ -96,6 +96,11 @@
     <string name="player_pip_action_pause">일시정지</string>
     <string name="player_pip_action_previous">이전 영상</string>
     <string name="player_pip_action_next">다음 영상</string>
+    <string name="player_orientation_toggle_sensor_content_description">화면 방향 센서 따름 켜기</string>
+    <string name="player_orientation_toggle_off_content_description">화면 방향 센서 따름 끄기</string>
+    <string name="player_orientation_hud_off">화면 방향 센서 따름 꺼짐</string>
+    <string name="player_orientation_hud_sensor">화면 방향 센서 따름 켜짐</string>
+    <string name="player_more_options_content_description">플레이어 상세 메뉴 열기</string>
     <string name="settings_theme_section_title">테마</string>
     <string name="settings_theme_mode_title">테마 모드</string>
     <string name="settings_theme_mode_description">앱 전체를 다크, 라이트, 또는 기기 시스템 설정에 맞춰 표시합니다. 기본값은 영상 감상에 맞춘 다크입니다.</string>

@@ -78,6 +78,7 @@ import gomeng.dev.stashplayer.core.player.AspectRatioMode
 import gomeng.dev.stashplayer.core.player.BrightnessController
 import gomeng.dev.stashplayer.core.player.PLAYER_CONTROLS_AUTO_HIDE_MS
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
+import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlayerAutoAdvanceDecision
 import gomeng.dev.stashplayer.core.player.PlayerBackAction
 import gomeng.dev.stashplayer.core.player.PlayerNextAction
@@ -157,6 +158,8 @@ import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestCance
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestCompleted
 import gomeng.dev.stashplayer.core.player.markSimilarRecommendationsRequestStarted
 import gomeng.dev.stashplayer.core.player.nextPlayerMediaSessionId
+import gomeng.dev.stashplayer.core.player.nextPlaybackOrientationMode
+import gomeng.dev.stashplayer.core.player.playerPlaybackOrientationHudText
 import gomeng.dev.stashplayer.core.player.togglePlayerLockState
 import gomeng.dev.stashplayer.core.player.subtitleTrackLanguageCode
 import gomeng.dev.stashplayer.core.player.toPlayerSceneCardModel
@@ -232,6 +235,9 @@ fun PlayerRoute(
     val pictureInPictureEnabled by settingsRepository.pictureInPictureEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PICTURE_IN_PICTURE_ENABLED,
     )
+    val playbackOrientationMode by settingsRepository.playbackOrientationMode.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_PLAYBACK_ORIENTATION_MODE,
+    )
     val subtitleLanguage by settingsRepository.subtitleLanguage.collectAsState(
         initial = StashSettingsRepository.DEFAULT_SUBTITLE_LANGUAGE,
     )
@@ -300,6 +306,7 @@ fun PlayerRoute(
             playbackEndAction = playbackEndAction,
             backgroundPlaybackEnabled = backgroundPlaybackEnabled,
             pictureInPictureEnabled = pictureInPictureEnabled,
+            playbackOrientationMode = playbackOrientationMode,
             subtitleLanguage = subtitleLanguage,
             subtitleFontScale = subtitleFontScale,
             subtitlePosition = subtitlePosition,
@@ -328,6 +335,7 @@ private fun RealPlayerRoute(
     playbackEndAction: PlaybackEndAction,
     backgroundPlaybackEnabled: Boolean,
     pictureInPictureEnabled: Boolean,
+    playbackOrientationMode: PlaybackOrientationMode,
     subtitleLanguage: SubtitleLanguagePreference,
     subtitleFontScale: Float,
     subtitlePosition: SubtitlePosition,
@@ -344,6 +352,7 @@ private fun RealPlayerRoute(
     onPlaylistDrawerOpen: suspend (String, Int) -> Unit,
 ) {
     val context = LocalContext.current
+    val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localView = LocalView.current
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1595,6 +1604,7 @@ private fun RealPlayerRoute(
         positionMs = positionMs,
         durationMs = durationMs,
         playbackSpeed = playbackSpeed,
+        playbackOrientationMode = playbackOrientationMode,
         aspectRatioMode = aspectRatioMode,
         hudText = hudText,
         seekPreview = seekPreview,
@@ -1678,6 +1688,15 @@ private fun RealPlayerRoute(
             }
             controller.setPlaybackSpeed(playbackSpeed)
             hudText = playerPlaybackSpeedHudText(playbackSpeed)
+        },
+        onTogglePlaybackOrientationMode = {
+            markPlayerInteraction()
+            controlsVisible = true
+            val nextMode = nextPlaybackOrientationMode(playbackOrientationMode)
+            scope.launch {
+                settingsRepository.setPlaybackOrientationMode(nextMode)
+            }
+            hudText = playerPlaybackOrientationHudText(nextMode)
         },
         onCycleAspectRatio = {
             markPlayerInteraction()

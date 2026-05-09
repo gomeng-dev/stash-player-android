@@ -194,22 +194,54 @@ data class PlayerOverlayVisibilityPolicy(
 
 enum class PlayerTopChromeAction {
     Close,
-    Lock,
     Stream,
-    Playlist,
     Speed,
-    AspectRatio,
-    PlaybackMode,
+    Orientation,
+    Fullscreen,
+    More,
 }
 
 fun defaultPlayerTopChromeActions(): List<PlayerTopChromeAction> = listOf(
     PlayerTopChromeAction.Close,
-    PlayerTopChromeAction.Lock,
     PlayerTopChromeAction.Stream,
-    PlayerTopChromeAction.Playlist,
     PlayerTopChromeAction.Speed,
-    PlayerTopChromeAction.AspectRatio,
-    PlayerTopChromeAction.PlaybackMode,
+    PlayerTopChromeAction.Orientation,
+    PlayerTopChromeAction.Fullscreen,
+    PlayerTopChromeAction.More,
+)
+
+enum class PlayerBottomChromeAction {
+    Lock,
+    Previous,
+    PlayPause,
+    Next,
+    AspectRatio,
+    PictureInPicture,
+}
+
+fun defaultPlayerBottomChromeActions(): List<PlayerBottomChromeAction> = listOf(
+    PlayerBottomChromeAction.Lock,
+    PlayerBottomChromeAction.Previous,
+    PlayerBottomChromeAction.PlayPause,
+    PlayerBottomChromeAction.Next,
+    PlayerBottomChromeAction.AspectRatio,
+    PlayerBottomChromeAction.PictureInPicture,
+)
+
+enum class PlayerOverflowMenuAction {
+    Playlist,
+    Queue,
+    Favorite,
+    WatchLater,
+    PlaybackMode,
+}
+
+fun defaultPlayerOverflowMenuActions(): List<PlayerOverflowMenuAction> = listOf(
+    PlayerOverflowMenuAction.Playlist,
+    PlayerOverflowMenuAction.Queue,
+    PlayerOverflowMenuAction.Favorite,
+    PlayerOverflowMenuAction.WatchLater,
+    PlayerOverflowMenuAction.PlaybackMode,
 )
 
 object PlayerOverlayAccessibilityPolicy {
@@ -288,6 +320,21 @@ fun playerPlaybackModeOptionsContentDescription(shuffleEnabled: Boolean): String
 
 fun playerPlaylistButtonContentDescription(playlistItemCount: Int): String =
     if (playlistItemCount > 0) stashString(R.string.auto_kr_0221, playlistItemCount) else stashString(R.string.auto_kr_0222)
+
+fun nextPlaybackOrientationMode(current: PlaybackOrientationMode): PlaybackOrientationMode = when (current) {
+    PlaybackOrientationMode.Off -> PlaybackOrientationMode.Sensor
+    PlaybackOrientationMode.Sensor -> PlaybackOrientationMode.Off
+}
+
+fun playerPlaybackOrientationContentDescription(mode: PlaybackOrientationMode): String = when (mode) {
+    PlaybackOrientationMode.Off -> stashString(R.string.player_orientation_toggle_sensor_content_description)
+    PlaybackOrientationMode.Sensor -> stashString(R.string.player_orientation_toggle_off_content_description)
+}
+
+fun playerPlaybackOrientationHudText(mode: PlaybackOrientationMode): String = when (mode) {
+    PlaybackOrientationMode.Off -> stashString(R.string.player_orientation_hud_off)
+    PlaybackOrientationMode.Sensor -> stashString(R.string.player_orientation_hud_sensor)
+}
 
 fun resolvePlayerOverlayTransportUiState(
     controlsVisible: Boolean,

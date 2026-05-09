@@ -96,6 +96,11 @@
     <string name="player_pip_action_pause">Pause</string>
     <string name="player_pip_action_previous">Previous video</string>
     <string name="player_pip_action_next">Next video</string>
+    <string name="player_orientation_toggle_sensor_content_description">Turn on sensor orientation</string>
+    <string name="player_orientation_toggle_off_content_description">Turn off sensor orientation</string>
+    <string name="player_orientation_hud_off">Sensor orientation off</string>
+    <string name="player_orientation_hud_sensor">Sensor orientation on</string>
+    <string name="player_more_options_content_description">Open player more options</string>
     <string name="settings_theme_section_title">Theme</string>
     <string name="settings_theme_mode_title">Theme mode</string>
     <string name="settings_theme_mode_description">Show the app in dark mode, light mode, or the device system theme. The default is dark for video watching.</string>

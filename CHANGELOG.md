@@ -8,6 +8,20 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - No unreleased changes yet.
 
+## [1.4.0] - 2026-05-09
+
+### English
+
+- Reworked the player chrome toward a screenshot-style layout with title/tool controls at the top and seek/transport/action controls at the bottom.
+- Moved automatic player orientation control out of Settings and into the player controls while keeping the existing saved preference.
+- Kept compact bar phones locked to portrait outside fullscreen player mode, even when sensor orientation is enabled.
+
+### 한국어
+
+- 플레이어 크롬을 스크린샷 스타일에 맞춰 상단 제목/도구 컨트롤과 하단 탐색/재생/액션 컨트롤 구조로 개편했습니다.
+- 자동 화면 방향 제어를 Settings에서 플레이어 컨트롤로 옮기고 기존 저장된 선호값은 유지했습니다.
+- 센서 방향이 켜져 있어도 바형 스마트폰은 전체화면 플레이어가 아닐 때 세로 화면을 유지하도록 했습니다.
+
 ## [1.3.1] - 2026-05-09
 
 ### English

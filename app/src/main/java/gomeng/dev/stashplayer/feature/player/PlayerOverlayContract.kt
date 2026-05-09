@@ -7,6 +7,7 @@ import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSpriteFrame
 import gomeng.dev.stashplayer.core.player.AspectRatioMode
+import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlayerDebugInfoUiState
 import gomeng.dev.stashplayer.core.player.PlayerGestureExclusionBounds
 import gomeng.dev.stashplayer.core.player.PlayerInfoDrawerContentState
@@ -27,6 +28,7 @@ data class PlayerOverlayState(
     val positionMs: Long,
     val durationMs: Long,
     val playbackSpeed: Float,
+    val playbackOrientationMode: PlaybackOrientationMode,
     val aspectRatioMode: AspectRatioMode,
     val hudText: String?,
     val seekPreview: PlayerSeekPreview?,
@@ -72,6 +74,7 @@ data class PlayerOverlayCallbacks(
     val onToggleFullscreenPlayer: () -> Unit,
     val onEnterPictureInPicture: () -> Unit,
     val onCycleSpeed: () -> Unit,
+    val onTogglePlaybackOrientationMode: () -> Unit,
     val onCycleAspectRatio: () -> Unit,
     val onSelectPlaybackSpeed: (Float) -> Unit,
     val onSelectAspectRatioMode: (AspectRatioMode) -> Unit,
@@ -96,4 +99,3 @@ data class PlayerOverlayCallbacks(
     val onBottomControlsHeightChanged: (Float) -> Unit = {},
     val onPlayerGestureSuspendedByModalSurfaceChanged: (Boolean) -> Unit = {},
 )
-

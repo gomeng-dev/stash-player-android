@@ -205,6 +205,19 @@ object PictureInPictureSettingCopy {
     @StringRes val description = R.string.settings_pip_description
 }
 
+object PlaybackSettingsCopy {
+    val visibleCardTitles: List<Int> = listOf(
+        DefaultStreamPreferenceSettingCopy.title,
+        PlaybackEndActionSettingCopy.title,
+        BackgroundPlaybackSettingCopy.title,
+        PictureInPictureSettingCopy.title,
+        SubtitleLanguageSettingCopy.title,
+        SubtitleFontScaleSettingCopy.title,
+        SubtitlePositionSettingCopy.title,
+        SubtitleTextAlignmentSettingCopy.title,
+    )
+}
+
 object PlaybackOrientationSettingCopy {
     @StringRes val title = R.string.settings_playback_orientation_title
     @StringRes val description = R.string.settings_playback_orientation_description
@@ -1057,9 +1070,6 @@ private fun PlaybackSettingsContent() {
     val pictureInPictureEnabled by repository.pictureInPictureEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PICTURE_IN_PICTURE_ENABLED,
     )
-    val playbackOrientationMode by repository.playbackOrientationMode.collectAsState(
-        initial = StashSettingsRepository.DEFAULT_PLAYBACK_ORIENTATION_MODE,
-    )
     val subtitleLanguage by repository.subtitleLanguage.collectAsState(
         initial = StashSettingsRepository.DEFAULT_SUBTITLE_LANGUAGE,
     )
@@ -1127,24 +1137,6 @@ private fun PlaybackSettingsContent() {
             coroutineScope.launch { repository.setPictureInPictureEnabled(enabled) }
         },
     )
-
-    SettingsRadioGroupCard(
-        title = PlaybackOrientationSettingCopy.title,
-        description = PlaybackOrientationSettingCopy.description,
-    ) {
-        PlaybackOrientationSettingCopy.options.forEach { option ->
-            SettingsRadioRow(
-                selected = playbackOrientationMode == option.mode,
-                label = option.label,
-                description = option.description,
-                onClick = {
-                    coroutineScope.launch {
-                        repository.setPlaybackOrientationMode(option.mode)
-                    }
-                },
-            )
-        }
-    }
 
     SettingsRadioGroupCard(
         title = SubtitleLanguageSettingCopy.title,

@@ -89,9 +89,9 @@ internal fun resolveAppOrientationRequest(
     playerPresentationMode: PlayerPresentationMode,
     playbackOrientationMode: PlaybackOrientationMode,
 ): AppOrientationRequest = when {
-    isPlayerRoute(route) && playbackOrientationMode == PlaybackOrientationMode.Sensor -> AppOrientationRequest.Sensor
     !isFoldLikeLayout && (!isPlayerRoute(route) || playerPresentationMode != PlayerPresentationMode.Fullscreen) ->
         AppOrientationRequest.Portrait
+    isPlayerRoute(route) && playbackOrientationMode == PlaybackOrientationMode.Sensor -> AppOrientationRequest.Sensor
     else -> AppOrientationRequest.Unspecified
 }
 

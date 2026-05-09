@@ -28,11 +28,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistAdd
+import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PictureInPictureAlt
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
@@ -72,6 +75,7 @@ import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.SimilarVideosLayoutContext
 import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.StashServerProfile
+import gomeng.dev.stashplayer.core.player.AspectRatioMode
 import gomeng.dev.stashplayer.core.player.PlayerDebugInfoUiState
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashAction
 import gomeng.dev.stashplayer.core.player.PlayerExpandedStashActionRowItem
@@ -92,6 +96,8 @@ import gomeng.dev.stashplayer.core.player.PlayerInfoDrawerState
 import gomeng.dev.stashplayer.core.player.PlayerWatchPageController
 import gomeng.dev.stashplayer.core.player.buildPlayerExpandedStashActionRowItems
 import gomeng.dev.stashplayer.core.player.formatPlayerPosition
+import gomeng.dev.stashplayer.core.player.playerAspectRatioToggleContentDescription
+import gomeng.dev.stashplayer.core.player.playerLockButtonContentDescription
 import gomeng.dev.stashplayer.core.ui.components.SimilarVideosSection
 import gomeng.dev.stashplayer.core.ui.designsystem.StashAlpha
 import gomeng.dev.stashplayer.core.ui.designsystem.StashColors
@@ -101,6 +107,8 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashPlayerYoutubeVisualToken
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSpacing
 import gomeng.dev.stashplayer.core.ui.designsystem.StashTagChip
 import gomeng.dev.stashplayer.core.ui.designsystem.StashTagChipModel
+import gomeng.dev.stashplayer.R
+import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
 @Composable
 fun PlayerBottomControls(
@@ -110,6 +118,8 @@ fun PlayerBottomControls(
     sliderFraction: Float,
     transportState: PlayerOverlayTransportUiState,
     isPlaying: Boolean,
+    aspectRatioMode: AspectRatioMode,
+    canEnterPictureInPicture: Boolean,
     ratingStep: Int,
     ratingMessage: String?,
     ratingUpdating: Boolean,
@@ -127,6 +137,9 @@ fun PlayerBottomControls(
     onPreviousTransport: () -> Unit,
     onPlayPause: () -> Unit,
     onNextTransport: () -> Unit,
+    onToggleLock: () -> Unit,
+    onCycleAspectRatio: () -> Unit,
+    onEnterPictureInPicture: () -> Unit,
     onSelectRatingStep: (Int) -> Unit,
     onAddCurrentSceneToQueue: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -178,19 +191,6 @@ fun PlayerBottomControls(
             ),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        PlayerFullscreenChromeTitleRow(
-            title = chrome.title,
-            ratingLabel = chrome.ratingLabel,
-        )
-        if (chrome.sectionOrder.contains(PlayerFullscreenBottomChromeSection.CompactTransport)) {
-            PlayerFullscreenCompactTransportRow(
-                state = transportState,
-                isPlaying = isPlaying,
-                onPreviousTransport = onPreviousTransport,
-                onPlayPause = onPlayPause,
-                onNextTransport = onNextTransport,
-            )
-        }
         PlayerSeekRow(
             displayedPositionMs = displayedPositionMs,
             durationMs = durationMs,
@@ -199,22 +199,52 @@ fun PlayerBottomControls(
             onSliderFractionChange = onSliderFractionChange,
             onSliderChangeFinished = onSliderChangeFinished,
         )
+        if (chrome.sectionOrder.contains(PlayerFullscreenBottomChromeSection.CompactTransport)) {
+            PlayerFullscreenScreenshotStyleActionRow(
+                state = transportState,
+                isPlaying = isPlaying,
+                onPreviousTransport = onPreviousTransport,
+                onPlayPause = onPlayPause,
+                onNextTransport = onNextTransport,
+                onToggleLock = onToggleLock,
+                aspectRatioMode = aspectRatioMode,
+                onCycleAspectRatio = onCycleAspectRatio,
+                canEnterPictureInPicture = canEnterPictureInPicture,
+                onEnterPictureInPicture = onEnterPictureInPicture,
+            )
+        }
     }
 }
 
 @Composable
-private fun PlayerFullscreenCompactTransportRow(
+private fun PlayerFullscreenScreenshotStyleActionRow(
     state: PlayerOverlayTransportUiState,
     isPlaying: Boolean,
     onPreviousTransport: () -> Unit,
     onPlayPause: () -> Unit,
     onNextTransport: () -> Unit,
+    onToggleLock: () -> Unit,
+    aspectRatioMode: AspectRatioMode,
+    onCycleAspectRatio: () -> Unit,
+    canEnterPictureInPicture: Boolean,
+    onEnterPictureInPicture: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        PlayerFullscreenCompactTransportButton(
+            onClick = onToggleLock,
+            contentDescription = playerLockButtonContentDescription(locked = false),
+        ) {
+            Icon(
+                Icons.Outlined.LockOpen,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.92f),
+                modifier = Modifier.size(22.dp),
+            )
+        }
         PlayerFullscreenCompactTransportButton(
             onClick = onPreviousTransport,
             contentDescription = state.previousContentDescription,
@@ -249,6 +279,30 @@ private fun PlayerFullscreenCompactTransportRow(
                 tint = Color.White.copy(alpha = if (state.nextEnabled) 0.92f else 0.38f),
                 modifier = Modifier.size(22.dp),
             )
+        }
+        PlayerFullscreenCompactTransportButton(
+            onClick = onCycleAspectRatio,
+            contentDescription = playerAspectRatioToggleContentDescription(aspectRatioMode),
+        ) {
+            Icon(
+                Icons.Outlined.AspectRatio,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.92f),
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        if (canEnterPictureInPicture) {
+            PlayerFullscreenCompactTransportButton(
+                onClick = onEnterPictureInPicture,
+                contentDescription = stashString(R.string.player_pip_button_content_description),
+            ) {
+                Icon(
+                    Icons.Outlined.PictureInPictureAlt,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.92f),
+                    modifier = Modifier.size(22.dp),
+                )
+            }
         }
     }
 }
@@ -315,9 +369,11 @@ private fun PlayerSeekRow(
     onSliderFractionChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit,
 ) {
+    val remainingMs = (durationMs - displayedPositionMs).coerceAtLeast(0L)
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = formatPlayerPosition(displayedPositionMs),
@@ -325,22 +381,26 @@ private fun PlayerSeekRow(
                 alpha = StashPlayerYoutubeVisualTokens.BottomSheetTimePrimaryAlpha,
             ),
             style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.width(48.dp),
         )
+        Box(modifier = Modifier.weight(1f)) {
+            ThinPlayerSeekBar(
+                fraction = uiState.sliderFraction,
+                enabled = uiState.sliderEnabled,
+                visualPolicy = visualPolicy,
+                onFractionChange = onSliderFractionChange,
+                onChangeFinished = onSliderChangeFinished,
+            )
+        }
         Text(
-            text = formatPlayerPosition(durationMs),
+            text = "-${formatPlayerPosition(remainingMs)}",
             color = StashColors.TextSecondary.copy(
                 alpha = StashPlayerYoutubeVisualTokens.BottomSheetTimeSecondaryAlpha,
             ),
             style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.width(52.dp),
         )
     }
-    ThinPlayerSeekBar(
-        fraction = uiState.sliderFraction,
-        enabled = uiState.sliderEnabled,
-        visualPolicy = visualPolicy,
-        onFractionChange = onSliderFractionChange,
-        onChangeFinished = onSliderChangeFinished,
-    )
 }
 
 @Composable

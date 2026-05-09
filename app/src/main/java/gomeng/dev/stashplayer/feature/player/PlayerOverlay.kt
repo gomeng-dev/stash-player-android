@@ -36,6 +36,7 @@ import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSpriteFrame
 import gomeng.dev.stashplayer.core.player.AspectRatioMode
+import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlayerBackAction
 import gomeng.dev.stashplayer.core.player.PlayerDebugInfoUiState
 import gomeng.dev.stashplayer.core.player.PlayerGestureExclusionBounds
@@ -74,6 +75,7 @@ fun PlayerOverlay(
         positionMs = state.positionMs,
         durationMs = state.durationMs,
         playbackSpeed = state.playbackSpeed,
+        playbackOrientationMode = state.playbackOrientationMode,
         aspectRatioMode = state.aspectRatioMode,
         hudText = state.hudText,
         seekPreview = state.seekPreview,
@@ -115,6 +117,7 @@ fun PlayerOverlay(
         onToggleFullscreenPlayer = callbacks.onToggleFullscreenPlayer,
         onEnterPictureInPicture = callbacks.onEnterPictureInPicture,
         onCycleSpeed = callbacks.onCycleSpeed,
+        onTogglePlaybackOrientationMode = callbacks.onTogglePlaybackOrientationMode,
         onCycleAspectRatio = callbacks.onCycleAspectRatio,
         onSelectPlaybackSpeed = callbacks.onSelectPlaybackSpeed,
         onSelectAspectRatioMode = callbacks.onSelectAspectRatioMode,
@@ -151,6 +154,7 @@ fun PlayerOverlay(
     positionMs: Long,
     durationMs: Long,
     playbackSpeed: Float,
+    playbackOrientationMode: PlaybackOrientationMode,
     aspectRatioMode: AspectRatioMode,
     hudText: String?,
     seekPreview: PlayerSeekPreview?,
@@ -192,6 +196,7 @@ fun PlayerOverlay(
     onToggleFullscreenPlayer: () -> Unit,
     onEnterPictureInPicture: () -> Unit,
     onCycleSpeed: () -> Unit,
+    onTogglePlaybackOrientationMode: () -> Unit,
     onCycleAspectRatio: () -> Unit,
     onSelectPlaybackSpeed: (Float) -> Unit,
     onSelectAspectRatioMode: (AspectRatioMode) -> Unit,
@@ -306,23 +311,21 @@ fun PlayerOverlay(
 
         if (visibilityPolicy.showTopControls) {
             PlayerTopControls(
+                title = title,
                 playlistItemCount = playlistItems.size,
                 playbackSpeed = playbackSpeed,
-                aspectRatioMode = aspectRatioMode,
+                playbackOrientationMode = playbackOrientationMode,
                 shuffleEnabled = shuffleEnabled,
                 canShuffleQueue = canShuffleQueue,
                 quickActions = if (visibilityPolicy.showQuickActions) quickActions else emptyList(),
                 fullscreenPlayerActive = fullscreenPlayerActive,
-                canEnterPictureInPicture = canEnterPictureInPicture,
                 onToggleFullscreenPlayer = onToggleFullscreenPlayer,
-                onEnterPictureInPicture = onEnterPictureInPicture,
                 onOpenStreamOptions = { activePlaybackOptionSheet = PlayerSeparatedPlaybackOptionSheet.Stream },
                 onOpenSpeedOptions = { activePlaybackOptionSheet = PlayerSeparatedPlaybackOptionSheet.Speed },
-                onCycleAspectRatio = onCycleAspectRatio,
+                onTogglePlaybackOrientationMode = onTogglePlaybackOrientationMode,
                 onTogglePlaybackMode = onSelectShuffleEnabled,
                 onOpenPlaylistDrawer = onOpenPlaylistDrawer,
                 onExitPlayer = onExitPlayer,
-                onToggleLock = onToggleLock,
                 onAddCurrentSceneToQueue = onAddCurrentSceneToQueue,
                 onToggleFavorite = onToggleFavorite,
                 onToggleWatchLater = onToggleWatchLater,
@@ -384,6 +387,8 @@ fun PlayerOverlay(
                 sliderFraction = sliderFraction,
                 transportState = transportState,
                 isPlaying = isPlaying,
+                aspectRatioMode = aspectRatioMode,
+                canEnterPictureInPicture = canEnterPictureInPicture,
                 ratingStep = ratingStep,
                 ratingMessage = ratingMessage,
                 ratingUpdating = ratingUpdating,
@@ -419,6 +424,9 @@ fun PlayerOverlay(
                 onPreviousTransport = onPreviousTransport,
                 onPlayPause = onPlayPause,
                 onNextTransport = onNextTransport,
+                onToggleLock = onToggleLock,
+                onCycleAspectRatio = onCycleAspectRatio,
+                onEnterPictureInPicture = onEnterPictureInPicture,
                 onSelectRatingStep = onSelectRatingStep,
                 onAddCurrentSceneToQueue = onAddCurrentSceneToQueue,
                 onToggleFavorite = onToggleFavorite,
