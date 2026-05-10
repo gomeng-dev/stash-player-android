@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +47,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.R
+import gomeng.dev.stashplayer.core.network.AppUpdateChecker
+import gomeng.dev.stashplayer.core.network.AppUpdateInstaller
+import gomeng.dev.stashplayer.core.network.AppUpdateNotice
+import gomeng.dev.stashplayer.core.network.STASH_ANDROID_LATEST_RELEASE_API_URL
+import gomeng.dev.stashplayer.core.network.STASH_ANDROID_RELEASES_URL
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
+import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashPluginRecommendationStatusClient
@@ -155,10 +162,12 @@ object RecentAppsPrivacySettingCopy {
 }
 
 object SupportSettingCopy {
-    const val releasesUrl = "https://github.com/gomeng-dev/stash-player-android/releases"
+    const val releasesUrl = STASH_ANDROID_RELEASES_URL
+    const val latestReleaseApiUrl = STASH_ANDROID_LATEST_RELEASE_API_URL
     const val issuesUrl = "https://github.com/gomeng-dev/stash-player-android/issues"
 
     @StringRes val versionTitle = R.string.settings_support_version_title
+    @StringRes val updateCheckTitle = R.string.settings_support_update_check_title
     @StringRes val issueTitle = R.string.settings_support_issue_title
 }
 
@@ -211,12 +220,33 @@ object PictureInPictureSettingCopy {
     @StringRes val description = R.string.settings_pip_description
 }
 
+object ShortsMaxDurationSettingCopy {
+    @StringRes val title = R.string.settings_shorts_max_duration_title
+    @StringRes val description = R.string.settings_shorts_max_duration_description
+    @StringRes val valueLabel = R.string.settings_shorts_max_duration_value_label
+    val sliderValueRange = 60f..180f
+    val sliderSteps = 119
+}
+
+object ShortsRecommendationResetSettingCopy {
+    @StringRes val title = R.string.settings_shorts_recommendation_reset_title
+    @StringRes val description = R.string.settings_shorts_recommendation_reset_description
+    @StringRes val button = R.string.settings_shorts_recommendation_reset_button
+    @StringRes val confirmTitle = R.string.settings_shorts_recommendation_reset_confirm_title
+    @StringRes val confirmMessage = R.string.settings_shorts_recommendation_reset_confirm_message
+    @StringRes val confirm = R.string.settings_shorts_recommendation_reset_confirm_button
+    @StringRes val cancel = R.string.settings_shorts_recommendation_reset_cancel_button
+    @StringRes val success = R.string.settings_shorts_recommendation_reset_success
+}
+
 object PlaybackSettingsCopy {
     val visibleCardTitles: List<Int> = listOf(
         DefaultStreamPreferenceSettingCopy.title,
         PlaybackEndActionSettingCopy.title,
         BackgroundPlaybackSettingCopy.title,
         PictureInPictureSettingCopy.title,
+        ShortsMaxDurationSettingCopy.title,
+        ShortsRecommendationResetSettingCopy.title,
         SubtitleLanguageSettingCopy.title,
         SubtitleFontScaleSettingCopy.title,
         SubtitlePositionSettingCopy.title,
@@ -555,17 +585,15 @@ object HybridRecommendationSettingCopy {
 @Composable
 fun SettingsRoute(
     isFoldLikeLayout: Boolean,
+    hasAvailableUpdate: Boolean = false,
     onOpenSection: (String) -> Unit,
 ) {
     SettingsScreenScaffold(isFoldLikeLayout = isFoldLikeLayout) {
         Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
-        Text(
-            stringResource(R.string.settings_subtitle),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         SettingsListCopy.sections.forEach { section ->
             SettingsSectionCard(
                 section = section,
+                showBadge = hasAvailableUpdate && section == SettingsSection.Support,
                 onClick = { onOpenSection(section.route) },
             )
         }
@@ -576,6 +604,8 @@ fun SettingsRoute(
 fun SettingsDetailRoute(
     section: SettingsSection,
     isFoldLikeLayout: Boolean,
+    availableUpdateNotice: AppUpdateNotice? = null,
+    onUpdateNoticeChange: (AppUpdateNotice?) -> Unit = {},
     onNavigateBack: () -> Unit,
     onOpenOnboarding: () -> Unit,
 ) {
@@ -584,10 +614,6 @@ fun SettingsDetailRoute(
             Text(stringResource(R.string.settings_back_button))
         }
         Text(stringResource(section.title), style = MaterialTheme.typography.headlineMedium)
-        Text(
-            stringResource(section.description),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         when (section) {
             SettingsSection.Server -> ServerSettingsContent(onOpenOnboarding = onOpenOnboarding)
             SettingsSection.Security -> SecuritySettingsContent()
@@ -595,7 +621,10 @@ fun SettingsDetailRoute(
             SettingsSection.Appearance -> AppearanceSettingsContent()
             SettingsSection.Interface -> InterfaceSettingsContent()
             SettingsSection.Development -> DevelopmentSettingsContent()
-            SettingsSection.Support -> SupportSettingsContent()
+            SettingsSection.Support -> SupportSettingsContent(
+                availableUpdateNotice = availableUpdateNotice,
+                onUpdateNoticeChange = onUpdateNoticeChange,
+            )
         }
     }
 }
@@ -618,6 +647,7 @@ private fun SettingsScreenScaffold(
 @Composable
 private fun SettingsSectionCard(
     section: SettingsSection,
+    showBadge: Boolean,
     onClick: () -> Unit,
 ) {
     Card(
@@ -637,10 +667,12 @@ private fun SettingsSectionCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(stringResource(section.title), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    stringResource(section.description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+            if (showBadge) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
                 )
             }
             Text(
@@ -677,6 +709,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             serverName = it.name
             serverUrl = it.baseUrl
             apiKey = it.apiKey
+            username = it.username
+            password = it.password
             allowInsecureLocalApiKey = it.allowInsecureLocalApiKey
             authMode = when (it.authMode) {
                 StashServerAuthMode.None -> SettingsServerAuthModeOption.LinkOnly
@@ -759,6 +793,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                             serverName = serverName,
                             serverUrl = serverUrl,
                             apiKey = apiKey,
+                            username = username,
+                            password = password,
                             authMode = authMode,
                             allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                         )
@@ -785,6 +821,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                                         apiKey = "",
                                         authMode = StashServerAuthMode.SessionCookie,
                                         sessionCookie = login.sessionCookie,
+                                        username = username,
+                                        password = password,
                                     )
                                 }
                             }
@@ -815,6 +853,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                             serverName = serverName,
                             serverUrl = serverUrl,
                             apiKey = apiKey,
+                            username = username,
+                            password = password,
                             authMode = authMode,
                             allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                         )
@@ -841,6 +881,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                                         apiKey = "",
                                         authMode = StashServerAuthMode.SessionCookie,
                                         sessionCookie = login.sessionCookie,
+                                        username = username,
+                                        password = password,
                                     )
                                 }
                             }
@@ -892,16 +934,6 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(HybridRecommendationSettingCopy.sectionTitle), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(HybridRecommendationSettingCopy.statusDescription),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                stringResource(HybridRecommendationSettingCopy.fallbackDescription),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             recommendationStatusText?.let { text ->
                 Text(
                     text,
@@ -955,12 +987,16 @@ private fun buildSettingsServerProfile(
     serverName: String,
     serverUrl: String,
     apiKey: String,
+    username: String,
+    password: String,
     authMode: SettingsServerAuthModeOption,
     allowInsecureLocalApiKey: Boolean,
 ): StashServerProfile = StashServerProfile(
     name = serverName,
     baseUrl = serverUrl,
     apiKey = if (authMode == SettingsServerAuthModeOption.ApiKey) apiKey else "",
+    username = if (authMode == SettingsServerAuthModeOption.Password) username else "",
+    password = if (authMode == SettingsServerAuthModeOption.Password) password else "",
     authMode = authMode.toServerAuthMode(),
     allowInsecureLocalApiKey = allowInsecureLocalApiKey,
 )
@@ -979,11 +1015,6 @@ private fun SettingsServerAuthModeRow(
         RadioButton(selected = selected, onClick = onClick)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(stringResource(label), style = MaterialTheme.typography.bodyLarge)
-            Text(
-                stringResource(description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -1026,11 +1057,6 @@ private fun SecuritySettingsContent() {
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(stringResource(BiometricAppLockSettingCopy.title), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    stringResource(BiometricAppLockSettingCopy.description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 Text(
                     statusMessage ?: stringResource(deviceAuthenticationAvailabilityDescriptionRes(availability)),
                     style = MaterialTheme.typography.bodySmall,
@@ -1078,6 +1104,7 @@ private fun SecuritySettingsContent() {
 private fun PlaybackSettingsContent() {
     val context = LocalContext.current
     val repository = remember(context) { StashSettingsRepository(context) }
+    val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val defaultStreamPreference by repository.defaultStreamPreference.collectAsState(
         initial = StashSettingsRepository.DEFAULT_STREAM_PREFERENCE,
     )
@@ -1089,6 +1116,9 @@ private fun PlaybackSettingsContent() {
     )
     val pictureInPictureEnabled by repository.pictureInPictureEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PICTURE_IN_PICTURE_ENABLED,
+    )
+    val shortsMaxDurationSeconds by repository.shortsMaxDurationSeconds.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_SHORTS_MAX_DURATION_SECONDS,
     )
     val subtitleLanguage by repository.subtitleLanguage.collectAsState(
         initial = StashSettingsRepository.DEFAULT_SUBTITLE_LANGUAGE,
@@ -1103,6 +1133,8 @@ private fun PlaybackSettingsContent() {
         initial = StashSettingsRepository.DEFAULT_SUBTITLE_TEXT_ALIGNMENT,
     )
     val coroutineScope = rememberCoroutineScope()
+    var showShortsResetDialog by remember { mutableStateOf(false) }
+    var shortsResetFeedback by remember { mutableStateOf<Int?>(null) }
 
     SettingsRadioGroupCard(
         title = DefaultStreamPreferenceSettingCopy.title,
@@ -1157,6 +1189,46 @@ private fun PlaybackSettingsContent() {
             coroutineScope.launch { repository.setPictureInPictureEnabled(enabled) }
         },
     )
+
+    ShortsMaxDurationSliderCard(
+        maxDurationSeconds = shortsMaxDurationSeconds,
+        onMaxDurationChange = { seconds ->
+            coroutineScope.launch {
+                repository.setShortsMaxDurationSeconds(seconds)
+            }
+        },
+    )
+
+    ShortsRecommendationResetCard(
+        feedback = shortsResetFeedback,
+        onRequestReset = { showShortsResetDialog = true },
+    )
+
+    if (showShortsResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showShortsResetDialog = false },
+            title = { Text(stringResource(ShortsRecommendationResetSettingCopy.confirmTitle)) },
+            text = { Text(stringResource(ShortsRecommendationResetSettingCopy.confirmMessage)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showShortsResetDialog = false
+                        coroutineScope.launch {
+                            localRepository.clearShortsRecommendationHistory()
+                            shortsResetFeedback = ShortsRecommendationResetSettingCopy.success
+                        }
+                    },
+                ) {
+                    Text(stringResource(ShortsRecommendationResetSettingCopy.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showShortsResetDialog = false }) {
+                    Text(stringResource(ShortsRecommendationResetSettingCopy.cancel))
+                }
+            },
+        )
+    }
 
     SettingsRadioGroupCard(
         title = SubtitleLanguageSettingCopy.title,
@@ -1336,11 +1408,6 @@ private fun DevelopmentSettingsContent() {
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(stringResource(PlayerDebugOverlaySettingCopy.title), style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    stringResource(PlayerDebugOverlaySettingCopy.description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
             Switch(
                 checked = playerDebugOverlayEnabled,
@@ -1359,11 +1426,6 @@ private fun DevelopmentSettingsContent() {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(DebugLogSettingCopy.title), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(DebugLogSettingCopy.description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             if (debugEntries.isEmpty()) {
                 Text(
                     stringResource(DebugLogSettingCopy.empty),
@@ -1412,20 +1474,103 @@ private fun DevelopmentSettingsContent() {
 }
 
 @Composable
-private fun SupportSettingsContent() {
+private fun SupportSettingsContent(
+    availableUpdateNotice: AppUpdateNotice?,
+    onUpdateNoticeChange: (AppUpdateNotice?) -> Unit,
+) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val updateChecker = remember { AppUpdateChecker() }
+    val updateInstaller = remember { AppUpdateInstaller() }
+    val currentVersion = currentAppVersionName(context)
     var statusText by remember { mutableStateOf<String?>(null) }
+    var updateStatusText by remember { mutableStateOf<String?>(null) }
+    var isCheckingForUpdate by remember { mutableStateOf(false) }
+    var isDownloadingUpdate by remember { mutableStateOf(false) }
 
-    SettingsLinkCard(
-        title = SupportSettingCopy.versionTitle,
-        descriptionText = stringResource(R.string.settings_support_version_description, currentAppVersionName(context)),
+    if (availableUpdateNotice != null) {
+        SettingsActionCard(
+            title = SupportSettingCopy.versionTitle,
+            descriptionText = stringResource(
+                R.string.settings_support_update_available,
+                availableUpdateNotice.latestVersionName,
+                availableUpdateNotice.currentVersionName,
+            ),
+            buttonText = when {
+                isDownloadingUpdate -> stringResource(R.string.settings_support_update_downloading)
+                availableUpdateNotice.apkAsset != null -> stringResource(R.string.settings_support_update_download_button)
+                else -> stringResource(R.string.settings_support_update_open_action)
+            },
+            enabled = !isDownloadingUpdate,
+            onClick = {
+                val apkAsset = availableUpdateNotice.apkAsset
+                if (apkAsset == null) {
+                    statusText = openSupportUrl(context, availableUpdateNotice.releaseUrl)
+                } else if (!updateInstaller.canRequestPackageInstalls(context)) {
+                    updateInstaller.openUnknownAppSourcesSettings(context)
+                    updateStatusText = context.getString(R.string.settings_support_update_install_permission_required)
+                } else {
+                    scope.launch {
+                        isDownloadingUpdate = true
+                        updateStatusText = context.getString(R.string.settings_support_update_downloading)
+                        runCatching {
+                            val apkFile = updateInstaller.downloadApk(context, apkAsset)
+                            updateInstaller.launchInstaller(context, apkFile)
+                        }.onSuccess {
+                            updateStatusText = context.getString(R.string.settings_support_update_install_started)
+                        }.onFailure {
+                            updateStatusText = context.getString(R.string.settings_support_update_download_failed)
+                        }
+                        isDownloadingUpdate = false
+                    }
+                }
+            },
+        )
+    } else {
+        SettingsLinkCard(
+            title = SupportSettingCopy.versionTitle,
+            descriptionText = stringResource(R.string.settings_support_version_description, currentVersion),
+            onClick = {
+                statusText = openSupportUrl(context, SupportSettingCopy.releasesUrl)
+            },
+        )
+    }
+    SettingsActionCard(
+        title = SupportSettingCopy.updateCheckTitle,
+        descriptionText = updateStatusText,
+        buttonText = if (isCheckingForUpdate) {
+            stringResource(R.string.settings_support_update_checking)
+        } else {
+            stringResource(R.string.settings_support_update_check_button)
+        },
+        enabled = !isCheckingForUpdate,
         onClick = {
-            statusText = openSupportUrl(context, SupportSettingCopy.releasesUrl)
+            scope.launch {
+                isCheckingForUpdate = true
+                updateStatusText = context.getString(R.string.settings_support_update_checking)
+                runCatching { updateChecker.checkForUpdate(currentVersion) }
+                    .onSuccess { notice ->
+                        onUpdateNoticeChange(notice)
+                        updateStatusText = if (notice != null) {
+                            context.getString(
+                                R.string.settings_support_update_available,
+                                notice.latestVersionName,
+                                notice.currentVersionName,
+                            )
+                        } else {
+                            context.getString(R.string.settings_support_update_current, currentVersion)
+                        }
+                    }
+                    .onFailure {
+                        updateStatusText = context.getString(R.string.settings_support_update_failed)
+                    }
+                isCheckingForUpdate = false
+            }
         },
     )
     SettingsLinkCard(
         title = SupportSettingCopy.issueTitle,
-        descriptionText = stringResource(R.string.settings_support_issue_description),
+        descriptionText = null,
         onClick = {
             statusText = openSupportUrl(context, SupportSettingCopy.issuesUrl)
         },
@@ -1436,9 +1581,37 @@ private fun SupportSettingsContent() {
 }
 
 @Composable
+private fun SettingsActionCard(
+    @StringRes title: Int,
+    descriptionText: String?,
+    buttonText: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
+            descriptionText?.takeIf { it.isNotBlank() }?.let { text ->
+                Text(
+                    text,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Button(onClick = onClick, enabled = enabled) {
+                Text(buttonText)
+            }
+        }
+    }
+}
+
+@Composable
 private fun SettingsLinkCard(
     @StringRes title: Int,
-    descriptionText: String,
+    descriptionText: String?,
     onClick: () -> Unit,
 ) {
     Card(
@@ -1451,11 +1624,13 @@ private fun SettingsLinkCard(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
-            Text(
-                descriptionText,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            descriptionText?.takeIf { it.isNotBlank() }?.let { text ->
+                Text(
+                    text,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -1518,18 +1693,8 @@ private fun SettingsUiScaleSliderCard(
                 }
             }
             Text(
-                stringResource(UiScaleSettingCopy.description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
                 stringResource(R.string.settings_ui_scale_value_format, previewLabel, previewPercent),
                 style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                stringResource(previewOption.description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Slider(
                 value = sliderValue,
@@ -1588,11 +1753,6 @@ private fun SettingsSubtitleFontScaleSliderCard(
                 }
             }
             Text(
-                stringResource(SubtitleFontScaleSettingCopy.description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
                 stringResource(R.string.settings_subtitle_font_scale_value_format, previewPercent),
                 style = MaterialTheme.typography.bodyLarge,
             )
@@ -1633,15 +1793,80 @@ private fun SettingsSwitchCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    stringResource(description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShortsRecommendationResetCard(
+    @StringRes feedback: Int?,
+    onRequestReset: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(ShortsRecommendationResetSettingCopy.title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Button(onClick = onRequestReset) {
+                Text(stringResource(ShortsRecommendationResetSettingCopy.button))
+            }
+            feedback?.let { message ->
+                Text(
+                    text = stringResource(message),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShortsMaxDurationSliderCard(
+    maxDurationSeconds: Int,
+    onMaxDurationChange: (Int) -> Unit,
+) {
+    var localValue by remember(maxDurationSeconds) { mutableFloatStateOf(maxDurationSeconds.toFloat()) }
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = stringResource(ShortsMaxDurationSettingCopy.title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                Text(
+                    text = stringResource(ShortsMaxDurationSettingCopy.valueLabel, localValue.roundToInt()),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Slider(
+                value = localValue,
+                onValueChange = { localValue = it },
+                onValueChangeFinished = { onMaxDurationChange(localValue.roundToInt()) },
+                valueRange = ShortsMaxDurationSettingCopy.sliderValueRange,
+                steps = ShortsMaxDurationSettingCopy.sliderSteps,
             )
         }
     }
@@ -1659,11 +1884,6 @@ private fun SettingsRadioGroupCard(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             content()
         }
     }
@@ -1692,11 +1912,6 @@ private fun SettingsRadioRow(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(stringResource(label), style = MaterialTheme.typography.bodyLarge)
-            Text(
-                stringResource(description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -1730,11 +1945,6 @@ private fun SettingsAccentColorRow(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(stringResource(label), style = MaterialTheme.typography.bodyLarge)
-            Text(
-                stringResource(description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }

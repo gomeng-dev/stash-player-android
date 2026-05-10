@@ -40,7 +40,7 @@ data class QueueAddDecision(
 data class PlaybackHistoryOverviewModel(
     val title: String,
     val itemCount: Int,
-    val subtitle: String,
+    val subtitle: String?,
     val actionLabel: String,
     val actionContentDescription: String,
     val actionEnabled: Boolean,
@@ -80,7 +80,7 @@ fun buildPlaybackHistoryOverviewModel(
 ): PlaybackHistoryOverviewModel = PlaybackHistoryOverviewModel(
     title = stashString(R.string.queue_playback_history_title),
     itemCount = historyCount,
-    subtitle = stashString(R.string.queue_playback_history_subtitle, displayLimit),
+    subtitle = null,
     actionLabel = if (expanded) {
         stashString(R.string.queue_playback_history_collapse_label)
     } else {

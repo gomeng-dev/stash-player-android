@@ -38,7 +38,6 @@ import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.canAttemptStashCredentialTransport
 import gomeng.dev.stashplayer.core.security.DeviceAuthenticationAvailability
 import gomeng.dev.stashplayer.core.security.shouldShowBiometricOnboardingPrompt
-import gomeng.dev.stashplayer.core.ui.StashUxCopy
 import gomeng.dev.stashplayer.feature.security.deviceAuthenticationAvailabilityDescriptionRes
 import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationAvailability
 import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationLauncher
@@ -104,6 +103,8 @@ fun ServerSetupRoute(
             serverName = it.name
             serverUrl = it.baseUrl
             apiKey = it.apiKey
+            username = it.username
+            password = it.password
             allowInsecureLocalApiKey = it.allowInsecureLocalApiKey
             authMode = when (it.authMode) {
                 StashServerAuthMode.None -> SetupAuthMode.LinkOnly
@@ -122,8 +123,6 @@ fun ServerSetupRoute(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("Stash Player", style = MaterialTheme.typography.headlineMedium)
-        Text(StashUxCopy.setupIntro)
-        Text(stashString(R.string.auto_kr_0529))
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -201,6 +200,8 @@ fun ServerSetupRoute(
                                 serverName = serverName,
                                 serverUrl = serverUrl,
                                 apiKey = apiKey,
+                                username = username,
+                                password = password,
                                 authMode = authMode,
                                 allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                             )
@@ -232,6 +233,8 @@ fun ServerSetupRoute(
                                             apiKey = "",
                                             authMode = StashServerAuthMode.SessionCookie,
                                             sessionCookie = login.sessionCookie,
+                                            username = username,
+                                            password = password,
                                             allowInsecureLocalApiKey = profile.allowInsecureLocalApiKey,
                                         )
                                     }
@@ -269,6 +272,8 @@ fun ServerSetupRoute(
                                 serverName = serverName,
                                 serverUrl = serverUrl,
                                 apiKey = apiKey,
+                                username = username,
+                                password = password,
                                 allowInsecureLocalApiKey = allowInsecureLocalApiKey,
                                 authMode = authMode,
                             )
@@ -314,12 +319,16 @@ private fun buildSetupProfile(
     serverName: String,
     serverUrl: String,
     apiKey: String,
+    username: String,
+    password: String,
     allowInsecureLocalApiKey: Boolean,
     authMode: SetupAuthMode = SetupAuthMode.ApiKey,
 ): StashServerProfile = StashServerProfile(
     name = serverName,
     baseUrl = serverUrl,
     apiKey = if (authMode == SetupAuthMode.ApiKey) apiKey else "",
+    username = if (authMode == SetupAuthMode.Password) username else "",
+    password = if (authMode == SetupAuthMode.Password) password else "",
     authMode = when (authMode) {
         SetupAuthMode.LinkOnly -> StashServerAuthMode.None
         SetupAuthMode.ApiKey -> StashServerAuthMode.ApiKey
@@ -342,11 +351,6 @@ private fun SetupAuthModeRow(
         RadioButton(selected = selected, onClick = onClick)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(stashString(label), style = MaterialTheme.typography.bodyLarge)
-            Text(
-                stashString(description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -364,11 +368,6 @@ private fun BiometricOnboardingOfferCard(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stashString(R.string.setup_biometric_offer_title), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stashString(R.string.setup_biometric_offer_description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             Text(
                 statusMessage ?: stashString(deviceAuthenticationAvailabilityDescriptionRes(availability)),
                 style = MaterialTheme.typography.bodySmall,

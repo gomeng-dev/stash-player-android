@@ -141,12 +141,7 @@ object PlayerWatchPageController {
             expandedActionsVisible = false,
             similarRecommendationsVisible = false,
             appliedRevealFraction = 0f,
-            seekBarVisualPolicy = PlayerFullscreenSeekBarVisualPolicy(
-                touchTargetHeightDp = 48,
-                restingTrackHeightDp = 2,
-                activeTrackHeightDp = 4,
-                thumbDiameterDp = 8,
-            ),
+            seekBarVisualPolicy = defaultPlayerFullscreenSeekBarVisualPolicy(),
         )
     }
 

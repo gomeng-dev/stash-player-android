@@ -120,7 +120,7 @@ fun stashSectionHeaderPresentation(
     contentDescription: String? = null,
 ): StashSectionHeaderPresentation {
     val normalizedTitle = state.title.trim().ifBlank { stashString(R.string.auto_kr_0392) }
-    val normalizedSubtitle = state.subtitle.normalizedOrNull()
+    val normalizedSubtitle = null
     val countBadgeLabel = state.itemCount?.let { count -> stashString(R.string.auto_kr_0397, count.coerceAtLeast(0)) }
     val normalizedAction = state.actionLabel.normalizedOrNull()
     val fallbackAccessibility = listOf(normalizedTitle, normalizedSubtitle, countBadgeLabel)

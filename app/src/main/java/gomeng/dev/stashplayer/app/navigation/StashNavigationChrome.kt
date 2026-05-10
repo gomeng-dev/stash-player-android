@@ -117,8 +117,8 @@ internal fun shouldRedirectSetupWithSavedProfile(hasSavedProfile: Boolean, route
 
 private val TopLevelDestinationLabelResourcesByRoute = mapOf(
     "home" to R.string.navigation_home_label,
-    "browse" to R.string.navigation_browse_label,
-    "search" to R.string.navigation_search_label,
+    "browse" to R.string.navigation_explore_label,
+    "shorts" to R.string.navigation_shorts_label,
     "queue" to R.string.navigation_queue_label,
     "settings" to R.string.navigation_settings_label,
 )

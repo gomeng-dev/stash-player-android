@@ -3,14 +3,21 @@ package gomeng.dev.stashplayer.app.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
@@ -20,7 +27,11 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -43,9 +54,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.local.applyLocalFavoriteFilter
 import gomeng.dev.stashplayer.core.model.SceneCardModel
+import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueueContinuation
 import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
@@ -53,15 +66,20 @@ import gomeng.dev.stashplayer.core.player.appendLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.handOffLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.shouldLoadMorePlayerPlaylistItems
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
+import gomeng.dev.stashplayer.core.network.AppUpdateChecker
+import gomeng.dev.stashplayer.core.network.AppUpdateNotice
+import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
+import gomeng.dev.stashplayer.core.network.passwordSessionStartupRefreshKey
+import gomeng.dev.stashplayer.core.network.shouldRefreshPasswordSessionOnStartup
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScale
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScaleProvider
-import gomeng.dev.stashplayer.feature.browse.BrowseRoute
 import gomeng.dev.stashplayer.feature.home.HomeRoute
 import gomeng.dev.stashplayer.feature.player.PlayerRoute
 import gomeng.dev.stashplayer.feature.queue.QueueRoute
-import gomeng.dev.stashplayer.feature.search.SearchRoute
+import gomeng.dev.stashplayer.feature.explore.ExploreRoute
+import gomeng.dev.stashplayer.feature.shorts.ShortsRoute
 import gomeng.dev.stashplayer.feature.settings.SettingsDestinations
 import gomeng.dev.stashplayer.feature.settings.SettingsDetailRoute
 import gomeng.dev.stashplayer.feature.settings.SettingsRoute
@@ -74,10 +92,25 @@ private enum class TopLevelDestination(
     val icon: ImageVector,
 ) {
     Home("home", topLevelDestinationLabelResource("home"), Icons.Outlined.Home),
-    Browse("browse", topLevelDestinationLabelResource("browse"), Icons.Outlined.VideoLibrary),
-    Search("search", topLevelDestinationLabelResource("search"), Icons.Outlined.Search),
+    Explore("browse", topLevelDestinationLabelResource("browse"), Icons.Outlined.VideoLibrary),
+    Shorts("shorts", topLevelDestinationLabelResource("shorts"), Icons.Outlined.PlayCircle),
     Queue("queue", topLevelDestinationLabelResource("queue"), Icons.AutoMirrored.Outlined.PlaylistPlay),
     Settings("settings", topLevelDestinationLabelResource("settings"), Icons.Outlined.Settings),
+}
+
+@Composable
+private fun TopLevelDestinationIcon(
+    destination: TopLevelDestination,
+    label: String,
+    showBadge: Boolean,
+) {
+    if (showBadge) {
+        BadgedBox(badge = { Badge() }) {
+            androidx.compose.material3.Icon(destination.icon, contentDescription = label)
+        }
+    } else {
+        androidx.compose.material3.Icon(destination.icon, contentDescription = label)
+    }
 }
 
 @Composable
@@ -94,6 +127,8 @@ fun StashNavHost(
     )
     val favoriteSceneIds by localRepository.favoriteSceneIds.collectAsState(initial = emptySet())
     val navController = rememberNavController()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val updateChecker = remember { AppUpdateChecker() }
     val topLevelDestinations = TopLevelDestination.entries
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -101,6 +136,9 @@ fun StashNavHost(
     var playbackQueue by remember { mutableStateOf(PlayerPlaybackQueue.Empty) }
     var playbackQueueContinuation by remember { mutableStateOf<PlayerPlaybackQueueContinuation?>(null) }
     var playerPresentationMode by remember { mutableStateOf(PlayerPresentationMode.WatchPage) }
+    var refreshedPasswordSessionKey by remember { mutableStateOf<String?>(null) }
+    var availableUpdateNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
+    var updateChangelogNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
     val navigationChromePolicy = stashNavigationChromeVisualPolicy()
     val activeUiScale = if (isPlayerRoute(currentRoute)) StashUiScale.Default else uiScale
     val activity = remember(context) { context.findActivity() }
@@ -121,6 +159,48 @@ fun StashNavHost(
                 launchSingleTop = true
             }
         }
+    }
+
+    LaunchedEffect(savedProfile) {
+        val profile = savedProfile ?: return@LaunchedEffect
+        if (!shouldRefreshPasswordSessionOnStartup(profile)) return@LaunchedEffect
+        val refreshKey = passwordSessionStartupRefreshKey(profile)
+        if (refreshedPasswordSessionKey == refreshKey) return@LaunchedEffect
+        refreshedPasswordSessionKey = refreshKey
+        runCatching {
+            StashLoginClient().loginWithPassword(
+                baseUrl = profile.baseUrl,
+                username = profile.username,
+                password = profile.password,
+            )
+        }.onSuccess { login ->
+            settingsRepository.saveServerProfile(profile.copy(sessionCookie = login.sessionCookie))
+        }.onFailure { throwable ->
+            StashDebugLogBuffer.record("Navigation", "Password session refresh failed", throwable)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        runCatching { updateChecker.checkForUpdate(currentAppVersionName(context)) }
+            .onSuccess { notice ->
+                if (notice != null) {
+                    availableUpdateNotice = notice
+                    val result = snackbarHostState.showSnackbar(
+                        message = context.getString(
+                            R.string.settings_support_update_available_snackbar,
+                            notice.latestVersionName,
+                        ),
+                        actionLabel = context.getString(R.string.settings_support_update_changelog_action),
+                        withDismissAction = true,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        updateChangelogNotice = notice
+                    }
+                }
+            }
+            .onFailure { throwable ->
+                StashDebugLogBuffer.record("Navigation", "App update check failed", throwable)
+            }
     }
 
     fun openPlaybackQueueScene(
@@ -232,7 +312,18 @@ fun StashNavHost(
     }
 
     StashUiScaleProvider(uiScale = activeUiScale) {
+        updateChangelogNotice?.let { notice ->
+            AppUpdateChangelogDialog(
+                notice = notice,
+                onOpenRelease = {
+                    updateChangelogNotice = null
+                    openExternalUrl(context, notice.releaseUrl)
+                },
+                onDismiss = { updateChangelogNotice = null },
+            )
+        }
         Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (shouldShowBottomNavigation(currentRoute, isFoldLikeLayout)) {
                 val navigationDividerColor = navigationChromePolicy.dividerRole.toNavigationChromeColor()
@@ -260,7 +351,14 @@ fun StashNavHost(
                             onClick = {
                                 navigateTopLevel(destination)
                             },
-                            icon = { androidx.compose.material3.Icon(destination.icon, contentDescription = destinationLabel) },
+                            icon = {
+                                TopLevelDestinationIcon(
+                                    destination = destination,
+                                    label = destinationLabel,
+                                    showBadge = destination == TopLevelDestination.Settings &&
+                                        availableUpdateNotice != null,
+                                )
+                            },
                             colors = navigationChromePolicy.navigationBarItemColors(),
                             label = {
                                 Text(
@@ -292,7 +390,14 @@ fun StashNavHost(
                                 onClick = {
                                     navigateTopLevel(destination)
                                 },
-                                icon = { androidx.compose.material3.Icon(destination.icon, contentDescription = destinationLabel) },
+                                icon = {
+                                    TopLevelDestinationIcon(
+                                        destination = destination,
+                                        label = destinationLabel,
+                                        showBadge = destination == TopLevelDestination.Settings &&
+                                            availableUpdateNotice != null,
+                                    )
+                                },
                                 colors = navigationChromePolicy.navigationRailItemColors(),
                                 label = { Text(destinationLabel) },
                             )
@@ -338,12 +443,12 @@ fun StashNavHost(
                             onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
                             onOpenQueue = { navigateTopLevel(TopLevelDestination.Queue) },
                             onOpenFavorites = { navigateTopLevel(TopLevelDestination.Queue) },
-                            onOpenBrowse = { navigateTopLevel(TopLevelDestination.Browse) },
-                            onOpenSearch = { navigateTopLevel(TopLevelDestination.Search) },
+                            onOpenExplore = { navigateTopLevel(TopLevelDestination.Explore) },
+                            onOpenShorts = { navigateTopLevel(TopLevelDestination.Shorts) },
                         )
                     }
-                    composable(TopLevelDestination.Browse.route) {
-                        BrowseRoute(
+                    composable(TopLevelDestination.Explore.route) {
+                        ExploreRoute(
                             isFoldLikeLayout = isFoldLikeLayout,
                             onOpenScene = { sceneId, scenes, randomShuffle, continuation ->
                                 openPlaybackQueueScene(
@@ -356,18 +461,17 @@ fun StashNavHost(
                             onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
                         )
                     }
-                    composable(TopLevelDestination.Search.route) {
-                        SearchRoute(
+                    composable("search") {
+                        LaunchedEffect(Unit) {
+                            navController.navigate(TopLevelDestination.Explore.route) {
+                                popUpTo("search") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                    composable(TopLevelDestination.Shorts.route) {
+                        ShortsRoute(
                             isFoldLikeLayout = isFoldLikeLayout,
-                            onOpenScene = { sceneId, scenes, randomShuffle, continuation ->
-                                openPlaybackQueueScene(
-                                    sceneId = sceneId,
-                                    scenes = scenes,
-                                    randomShuffle = randomShuffle,
-                                    continuation = continuation,
-                                )
-                            },
-                            onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
                         )
                     }
                     composable(TopLevelDestination.Queue.route) {
@@ -381,13 +485,14 @@ fun StashNavHost(
                                     randomShuffle = randomShuffle,
                                 )
                             },
-                            onOpenBrowse = { navigateTopLevel(TopLevelDestination.Browse) },
-                            onOpenSearch = { navigateTopLevel(TopLevelDestination.Search) },
+                            onOpenBrowse = { navigateTopLevel(TopLevelDestination.Explore) },
+                            onOpenSearch = { navigateTopLevel(TopLevelDestination.Explore) },
                         )
                     }
                     composable(TopLevelDestination.Settings.route) {
                         SettingsRoute(
                             isFoldLikeLayout = isFoldLikeLayout,
+                            hasAvailableUpdate = availableUpdateNotice != null,
                             onOpenSection = { route -> navController.navigate(route) },
                         )
                     }
@@ -396,6 +501,8 @@ fun StashNavHost(
                             SettingsDetailRoute(
                                 section = section,
                                 isFoldLikeLayout = isFoldLikeLayout,
+                                availableUpdateNotice = availableUpdateNotice,
+                                onUpdateNoticeChange = { availableUpdateNotice = it },
                                 onNavigateBack = {
                                     if (!navController.popBackStack()) {
                                         navController.navigate(SettingsDestinations.Root) {
@@ -428,6 +535,42 @@ fun StashNavHost(
 }
 
 @Composable
+private fun AppUpdateChangelogDialog(
+    notice: AppUpdateNotice,
+    onOpenRelease: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(
+                    R.string.settings_support_update_changelog_title,
+                    notice.latestVersionName,
+                ),
+            )
+        },
+        text = {
+            Text(
+                text = notice.changelog?.takeIf { it.isNotBlank() }
+                    ?: stringResource(R.string.settings_support_update_changelog_empty),
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onOpenRelease) {
+                Text(stringResource(R.string.settings_support_update_open_action))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.settings_support_update_changelog_close))
+            }
+        },
+    )
+}
+
+@Composable
 private fun AppOrientationEffect(
     activity: Activity?,
     request: AppOrientationRequest,
@@ -455,6 +598,20 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+private fun openExternalUrl(context: Context, url: String) {
+    runCatching {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    }.onFailure { throwable ->
+        StashDebugLogBuffer.record("Navigation", "External URL open failed", throwable)
+    }
+}
+
+private fun currentAppVersionName(context: Context): String {
+    return runCatching {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty()
+    }.getOrDefault("")
 }
 
 private fun isTopLevelDestinationSelected(

@@ -99,6 +99,7 @@ import gomeng.dev.stashplayer.core.player.formatPlayerPosition
 import gomeng.dev.stashplayer.core.player.playerAspectRatioToggleContentDescription
 import gomeng.dev.stashplayer.core.player.playerLockButtonContentDescription
 import gomeng.dev.stashplayer.core.ui.components.SimilarVideosSection
+import gomeng.dev.stashplayer.core.ui.components.ReusablePlayerSeekRow
 import gomeng.dev.stashplayer.core.ui.designsystem.StashAlpha
 import gomeng.dev.stashplayer.core.ui.designsystem.StashColors
 import gomeng.dev.stashplayer.core.ui.designsystem.StashMetadataBadge
@@ -191,10 +192,11 @@ fun PlayerBottomControls(
             ),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        PlayerSeekRow(
+        ReusablePlayerSeekRow(
             displayedPositionMs = displayedPositionMs,
             durationMs = durationMs,
-            uiState = seekRowUiState,
+            sliderFraction = seekRowUiState.sliderFraction,
+            sliderEnabled = seekRowUiState.sliderEnabled,
             visualPolicy = chrome.seekBarVisualPolicy,
             onSliderFractionChange = onSliderFractionChange,
             onSliderChangeFinished = onSliderChangeFinished,
@@ -355,136 +357,6 @@ private fun PlayerFullscreenChromeTitleRow(
                 color = StashColors.TextPrimary.copy(alpha = 0.86f),
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
-            )
-        }
-    }
-}
-
-@Composable
-private fun PlayerSeekRow(
-    displayedPositionMs: Long,
-    durationMs: Long,
-    uiState: PlayerInfoDrawerSeekRowUiState,
-    visualPolicy: PlayerFullscreenSeekBarVisualPolicy,
-    onSliderFractionChange: (Float) -> Unit,
-    onSliderChangeFinished: () -> Unit,
-) {
-    val remainingMs = (durationMs - displayedPositionMs).coerceAtLeast(0L)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = formatPlayerPosition(displayedPositionMs),
-            color = StashColors.TextPrimary.copy(
-                alpha = StashPlayerYoutubeVisualTokens.BottomSheetTimePrimaryAlpha,
-            ),
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.width(48.dp),
-        )
-        Box(modifier = Modifier.weight(1f)) {
-            ThinPlayerSeekBar(
-                fraction = uiState.sliderFraction,
-                enabled = uiState.sliderEnabled,
-                visualPolicy = visualPolicy,
-                onFractionChange = onSliderFractionChange,
-                onChangeFinished = onSliderChangeFinished,
-            )
-        }
-        Text(
-            text = "-${formatPlayerPosition(remainingMs)}",
-            color = StashColors.TextSecondary.copy(
-                alpha = StashPlayerYoutubeVisualTokens.BottomSheetTimeSecondaryAlpha,
-            ),
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.width(52.dp),
-        )
-    }
-}
-
-@Composable
-private fun ThinPlayerSeekBar(
-    fraction: Float,
-    enabled: Boolean,
-    visualPolicy: PlayerFullscreenSeekBarVisualPolicy,
-    onFractionChange: (Float) -> Unit,
-    onChangeFinished: () -> Unit,
-) {
-    val coercedFraction = fraction.coerceIn(0f, 1f)
-    val accessibilityState = PlayerWatchPageController.buildPlayerSeekBarAccessibilityState(
-        fraction = coercedFraction,
-        enabled = enabled,
-    )
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(visualPolicy.touchTargetHeightDp.dp)
-            .semantics {
-                contentDescription = accessibilityState.contentDescription
-                stateDescription = accessibilityState.stateDescription
-                progressBarRangeInfo = ProgressBarRangeInfo(
-                    current = accessibilityState.progressFraction,
-                    range = 0f..1f,
-                    steps = 0,
-                )
-                if (!accessibilityState.enabled) {
-                    disabled()
-                }
-                if (accessibilityState.enabled) {
-                    setProgress { targetFraction ->
-                        onFractionChange(targetFraction.coerceIn(0f, 1f))
-                        onChangeFinished()
-                        true
-                    }
-                }
-            }
-            .pointerInput(enabled) {
-                if (!enabled) return@pointerInput
-                awaitEachGesture {
-                    val down = awaitFirstDown()
-                    fun updateFraction(x: Float) {
-                        val widthPx = size.width.toFloat().coerceAtLeast(1f)
-                        onFractionChange((x / widthPx).coerceIn(0f, 1f))
-                    }
-                    updateFraction(down.position.x)
-                    drag(down.id) { change ->
-                        updateFraction(change.position.x)
-                        change.consume()
-                    }
-                    onChangeFinished()
-                }
-            },
-    ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .fillMaxWidth()
-                .height(visualPolicy.restingTrackHeightDp.dp)
-                .clip(CircleShape)
-                .background(
-                    StashColors.TextSecondary.copy(
-                        alpha = StashPlayerYoutubeVisualTokens.BottomSheetSeekInactiveTrackAlpha,
-                    ),
-                ),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .width(maxWidth * coercedFraction)
-                .height(visualPolicy.activeTrackHeightDp.dp)
-                .clip(CircleShape)
-                .background(StashColors.Primary),
-        )
-        if (enabled) {
-            val thumbSize = visualPolicy.thumbDiameterDp.dp
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .offset(x = maxWidth * coercedFraction - (thumbSize / 2))
-                    .size(thumbSize)
-                    .clip(CircleShape)
-                    .background(StashColors.Primary),
             )
         }
     }

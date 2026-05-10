@@ -202,7 +202,7 @@ fun stashSectionHeaderV2Model(
     contentDescription: String? = null,
 ): StashSectionHeaderV2Model {
     val normalizedTitle = title.trim().ifBlank { stashString(R.string.auto_kr_0392) }
-    val normalizedSubtitle = subtitle.normalizedOrNull()
+    val normalizedSubtitle = null
     val normalizedCount = countLabel.normalizedOrNull()
     val normalizedAction = actionLabel.normalizedOrNull()
     val fallbackAccessibility = listOf(normalizedTitle, normalizedSubtitle, normalizedCount)

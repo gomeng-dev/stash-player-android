@@ -18,7 +18,6 @@ import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.Star
@@ -37,12 +36,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.StashMainTabSection
+import gomeng.dev.stashplayer.core.model.StashVideoFilterState
+import gomeng.dev.stashplayer.core.model.nextStashRandomSortSeed
+import gomeng.dev.stashplayer.core.model.withStashRandomShuffleSeed
+import gomeng.dev.stashplayer.core.network.buildSimilarScenesRepository
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
@@ -54,10 +56,8 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashEmptyStateModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashGhostButton
 import gomeng.dev.stashplayer.core.ui.designsystem.StashHeroMediaCard
 import gomeng.dev.stashplayer.core.ui.designsystem.StashScreenHeader
-import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionCard
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeader
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeaderModel
-import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeaderV2
 import gomeng.dev.stashplayer.core.ui.designsystem.StashServerStatusCard as StashDesignServerStatusCard
 import gomeng.dev.stashplayer.core.ui.designsystem.StashStatCard
 import gomeng.dev.stashplayer.core.ui.designsystem.stashServerStatusCardModel
@@ -72,8 +72,8 @@ fun HomeRoute(
     onOpenSettings: () -> Unit,
     onOpenQueue: () -> Unit,
     onOpenFavorites: () -> Unit,
-    onOpenBrowse: () -> Unit,
-    onOpenSearch: () -> Unit,
+    onOpenExplore: () -> Unit,
+    onOpenShorts: () -> Unit,
 ) {
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
@@ -83,7 +83,10 @@ fun HomeRoute(
     val watchLaterScenes by localRepository.watchLaterScenes.collectAsState(initial = emptyList())
     val favoriteScenes by localRepository.favoriteScenes.collectAsState(initial = emptyList())
     val playbackHistoryScenes by localRepository.playbackHistoryScenes.collectAsState(initial = emptyList())
+    val shortsInteractions by localRepository.shortsInteractions.collectAsState(initial = emptyList())
     var sections by remember(profile) { mutableStateOf<List<StashMainTabSection>>(emptyList()) }
+    var recommendedScenes by remember(profile) { mutableStateOf<List<SceneCardModel>>(emptyList()) }
+    val recommendationSeed = remember(profile) { nextStashRandomSortSeed() }
     var isLoading by remember(profile) { mutableStateOf(false) }
     var error by remember(profile) { mutableStateOf<String?>(null) }
     var reloadToken by remember { mutableStateOf(0) }
@@ -104,6 +107,47 @@ fun HomeRoute(
         isLoading = false
     }
 
+    LaunchedEffect(profile, favoriteScenes, shortsInteractions, sections, recommendationSeed) {
+        val activeProfile = profile
+        if (activeProfile == null) {
+            recommendedScenes = emptyList()
+            return@LaunchedEffect
+        }
+        val anchors = buildHomeRecommendationAnchors(
+            favoriteScenes = favoriteScenes,
+            shortsInteractions = shortsInteractions,
+        )
+        if (anchors.isEmpty()) {
+            recommendedScenes = emptyList()
+            return@LaunchedEffect
+        }
+        val client = StashGraphQlClient(activeProfile)
+        val repository = buildSimilarScenesRepository(
+            graphQlClient = client,
+            stashServerProfile = activeProfile,
+        )
+        val hybridRecommendations = anchors
+            .take(3)
+            .flatMap { anchor ->
+                repository.getSimilarScenes(sceneId = anchor.sceneId, limit = 12).getOrDefault(emptyList())
+            }
+        val libraryCandidates = runCatching {
+            client.findSceneCardsPage(
+                perPage = HOME_RECOMMENDATION_LIBRARY_CANDIDATE_PAGE_SIZE,
+                sort = "random",
+                videoFilter = StashVideoFilterState().withStashRandomShuffleSeed(recommendationSeed),
+            ).scenes
+        }.getOrDefault(emptyList())
+        recommendedScenes = rankHomeRecommendedScenes(
+            candidates = homeRecommendationCandidatePool(
+                libraryCandidates = libraryCandidates,
+                sectionCandidates = sections.flatMap { it.scenes },
+            ),
+            anchors = anchors,
+            hybridRecommendations = hybridRecommendations,
+        )
+    }
+
     val hubState = buildHomeHubState(
         hasProfile = profile != null,
         serverLabel = profile?.normalizedBaseUrl().orEmpty(),
@@ -122,6 +166,7 @@ fun HomeRoute(
         isFoldLikeLayout = isFoldLikeLayout,
         hubState = hubState,
         sections = sections,
+        recommendedScenes = recommendedScenes,
         serverProfile = profile,
         queueScenes = queueScenes,
         watchLaterScenes = watchLaterScenes,
@@ -134,18 +179,21 @@ fun HomeRoute(
         onOpenSettings = onOpenSettings,
         onOpenQueue = onOpenQueue,
         onOpenFavorites = onOpenFavorites,
-        onOpenBrowse = onOpenBrowse,
-        onOpenSearch = onOpenSearch,
+        onOpenExplore = onOpenExplore,
+        onOpenShorts = onOpenShorts,
         onPlayQueue = { playQueue(shuffle = false) },
         onShuffleQueue = { playQueue(shuffle = true) },
     )
 }
+
+private const val HOME_RECOMMENDATION_LIBRARY_CANDIDATE_PAGE_SIZE = 100
 
 @Composable
 private fun HomeHubContent(
     isFoldLikeLayout: Boolean,
     hubState: HomeHubState,
     sections: List<StashMainTabSection>,
+    recommendedScenes: List<SceneCardModel>,
     serverProfile: StashServerProfile?,
     queueScenes: List<SceneCardModel>,
     watchLaterScenes: List<SceneCardModel>,
@@ -158,8 +206,8 @@ private fun HomeHubContent(
     onOpenSettings: () -> Unit,
     onOpenQueue: () -> Unit,
     onOpenFavorites: () -> Unit,
-    onOpenBrowse: () -> Unit,
-    onOpenSearch: () -> Unit,
+    onOpenExplore: () -> Unit,
+    onOpenShorts: () -> Unit,
     onPlayQueue: () -> Unit,
     onShuffleQueue: () -> Unit,
 ) {
@@ -244,8 +292,8 @@ private fun HomeHubContent(
                     onShuffleQueue = onShuffleQueue,
                     onOpenQueue = onOpenQueue,
                     onOpenFavorites = onOpenFavorites,
-                    onOpenBrowse = onOpenBrowse,
-                    onOpenSearch = onOpenSearch,
+                    onOpenExplore = onOpenExplore,
+                    onOpenShorts = onOpenShorts,
                     onOpenSettings = onOpenSettings,
                 )
             }
@@ -295,13 +343,21 @@ private fun HomeHubContent(
                 }
             }
 
-            item {
-                HomeDiscoverySection(
-                    modifier = Modifier.padding(horizontal = horizontalPadding),
-                    onOpenBrowse = onOpenBrowse,
-                    onOpenSearch = onOpenSearch,
-                )
+            if (recommendedScenes.isNotEmpty()) {
+                item {
+                    HomeScenePreviewRow(
+                        title = homePreviewSectionTitle(HomeHubSectionId.Recommended),
+                        scenes = recommendedScenes.take(8),
+                        allScenes = recommendedScenes,
+                        cardWidth = cardWidth,
+                        thumbnailHeight = thumbnailHeight,
+                        horizontalPadding = horizontalPadding,
+                        serverProfile = serverProfile,
+                        onOpenScene = onOpenScene,
+                    )
+                }
             }
+
         }
 
         if (isRefreshing && sections.isEmpty() && hasProfile) {
@@ -364,7 +420,7 @@ private fun HomeHubContent(
                         primaryActionLabel = stashString(R.string.auto_kr_0002),
                     ),
                     modifier = Modifier.padding(horizontal = horizontalPadding),
-                    onPrimaryAction = onOpenBrowse,
+                    onPrimaryAction = onOpenExplore,
                 )
             }
         }
@@ -429,8 +485,8 @@ private fun HomeQuickActionRow(
     onShuffleQueue: () -> Unit,
     onOpenQueue: () -> Unit,
     onOpenFavorites: () -> Unit,
-    onOpenBrowse: () -> Unit,
-    onOpenSearch: () -> Unit,
+    onOpenExplore: () -> Unit,
+    onOpenShorts: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val actions = buildHomeQuickActions(
@@ -451,8 +507,10 @@ private fun HomeQuickActionRow(
                         HomeHubAction.ShuffleQueue -> onShuffleQueue()
                         HomeHubAction.OpenQueue -> onOpenQueue()
                         HomeHubAction.OpenFavorites -> onOpenFavorites()
-                        HomeHubAction.OpenBrowse -> onOpenBrowse()
-                        HomeHubAction.OpenSearch -> onOpenSearch()
+                        HomeHubAction.OpenExplore -> onOpenExplore()
+                        HomeHubAction.OpenShorts -> onOpenShorts()
+                        HomeHubAction.OpenBrowse -> onOpenExplore()
+                        HomeHubAction.OpenSearch -> onOpenShorts()
                         HomeHubAction.OpenSettings -> onOpenSettings()
                         HomeHubAction.RetryServerSections -> Unit
                     }
@@ -474,8 +532,8 @@ private fun homeQuickActionIcon(action: HomeQuickActionModel): ImageVector = whe
     stashString(R.string.auto_kr_0004) -> Icons.AutoMirrored.Outlined.PlaylistPlay
     stashString(R.string.auto_kr_0016) -> Icons.Outlined.Bookmarks
     stashString(R.string.auto_kr_0238) -> Icons.Outlined.Star
-    stashString(R.string.auto_kr_0002) -> Icons.Outlined.Explore
-    stashString(R.string.auto_kr_0003) -> Icons.Outlined.Search
+    stashString(R.string.navigation_explore_label) -> Icons.Outlined.Explore
+    stashString(R.string.navigation_shorts_label) -> Icons.Outlined.PlayArrow
     else -> Icons.Outlined.Settings
 }
 
@@ -504,65 +562,6 @@ private fun HomeServerStatusCard(
         onSecondaryAction = if (error != null) onOpenSettings else null,
         modifier = modifier,
     )
-}
-
-@Composable
-private fun HomeDiscoverySection(
-    modifier: Modifier = Modifier,
-    onOpenBrowse: () -> Unit,
-    onOpenSearch: () -> Unit,
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        StashSectionHeaderV2(
-            title = homePreviewSectionTitle(HomeHubSectionId.Discovery),
-            subtitle = stashString(R.string.auto_kr_0455),
-        )
-        homeDiscoveryEntryModels().forEach { entry ->
-            HomeEntryCard(
-                title = entry.title,
-                subtitle = entry.subtitle,
-                onClick = when (entry.action) {
-                    HomeHubAction.OpenBrowse -> onOpenBrowse
-                    HomeHubAction.OpenSearch -> onOpenSearch
-                    else -> onOpenBrowse
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun HomeEntryCard(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    StashSectionCard(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
 }
 
 @Composable

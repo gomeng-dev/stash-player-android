@@ -242,11 +242,30 @@ class StashGraphQlClient(
         return parseFindTagsResponse(execute(FIND_TAGS_QUERY, buildFindTagsVariables(perPage, page, query)))
     }
 
+    suspend fun ensureShortsTagOnScene(scene: SceneCardModel): Boolean {
+        val existingShortsTag = scene.tagChips.firstOrNull { it.label.equals(SHORTS_TAG_NAME, ignoreCase = true) }
+            ?: findTags(perPage = 10, query = SHORTS_TAG_NAME).firstOrNull { it.name.equals(SHORTS_TAG_NAME, ignoreCase = true) }
+                ?.let { tag -> gomeng.dev.stashplayer.core.model.SceneCardTagChip(id = tag.id, label = tag.name) }
+            ?: parseTagCreateResponse(execute(TAG_CREATE_MUTATION, buildTagCreateVariables(SHORTS_TAG_NAME)))
+        if (existingShortsTag.id.isBlank()) return false
+        if (scene.tagChips.any { it.id == existingShortsTag.id }) return true
+        return parseSceneTagsUpdateResponse(
+            execute(
+                SCENE_TAGS_UPDATE_MUTATION,
+                buildSceneTagUpdateVariables(
+                    sceneId = scene.id,
+                    existingTagIds = scene.tagChips.map { it.id },
+                    shortsTagId = existingShortsTag.id,
+                ),
+            ),
+        )
+    }
+
     suspend fun fetchSpriteFrames(vttUrl: String): List<StashSpriteFrame> = withContext(Dispatchers.IO) {
         val authenticatedVttUrl = profile.authenticatedUrl(vttUrl)
         val requestBuilder = Request.Builder().url(authenticatedVttUrl)
-        if (profile.authHeadersFor(vttUrl).isNotEmpty()) {
-            requestBuilder.header("ApiKey", profile.apiKey)
+        profile.authHeadersFor(authenticatedVttUrl).forEach { (name, value) ->
+            requestBuilder.header(name, value)
         }
         val response = okHttpClient.newCall(requestBuilder.build()).execute()
         val responseBody = response.body?.string().orEmpty()
@@ -386,6 +405,18 @@ class StashGraphQlClient(
             }
         """
 
+        val TAG_CREATE_MUTATION = """
+            mutation TagCreate(${'$'}input: TagCreateInput!) {
+              tagCreate(input: ${'$'}input) { id name }
+            }
+        """
+
+        val SCENE_TAGS_UPDATE_MUTATION = """
+            mutation SceneTagsUpdate(${'$'}input: SceneUpdateInput!) {
+              sceneUpdate(input: ${'$'}input) { id tags { id name } }
+            }
+        """
+
         val PLUGINS_QUERY = """
             query Plugins {
               plugins {
@@ -431,8 +462,28 @@ class StashGraphQlClient(
               scenesDestroy(input: ${'$'}input)
             }
         """
+
+        const val SHORTS_TAG_NAME = "shorts"
     }
 }
+
+internal fun buildTagCreateVariables(name: String): Map<String, Any?> = mapOf(
+    "input" to mapOf("name" to name.trim().ifBlank { StashGraphQlClient.SHORTS_TAG_NAME }),
+)
+
+internal fun buildSceneTagUpdateVariables(
+    sceneId: String,
+    existingTagIds: List<String>,
+    shortsTagId: String,
+): Map<String, Any?> = mapOf(
+    "input" to mapOf(
+        "id" to sceneId,
+        "tag_ids" to (existingTagIds + shortsTagId)
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .distinct(),
+    ),
+)
 
 internal fun buildFindScenesVariables(
     perPage: Int,

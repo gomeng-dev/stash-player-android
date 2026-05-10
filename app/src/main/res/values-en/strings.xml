@@ -3,9 +3,49 @@
     <string name="app_name">Stash Player</string>
     <string name="navigation_home_label">Home</string>
     <string name="navigation_browse_label">Browse</string>
+    <string name="navigation_explore_label">Explore</string>
     <string name="navigation_search_label">Search</string>
+    <string name="navigation_shorts_label">Shorts</string>
+    <string name="home_recommended_section_title">Recommended videos</string>
     <string name="navigation_queue_label">Queue</string>
     <string name="navigation_settings_label">Settings</string>
+    <string name="explore_screen_subtitle">Search, filter, sort, and view your Stash videos from one screen.</string>
+    <string name="explore_requires_server_message">Connect a Stash server to load Explore results.</string>
+    <string name="explore_empty_prompt_title">Start exploring</string>
+    <string name="explore_empty_prompt_message">Enter a search term or adjust filters to show Stash video results here.</string>
+    <string name="explore_load_failed_title">Could not load Explore results</string>
+    <string name="explore_no_results_title">No Explore results</string>
+    <string name="explore_no_results_message">Try another search term or remove some filters.</string>
+    <string name="explore_home_section_title">Explore and Shorts</string>
+    <string name="explore_home_section_subtitle">Find videos in your library or get ready for short-form playback.</string>
+    <string name="explore_home_entry_subtitle">Browse all videos and search results from one screen.</string>
+    <string name="shorts_home_entry_subtitle">Play under-one-minute videos as a vertical random feed.</string>
+    <string name="shorts_placeholder_title">Shorts</string>
+    <string name="shorts_placeholder_message">Play under-one-minute videos as a vertical random feed.</string>
+    <string name="shorts_requires_server_title">Stash connection required</string>
+    <string name="shorts_requires_server_message">Connect a Stash server before loading Shorts.</string>
+    <string name="shorts_loading_title">Loading Shorts</string>
+    <string name="shorts_loading_message">Preparing under-one-minute videos in random order.</string>
+    <string name="shorts_empty_title">No Shorts to show</string>
+    <string name="shorts_empty_message">Check that your Stash library has videos shorter than one minute.</string>
+    <string name="shorts_error_title">Could not load Shorts</string>
+    <string name="shorts_error_message">Try again in a moment.</string>
+    <string name="shorts_stream_error_title">Could not play this Short</string>
+    <string name="shorts_retry_action">Retry</string>
+    <string name="shorts_skip_action">Next</string>
+    <string name="shorts_play_content_description">Play Short</string>
+    <string name="shorts_pause_content_description">Pause Short</string>
+    <string name="shorts_like_content_description">Like Short</string>
+    <string name="shorts_liked_content_description">Remove Shorts like</string>
+    <string name="shorts_not_interested_content_description">Not interested</string>
+    <string name="shorts_not_interested_selected_content_description">Remove Not interested</string>
+    <string name="shorts_delete_content_description">Delete Shorts video</string>
+    <string name="shorts_delete_failed_message">Could not delete this Shorts video.</string>
+    <string name="shorts_seek_content_description">Shorts playback position</string>
+    <string name="shorts_seek_preview">%1$s / %2$s</string>
+    <string name="shorts_speed_hold_feedback">1.5x speed</string>
+    <string name="queue_explore_entry_label">Go to Explore</string>
+    <string name="queue_library_subtitle">A local playlist built from items added to the queue or Watch Later from Explore cards.</string>
     <string name="scene_card_queue_remove_content_description">Remove from queue</string>
     <string name="scene_card_queue_removed_feedback">Removed from queue.</string>
     <string name="settings_title">Settings</string>
@@ -47,6 +87,17 @@
     <string name="settings_pip_title">Enable PiP</string>
     <string name="settings_pip_label">Use PiP</string>
     <string name="settings_pip_description">Enter a small player when you go home and show a PiP button in the player.</string>
+    <string name="settings_shorts_max_duration_title">Shorts maximum length</string>
+    <string name="settings_shorts_max_duration_description">Choose the longest videos shown in the Shorts tab.</string>
+    <string name="settings_shorts_max_duration_value_label">%1$d sec</string>
+    <string name="settings_shorts_recommendation_reset_title">Reset Shorts recommendations</string>
+    <string name="settings_shorts_recommendation_reset_description">Delete only Shorts learning such as likes, not interested, completions, and skips.</string>
+    <string name="settings_shorts_recommendation_reset_button">Reset learning history</string>
+    <string name="settings_shorts_recommendation_reset_confirm_title">Reset Shorts recommendation learning?</string>
+    <string name="settings_shorts_recommendation_reset_confirm_message">Favorites, Watch Later, Queue, playback history, and server settings are kept.</string>
+    <string name="settings_shorts_recommendation_reset_confirm_button">Reset</string>
+    <string name="settings_shorts_recommendation_reset_cancel_button">Cancel</string>
+    <string name="settings_shorts_recommendation_reset_success">Shorts recommendation learning has been reset.</string>
     <string name="settings_playback_orientation_title">Automatic orientation control</string>
     <string name="settings_playback_orientation_description">Choose whether the player follows the device rotation sensor.</string>
     <string name="settings_playback_orientation_off_label">Off</string>
@@ -157,6 +208,24 @@
     <string name="settings_support_version_title">Version</string>
     <string name="settings_support_version_description">Current version: %1$s. Tap to open GitHub Releases.</string>
     <string name="settings_support_unknown_version">Unknown</string>
+    <string name="settings_support_update_check_title">Check for updates</string>
+    <string name="settings_support_update_check_description">Check GitHub Releases for the latest app version. The app will notify you when a newer version is available.</string>
+    <string name="settings_support_update_check_button">Check latest version</string>
+    <string name="settings_support_update_checking">Checking...</string>
+    <string name="settings_support_update_available">Version %1$s is available. Current version: %2$s.</string>
+    <string name="settings_support_update_available_snackbar">Version %1$s is available</string>
+    <string name="settings_support_update_current">You are using the latest version. (%1$s)</string>
+    <string name="settings_support_update_failed">Could not check for updates. Try again in a moment.</string>
+    <string name="settings_support_update_download_button">Download update</string>
+    <string name="settings_support_update_downloading">Downloading update...</string>
+    <string name="settings_support_update_download_failed">Could not download the update APK. Try again from the release page.</string>
+    <string name="settings_support_update_install_started">Download complete. Opening the installer.</string>
+    <string name="settings_support_update_install_permission_required">Allow APK installs for this app, then try again.</string>
+    <string name="settings_support_update_changelog_action">Changes</string>
+    <string name="settings_support_update_changelog_title">Version %1$s changes</string>
+    <string name="settings_support_update_changelog_empty">This release does not include visible changelist text.</string>
+    <string name="settings_support_update_changelog_close">Close</string>
+    <string name="settings_support_update_open_action">Releases</string>
     <string name="settings_support_issue_title">Report issue</string>
     <string name="settings_support_issue_description">Report issues or check progress in GitHub Issues.</string>
     <string name="settings_support_link_open_failed">Could not open the link.</string>
@@ -515,7 +584,7 @@
     <string name="auto_kr_0300">Recommendation score %1$s</string>
     <string name="auto_kr_0301">Detail filters%1$s</string>
     <string name="auto_kr_0302" formatted="false">Detail filters</string>
-    <string name="auto_kr_0303" formatted="false">Apply date, video duration, and watch status to Browse/Search results.</string>
+    <string name="auto_kr_0303" formatted="false">Apply date, video duration, and watch status to Explore results.</string>
     <string name="auto_kr_0304" formatted="false">Date</string>
     <string name="auto_kr_0305" formatted="false">Clear date</string>
     <string name="auto_kr_0306" formatted="false">Start date</string>
@@ -544,7 +613,7 @@
     <string name="auto_kr_0329">%1$s · Applied</string>
     <string name="auto_kr_0330">Quality and rating%1$s</string>
     <string name="auto_kr_0331" formatted="false">Quality and rating filter</string>
-    <string name="auto_kr_0332" formatted="false">Apply rating, resolution, and file type to Browse/Search results.</string>
+    <string name="auto_kr_0332" formatted="false">Apply rating, resolution, and file type to Explore results.</string>
     <string name="auto_kr_0333" formatted="false">Clear rating</string>
     <string name="auto_kr_0334" formatted="false">Choose minimum/maximum scores with the same star slider as the player. The maximum can be left blank, and when set it cannot be lower than the minimum.</string>
     <string name="auto_kr_0335" formatted="false">Resolution</string>
@@ -581,7 +650,7 @@
     <string name="auto_kr_0366" formatted="false">Clear saved filter</string>
     <string name="auto_kr_0367" formatted="false">Clear random</string>
     <string name="auto_kr_0368" formatted="false">Tag filter</string>
-    <string name="auto_kr_0369" formatted="false">Search and select tags, then tap Apply to update Browse/Search results.</string>
+    <string name="auto_kr_0369" formatted="false">Search and select tags, then tap Apply to update Explore results.</string>
     <string name="auto_kr_0370" formatted="false">Search tags</string>
     <string name="auto_kr_0371" formatted="false">Tag name…</string>
     <string name="auto_kr_0372" formatted="false">Could not load tags.</string>
@@ -718,15 +787,15 @@
     <string name="auto_kr_0502" formatted="false">Add all to queue</string>
     <string name="auto_kr_0503" formatted="false">Add all Watch Later items to queue</string>
     <string name="auto_kr_0504" formatted="false">Remove</string>
-    <string name="auto_kr_0505" formatted="false">A local playlist built from items added to the queue or Watch Later from Browse/Search cards.</string>
+    <string name="auto_kr_0505" formatted="false">A local playlist built from items added to the queue or Watch Later from Explore cards.</string>
     <string name="auto_kr_0506" formatted="false">Up next queue</string>
     <string name="auto_kr_0507" formatted="false">Playback queue is empty</string>
     <string name="auto_kr_0508" formatted="false">Choose videos in Browse to build a queue for continuous playback.</string>
-    <string name="auto_kr_0509" formatted="false">Go to Browse</string>
+    <string name="auto_kr_0509" formatted="false">Go to Explore</string>
     <string name="auto_kr_0510" formatted="false">Collect candidates to watch someday, then send them to the playback queue when ready.</string>
     <string name="auto_kr_0511" formatted="false">No videos to watch later</string>
     <string name="auto_kr_0512" formatted="false">Save videos you like from Search to Watch Later.</string>
-    <string name="auto_kr_0513" formatted="false">Go to Search</string>
+    <string name="auto_kr_0513" formatted="false">Go to Explore</string>
     <string name="auto_kr_0514" formatted="false">No favorite videos</string>
     <string name="auto_kr_0515" formatted="false">Save frequently watched videos as favorites from Browse.</string>
     <string name="auto_kr_0516" formatted="false">Send Watch Later items to the queue to watch now.</string>

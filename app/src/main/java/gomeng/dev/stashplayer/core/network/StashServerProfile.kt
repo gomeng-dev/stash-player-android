@@ -24,6 +24,8 @@ data class StashServerProfile(
     val apiKey: String = "",
     val authMode: StashServerAuthMode = StashServerAuthMode.ApiKey,
     val sessionCookie: String = "",
+    val username: String = "",
+    val password: String = "",
     val allowInsecureLocalApiKey: Boolean = false,
 ) {
     fun isConfigured(): Boolean = baseUrl.isNotBlank()
@@ -64,6 +66,9 @@ data class StashServerProfile(
         }
     }
 
+    fun hasPasswordSessionCredentials(): Boolean =
+        authMode == StashServerAuthMode.SessionCookie && username.isNotBlank() && password.isNotBlank()
+
     fun authenticatedUrl(url: String): String {
         val absolute = absoluteUrl(url)
         if (authMode != StashServerAuthMode.ApiKey || apiKey.isBlank() || !isSameOrigin(absolute) || absolute.contains("apikey=")) return absolute
@@ -74,6 +79,18 @@ data class StashServerProfile(
         val separator = if (main.contains('?')) "&" else "?"
         return "$main${separator}apikey=$encoded$fragment"
     }
+
+    override fun toString(): String =
+        "StashServerProfile(" +
+            "name=$name, " +
+            "baseUrl=$baseUrl, " +
+            "apiKey=${apiKey.redactedCredentialLabel()}, " +
+            "authMode=$authMode, " +
+            "sessionCookie=${sessionCookie.redactedCredentialLabel()}, " +
+            "username=${username.redactedCredentialLabel()}, " +
+            "password=${password.redactedCredentialLabel()}, " +
+            "allowInsecureLocalApiKey=$allowInsecureLocalApiKey" +
+            ")"
 
     private fun parseHttpUri(value: String): URI? = runCatching { URI(value) }
         .getOrNull()
@@ -86,9 +103,17 @@ data class StashServerProfile(
         scheme.equals("https", ignoreCase = true) -> 443
         else -> 80
     }
+
+    private fun String.redactedCredentialLabel(): String = if (isBlank()) "" else "[REDACTED]"
 }
 
 fun persistStashServerAuthMode(mode: StashServerAuthMode): String = mode.persistedValue
 
 fun stashServerAuthModeFromPersistedValue(value: String?): StashServerAuthMode =
     StashServerAuthMode.fromPersistedValue(value)
+
+fun shouldRefreshPasswordSessionOnStartup(profile: StashServerProfile?): Boolean =
+    profile?.hasPasswordSessionCredentials() == true
+
+fun passwordSessionStartupRefreshKey(profile: StashServerProfile): String =
+    listOf(profile.normalizedBaseUrl(), profile.username.trim(), profile.password).joinToString(separator = "\u001F")

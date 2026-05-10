@@ -95,6 +95,19 @@ fun parseFindTagsResponse(json: String): List<StashSelectedTag> {
     return envelope.data?.findTags?.tags.orEmpty().mapNotNull { tag -> tag.toSelectedTagOrNull() }
 }
 
+fun parseTagCreateResponse(json: String): SceneCardTagChip {
+    val envelope = parseJson<TagCreateEnvelope>(json)
+    envelope.throwIfErrors()
+    val tag = envelope.data?.tagCreate ?: error("Stash tagCreate returned no tag")
+    return tag.toSceneCardTagChipOrNull() ?: error("Stash tagCreate returned an invalid tag")
+}
+
+fun parseSceneTagsUpdateResponse(json: String): Boolean {
+    val envelope = parseJson<SceneTagsUpdateEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.sceneUpdate?.id?.isNotBlank() == true
+}
+
 fun parseVersionResponse(json: String): String {
     val envelope = parseJson<VersionEnvelope>(json)
     envelope.throwIfErrors()
@@ -227,6 +240,22 @@ private data class ApiFindTags(
     val count: Int? = null,
     val tags: List<ApiTag> = emptyList(),
 )
+
+private data class TagCreateEnvelope(
+    val data: TagCreateData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class TagCreateData(val tagCreate: ApiTag? = null)
+
+private data class SceneTagsUpdateEnvelope(
+    val data: SceneTagsUpdateData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class SceneTagsUpdateData(val sceneUpdate: ApiSceneId? = null)
+
+private data class ApiSceneId(val id: String? = null)
 
 private data class ApiTag(
     val id: String,

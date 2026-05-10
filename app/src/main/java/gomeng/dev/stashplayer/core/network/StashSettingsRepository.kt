@@ -15,8 +15,11 @@ import gomeng.dev.stashplayer.core.ui.theme.StashUiScale
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import gomeng.dev.stashplayer.core.model.STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
+import gomeng.dev.stashplayer.core.model.coerceShortsMaxDurationSeconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -34,6 +37,8 @@ class StashSettingsRepository(private val context: Context) {
                 apiKey = prefs[Keys.ApiKey].orEmpty(),
                 authMode = stashServerAuthModeFromPersistedValue(prefs[Keys.AuthMode]),
                 sessionCookie = prefs[Keys.SessionCookie].orEmpty(),
+                username = prefs[Keys.Username].orEmpty(),
+                password = prefs[Keys.Password].orEmpty(),
                 allowInsecureLocalApiKey = prefs[Keys.AllowInsecureLocalApiKey] ?: false,
             )
         }
@@ -83,6 +88,10 @@ class StashSettingsRepository(private val context: Context) {
         prefs[Keys.PictureInPictureEnabled] ?: DEFAULT_PICTURE_IN_PICTURE_ENABLED
     }
 
+    val shortsMaxDurationSeconds: Flow<Int> = context.stashSettingsDataStore.data.map { prefs ->
+        shortsMaxDurationSecondsFromPersistedValue(prefs[Keys.ShortsMaxDurationSeconds])
+    }
+
     val playbackOrientationMode: Flow<PlaybackOrientationMode> = context.stashSettingsDataStore.data.map { prefs ->
         playbackOrientationModeFromPersistedValue(prefs[Keys.PlaybackOrientationMode])
     }
@@ -110,6 +119,16 @@ class StashSettingsRepository(private val context: Context) {
             prefs[Keys.ApiKey] = profile.apiKey.trim()
             prefs[Keys.AuthMode] = persistStashServerAuthMode(profile.authMode)
             prefs[Keys.SessionCookie] = profile.sessionCookie.trim()
+            prefs[Keys.Username] = if (profile.authMode == StashServerAuthMode.SessionCookie) {
+                profile.username.trim()
+            } else {
+                ""
+            }
+            prefs[Keys.Password] = if (profile.authMode == StashServerAuthMode.SessionCookie) {
+                profile.password
+            } else {
+                ""
+            }
             prefs[Keys.AllowInsecureLocalApiKey] = profile.allowInsecureLocalApiKey
         }
     }
@@ -180,6 +199,12 @@ class StashSettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setShortsMaxDurationSeconds(seconds: Int) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.ShortsMaxDurationSeconds] = persistShortsMaxDurationSeconds(seconds)
+        }
+    }
+
     suspend fun setPlaybackOrientationMode(mode: PlaybackOrientationMode) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.PlaybackOrientationMode] = persistPlaybackOrientationModeValue(mode)
@@ -217,6 +242,8 @@ class StashSettingsRepository(private val context: Context) {
             prefs.remove(Keys.ApiKey)
             prefs.remove(Keys.AuthMode)
             prefs.remove(Keys.SessionCookie)
+            prefs.remove(Keys.Username)
+            prefs.remove(Keys.Password)
             prefs.remove(Keys.AllowInsecureLocalApiKey)
         }
     }
@@ -227,6 +254,8 @@ class StashSettingsRepository(private val context: Context) {
         val ApiKey = stringPreferencesKey("server_api_key")
         val AuthMode = stringPreferencesKey("server_auth_mode")
         val SessionCookie = stringPreferencesKey("server_session_cookie")
+        val Username = stringPreferencesKey("server_username")
+        val Password = stringPreferencesKey("server_password")
         val AllowInsecureLocalApiKey = booleanPreferencesKey("server_allow_insecure_local_api_key")
         val PlayerDebugOverlayEnabled = booleanPreferencesKey("player_debug_overlay_enabled")
         val BiometricAppLockEnabled = booleanPreferencesKey("biometric_app_lock_enabled")
@@ -239,6 +268,7 @@ class StashSettingsRepository(private val context: Context) {
         val PlaybackEndAction = stringPreferencesKey("playback_end_action")
         val BackgroundPlaybackEnabled = booleanPreferencesKey("background_playback_enabled")
         val PictureInPictureEnabled = booleanPreferencesKey("picture_in_picture_enabled")
+        val ShortsMaxDurationSeconds = intPreferencesKey("shorts_max_duration_seconds")
         val PlaybackOrientationMode = stringPreferencesKey("playback_orientation_mode")
         val SubtitleLanguage = stringPreferencesKey("subtitle_language")
         val SubtitleFontScale = floatPreferencesKey("subtitle_font_scale")
@@ -258,6 +288,7 @@ class StashSettingsRepository(private val context: Context) {
         val DEFAULT_PLAYBACK_END_ACTION: PlaybackEndAction = PlaybackEndAction.default
         const val DEFAULT_BACKGROUND_PLAYBACK_ENABLED = false
         const val DEFAULT_PICTURE_IN_PICTURE_ENABLED = false
+        const val DEFAULT_SHORTS_MAX_DURATION_SECONDS = STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
         val DEFAULT_PLAYBACK_ORIENTATION_MODE: PlaybackOrientationMode = PlaybackOrientationMode.default
         val DEFAULT_SUBTITLE_LANGUAGE: SubtitleLanguagePreference = SubtitleLanguagePreference.default
         const val DEFAULT_SUBTITLE_FONT_SCALE: Float = SUBTITLE_FONT_SCALE_DEFAULT
@@ -292,6 +323,11 @@ class StashSettingsRepository(private val context: Context) {
 
         fun playbackEndActionFromPersistedValue(value: String?): PlaybackEndAction =
             PlaybackEndAction.fromPersistedValue(value)
+
+        fun persistShortsMaxDurationSeconds(seconds: Int): Int = coerceShortsMaxDurationSeconds(seconds)
+
+        fun shortsMaxDurationSecondsFromPersistedValue(value: Int?): Int =
+            coerceShortsMaxDurationSeconds(value ?: DEFAULT_SHORTS_MAX_DURATION_SECONDS)
 
         fun persistPlaybackOrientationModeValue(mode: PlaybackOrientationMode): String = mode.persistedValue
 

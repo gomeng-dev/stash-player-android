@@ -13,14 +13,22 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import gomeng.dev.stashplayer.core.model.SceneCardModel
+import gomeng.dev.stashplayer.core.model.ShortsExplicitFeedback
+import gomeng.dev.stashplayer.core.model.ShortsInteractionOutcome
+import gomeng.dev.stashplayer.core.model.ShortsInteractionRecord
 import gomeng.dev.stashplayer.core.model.StashPersistedBrowseFilterState
+import gomeng.dev.stashplayer.core.model.StashPersistedExploreFilterState
 import gomeng.dev.stashplayer.core.model.StashPersistedSearchFilterState
 import gomeng.dev.stashplayer.core.model.StashSavedFilterRef
 import gomeng.dev.stashplayer.core.model.StashVideoFilterState
 import gomeng.dev.stashplayer.core.model.deserializeStashPersistedBrowseFilterState
+import gomeng.dev.stashplayer.core.model.deserializeStashPersistedExploreFilterState
 import gomeng.dev.stashplayer.core.model.deserializeStashPersistedSearchFilterState
 import gomeng.dev.stashplayer.core.model.deserializeStashVideoFilterState
+import gomeng.dev.stashplayer.core.model.mergeRecentExploreVideoFilters
 import gomeng.dev.stashplayer.core.model.normalizeStashVideoFilterText
 import gomeng.dev.stashplayer.core.model.promoteStashRecentVideoFilter
 import gomeng.dev.stashplayer.core.model.toSavedFilterPayload
@@ -85,6 +93,21 @@ data class LocalSavedVideoFilterEntity(
     val updatedAt: Long,
 )
 
+@Entity(tableName = "local_shorts_interactions")
+data class LocalShortsInteractionEntity(
+    @PrimaryKey val sceneId: String,
+    val explicitFeedback: String,
+    val impressionCount: Int,
+    val completedCount: Int,
+    val skipCount: Int,
+    val replayCount: Int,
+    val totalWatchMs: Long,
+    val lastProgress: Float,
+    val tagIdsSnapshot: String,
+    val studioSnapshot: String?,
+    val updatedAt: Long,
+)
+
 @Dao
 interface StashLocalLibraryDao {
     @Query("SELECT sceneId FROM local_favorite_scenes ORDER BY updatedAt DESC")
@@ -117,6 +140,9 @@ interface StashLocalLibraryDao {
     @Query("DELETE FROM local_scene_list_items WHERE sceneId IN (:sceneIds)")
     suspend fun deleteSceneListItemsForScenes(sceneIds: List<String>)
 
+    @Query("DELETE FROM local_shorts_interactions WHERE sceneId IN (:sceneIds)")
+    suspend fun deleteShortsInteractionsForScenes(sceneIds: List<String>)
+
     @Query("DELETE FROM local_scene_list_items WHERE listType = :listType")
     suspend fun clearSceneList(listType: String)
 
@@ -134,6 +160,18 @@ interface StashLocalLibraryDao {
 
     @Query("DELETE FROM local_saved_video_filters WHERE id = :id")
     suspend fun deleteSavedVideoFilter(id: String)
+
+    @Query("SELECT * FROM local_shorts_interactions ORDER BY updatedAt DESC")
+    fun observeShortsInteractions(): Flow<List<LocalShortsInteractionEntity>>
+
+    @Query("SELECT * FROM local_shorts_interactions WHERE sceneId = :sceneId")
+    suspend fun shortsInteraction(sceneId: String): LocalShortsInteractionEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertShortsInteraction(interaction: LocalShortsInteractionEntity)
+
+    @Query("DELETE FROM local_shorts_interactions")
+    suspend fun clearShortsInteractions()
 }
 
 @Database(
@@ -141,8 +179,9 @@ interface StashLocalLibraryDao {
         LocalFavoriteSceneEntity::class,
         LocalSceneListItemEntity::class,
         LocalSavedVideoFilterEntity::class,
+        LocalShortsInteractionEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class StashLocalDatabase : RoomDatabase() {
@@ -157,7 +196,32 @@ abstract class StashLocalDatabase : RoomDatabase() {
                 context.applicationContext,
                 StashLocalDatabase::class.java,
                 LOCAL_DATABASE_NAME,
-            ).build().also { instance = it }
+            )
+                .addMigrations(MIGRATION_1_2)
+                .build()
+                .also { instance = it }
+        }
+
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS local_shorts_interactions (
+                        sceneId TEXT NOT NULL PRIMARY KEY,
+                        explicitFeedback TEXT NOT NULL,
+                        impressionCount INTEGER NOT NULL,
+                        completedCount INTEGER NOT NULL,
+                        skipCount INTEGER NOT NULL,
+                        replayCount INTEGER NOT NULL,
+                        totalWatchMs INTEGER NOT NULL,
+                        lastProgress REAL NOT NULL,
+                        tagIdsSnapshot TEXT NOT NULL,
+                        studioSnapshot TEXT,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+            }
         }
     }
 }
@@ -184,11 +248,40 @@ class StashLocalLibraryRepository(context: Context) {
     val savedVideoFilters: Flow<List<LocalSavedVideoFilter>> = dao.observeSavedVideoFilters().map { filters ->
         filters.map { it.toModel() }
     }
+    val shortsInteractions: Flow<List<ShortsInteractionRecord>> = dao.observeShortsInteractions().map { interactions ->
+        interactions.map { it.toModel() }
+    }
     val persistedBrowseFilterState: Flow<StashPersistedBrowseFilterState?> = appContext.stashLocalFilterDataStore.data.map { prefs ->
         deserializeStashPersistedBrowseFilterState(prefs[LocalFilterKeys.Browse].orEmpty())
     }
     val persistedSearchFilterState: Flow<StashPersistedSearchFilterState?> = appContext.stashLocalFilterDataStore.data.map { prefs ->
         deserializeStashPersistedSearchFilterState(prefs[LocalFilterKeys.Search].orEmpty())
+    }
+    val persistedExploreFilterState: Flow<StashPersistedExploreFilterState?> = appContext.stashLocalFilterDataStore.data.map { prefs ->
+        val explicitExploreState = prefs[LocalFilterKeys.Explore]
+        if (!explicitExploreState.isNullOrBlank()) {
+            deserializeStashPersistedExploreFilterState(explicitExploreState)
+        } else {
+            val search = deserializeStashPersistedSearchFilterState(prefs[LocalFilterKeys.Search].orEmpty())
+            val browse = deserializeStashPersistedBrowseFilterState(prefs[LocalFilterKeys.Browse].orEmpty())
+            val searchHasIntent = search.query.isNotBlank() || !search.videoFilter.isEmpty
+            if (searchHasIntent) {
+                StashPersistedExploreFilterState(
+                    query = search.query,
+                    sortOptionId = search.sortOptionId,
+                    sortDirection = search.sortDirection,
+                    pageSize = search.pageSize,
+                    videoFilter = search.videoFilter,
+                )
+            } else {
+                StashPersistedExploreFilterState(
+                    sortOptionId = browse.sortOptionId,
+                    sortDirection = browse.sortDirection,
+                    pageSize = browse.pageSize,
+                    videoFilter = browse.videoFilter,
+                )
+            }
+        }
     }
     val recentBrowseVideoFilters: Flow<List<StashVideoFilterState>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
         prefs[LocalFilterKeys.RecentBrowse]
@@ -199,6 +292,20 @@ class StashLocalLibraryRepository(context: Context) {
         prefs[LocalFilterKeys.RecentSearch]
             .orEmpty()
             .parseRecentFilters()
+    }
+    val recentExploreVideoFilters: Flow<List<StashVideoFilterState>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
+        val explicitExploreFilters = prefs[LocalFilterKeys.RecentExplore]
+            .orEmpty()
+            .parseRecentFilters()
+        if (explicitExploreFilters.isNotEmpty()) {
+            explicitExploreFilters
+        } else {
+            mergeRecentExploreVideoFilters(
+                recentSearch = prefs[LocalFilterKeys.RecentSearch].orEmpty().parseRecentFilters(),
+                recentBrowse = prefs[LocalFilterKeys.RecentBrowse].orEmpty().parseRecentFilters(),
+                limit = LOCAL_RECENT_FILTER_LIMIT,
+            )
+        }
     }
 
     suspend fun setFavorite(scene: SceneCardModel, isFavorite: Boolean, nowMillis: Long = System.currentTimeMillis()) {
@@ -257,6 +364,7 @@ class StashLocalLibraryRepository(context: Context) {
         if (ids.isEmpty()) return
         dao.deleteFavoriteScenes(ids)
         dao.deleteSceneListItemsForScenes(ids)
+        dao.deleteShortsInteractionsForScenes(ids)
     }
 
     suspend fun saveVideoFilter(
@@ -288,6 +396,49 @@ class StashLocalLibraryRepository(context: Context) {
         dao.deleteSavedVideoFilter(id)
     }
 
+    suspend fun recordShortsInteraction(
+        scene: SceneCardModel,
+        outcome: ShortsInteractionOutcome,
+        watchMs: Long,
+        progress: Float,
+        nowMillis: Long = System.currentTimeMillis(),
+    ) {
+        val existing = dao.shortsInteraction(scene.id)
+        val currentFeedback = ShortsExplicitFeedback.fromStorageValue(existing?.explicitFeedback)
+        val updated = (existing ?: scene.toShortsInteractionEntity(nowMillis)).copy(
+            explicitFeedback = currentFeedback.storageValue,
+            impressionCount = (existing?.impressionCount ?: 0) + 1,
+            completedCount = (existing?.completedCount ?: 0) + if (outcome == ShortsInteractionOutcome.Completed) 1 else 0,
+            skipCount = (existing?.skipCount ?: 0) + if (outcome == ShortsInteractionOutcome.Skipped || outcome == ShortsInteractionOutcome.PlaybackError) 1 else 0,
+            replayCount = (existing?.replayCount ?: 0) + if (outcome == ShortsInteractionOutcome.Replay) 1 else 0,
+            totalWatchMs = (existing?.totalWatchMs ?: 0L) + watchMs.coerceAtLeast(0L),
+            lastProgress = progress.coerceIn(0f, 1f),
+            tagIdsSnapshot = scene.tagChips.joinToString("\n") { it.id },
+            studioSnapshot = scene.studio.takeIf { it.isNotBlank() },
+            updatedAt = nowMillis,
+        )
+        dao.upsertShortsInteraction(updated)
+    }
+
+    suspend fun setShortsExplicitFeedback(
+        scene: SceneCardModel,
+        feedback: ShortsExplicitFeedback,
+        nowMillis: Long = System.currentTimeMillis(),
+    ) {
+        val existing = dao.shortsInteraction(scene.id)
+        val updated = (existing ?: scene.toShortsInteractionEntity(nowMillis)).copy(
+            explicitFeedback = feedback.storageValue,
+            tagIdsSnapshot = scene.tagChips.joinToString("\n") { it.id },
+            studioSnapshot = scene.studio.takeIf { it.isNotBlank() },
+            updatedAt = nowMillis,
+        )
+        dao.upsertShortsInteraction(updated)
+    }
+
+    suspend fun clearShortsRecommendationHistory() {
+        dao.clearShortsInteractions()
+    }
+
     suspend fun saveBrowseFilterState(state: StashPersistedBrowseFilterState) {
         appContext.stashLocalFilterDataStore.edit { prefs ->
             prefs[LocalFilterKeys.Browse] = state.serializeForStorage()
@@ -300,12 +451,22 @@ class StashLocalLibraryRepository(context: Context) {
         }
     }
 
+    suspend fun saveExploreFilterState(state: StashPersistedExploreFilterState) {
+        appContext.stashLocalFilterDataStore.edit { prefs ->
+            prefs[LocalFilterKeys.Explore] = state.serializeForStorage()
+        }
+    }
+
     suspend fun saveRecentBrowseVideoFilter(filterState: StashVideoFilterState) {
         saveRecentFilter(LocalFilterKeys.RecentBrowse, filterState)
     }
 
     suspend fun saveRecentSearchVideoFilter(filterState: StashVideoFilterState) {
         saveRecentFilter(LocalFilterKeys.RecentSearch, filterState)
+    }
+
+    suspend fun saveRecentExploreVideoFilter(filterState: StashVideoFilterState) {
+        saveRecentFilter(LocalFilterKeys.RecentExplore, filterState)
     }
 
     private suspend fun saveRecentFilter(
@@ -328,8 +489,10 @@ class StashLocalLibraryRepository(context: Context) {
     private object LocalFilterKeys {
         val Browse = stringPreferencesKey("browse_filter_state")
         val Search = stringPreferencesKey("search_filter_state")
+        val Explore = stringPreferencesKey("explore_filter_state")
         val RecentBrowse = stringPreferencesKey("recent_browse_filter_state")
         val RecentSearch = stringPreferencesKey("recent_search_filter_state")
+        val RecentExplore = stringPreferencesKey("recent_explore_filter_state")
     }
 }
 
@@ -370,6 +533,38 @@ private fun LocalSavedVideoFilterEntity.toModel(): LocalSavedVideoFilter = Local
     filterState = deserializeStashVideoFilterState(serializedFilter),
     createdAt = createdAt,
     updatedAt = updatedAt,
+)
+
+private fun LocalShortsInteractionEntity.toModel(): ShortsInteractionRecord = ShortsInteractionRecord(
+    sceneId = sceneId,
+    explicitFeedback = ShortsExplicitFeedback.fromStorageValue(explicitFeedback),
+    impressionCount = impressionCount,
+    completedCount = completedCount,
+    skipCount = skipCount,
+    replayCount = replayCount,
+    totalWatchMs = totalWatchMs,
+    lastProgress = lastProgress,
+    tagIdsSnapshot = tagIdsSnapshot
+        .lineSequence()
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+        .toList(),
+    studioSnapshot = studioSnapshot,
+    updatedAt = updatedAt,
+)
+
+private fun SceneCardModel.toShortsInteractionEntity(nowMillis: Long): LocalShortsInteractionEntity = LocalShortsInteractionEntity(
+    sceneId = id,
+    explicitFeedback = ShortsExplicitFeedback.None.storageValue,
+    impressionCount = 0,
+    completedCount = 0,
+    skipCount = 0,
+    replayCount = 0,
+    totalWatchMs = 0L,
+    lastProgress = progress,
+    tagIdsSnapshot = tagChips.joinToString("\n") { it.id },
+    studioSnapshot = studio.takeIf { it.isNotBlank() },
+    updatedAt = nowMillis,
 )
 
 private fun SceneCardModel.toFavoriteEntity(nowMillis: Long): LocalFavoriteSceneEntity = LocalFavoriteSceneEntity(

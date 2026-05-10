@@ -6,7 +6,29 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+## [1.5.0] - 2026-05-10
+
+### English
+
+- Added the Shorts tab with vertical swipe playback, prewarm, full-surface play/pause gestures, seek controls, long-press speed hold, delete actions, and configurable maximum clip duration.
+- Added Shorts recommendation learning from likes, not-interested feedback, watch outcomes, and liked-anchor Hybrid/GraphQL similarity signals, plus a Settings reset action.
+- Merged Browse and Search into one Explore tab and reserved the center tab for Shorts.
+- Added a Home recommended videos row powered by Shorts likes, Favorites, Hybrid/GraphQL similarity, and a broader whole-library candidate pool.
+- Added in-app update checks with changelist viewing and APK download/install handoff from Support.
+- Removed explanatory UI helper copy and simplified Home by removing the old Explore/Shorts promo sections.
+- Preserve password-based Stash sessions across app restarts by storing the login material needed to refresh the session cookie.
+- Refreshed README content and screenshots for the 1.5.0 app shape.
+
+### 한국어
+
+- 세로 스와이프 재생, prewarm, 전체 화면 play/pause 제스처, 탐색 컨트롤, 롱프레스 배속, 삭제, 최대 길이 설정을 갖춘 Shorts 탭을 추가했습니다.
+- 좋아요, 관심없음, 시청 결과, 좋아요 앵커 기반 Hybrid/GraphQL 유사도 신호를 학습하는 Shorts 추천과 설정 초기화 기능을 추가했습니다.
+- 둘러보기와 검색을 하나의 탐색 탭으로 통합하고 중앙 탭을 Shorts로 예약했습니다.
+- Shorts 좋아요, 즐겨찾기, Hybrid/GraphQL 유사도, 전체 라이브러리 후보 풀을 사용하는 홈 추천 영상 섹션을 추가했습니다.
+- 앱 내 업데이트 확인, 변경 내역 보기, APK 다운로드/설치 연결 흐름을 Support에 추가했습니다.
+- 공간을 차지하던 설명성 UI 문구를 제거하고 홈의 기존 탐색/숏츠 홍보 섹션을 정리했습니다.
+- 앱 재시작 후에도 ID/비밀번호 기반 Stash 세션을 복구할 수 있도록 session cookie 갱신에 필요한 로그인 정보를 보존합니다.
+- 1.5.0 앱 구조에 맞춰 README 내용과 스크린샷을 갱신했습니다.
 
 ## [1.4.1] - 2026-05-09
 

@@ -179,7 +179,6 @@ fun QueueRoute(
         item {
             StashScreenHeader(
                 title = stashString(R.string.auto_kr_0004),
-                subtitle = stashString(R.string.auto_kr_0505),
             )
         }
 
@@ -205,7 +204,7 @@ fun QueueRoute(
                         state = StashEmptyStateModel(
                             title = stringResource(R.string.queue_playback_history_empty_title),
                             message = stringResource(R.string.queue_playback_history_empty_message),
-                            primaryActionLabel = stashString(R.string.auto_kr_0509),
+                            primaryActionLabel = stringResource(R.string.queue_explore_entry_label),
                         ),
                         onPrimaryAction = onOpenBrowse,
                     )
@@ -229,7 +228,7 @@ fun QueueRoute(
                     state = StashEmptyStateModel(
                         title = stringResource(R.string.queue_playback_history_empty_title),
                         message = stringResource(R.string.queue_playback_history_empty_message),
-                        primaryActionLabel = stashString(R.string.auto_kr_0509),
+                        primaryActionLabel = stringResource(R.string.queue_explore_entry_label),
                     ),
                     onPrimaryAction = onOpenBrowse,
                 )
@@ -259,7 +258,7 @@ fun QueueRoute(
                     state = StashEmptyStateModel(
                         title = stashString(R.string.auto_kr_0507),
                         message = stashString(R.string.auto_kr_0508),
-                        primaryActionLabel = stashString(R.string.auto_kr_0509),
+                        primaryActionLabel = stringResource(R.string.queue_explore_entry_label),
                     ),
                     onPrimaryAction = onOpenBrowse,
                 )
@@ -294,7 +293,6 @@ fun QueueRoute(
                 state = StashSectionHeaderModel(
                     title = stashString(R.string.auto_kr_0016),
                     itemCount = watchLaterScenes.size,
-                    subtitle = stashString(R.string.auto_kr_0510),
                 ),
             )
         }
@@ -312,7 +310,7 @@ fun QueueRoute(
                     state = StashEmptyStateModel(
                         title = stashString(R.string.auto_kr_0511),
                         message = stashString(R.string.auto_kr_0512),
-                        primaryActionLabel = stashString(R.string.auto_kr_0513),
+                        primaryActionLabel = stringResource(R.string.queue_explore_entry_label),
                     ),
                     onPrimaryAction = onOpenSearch,
                 )
@@ -347,7 +345,7 @@ fun QueueRoute(
                     state = StashEmptyStateModel(
                         title = stashString(R.string.auto_kr_0514),
                         message = stashString(R.string.auto_kr_0515),
-                        primaryActionLabel = stashString(R.string.auto_kr_0509),
+                        primaryActionLabel = stringResource(R.string.queue_explore_entry_label),
                     ),
                     onPrimaryAction = onOpenBrowse,
                 )

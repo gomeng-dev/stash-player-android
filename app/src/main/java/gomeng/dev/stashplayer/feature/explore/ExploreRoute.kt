@@ -1,4 +1,4 @@
-package gomeng.dev.stashplayer.feature.search
+package gomeng.dev.stashplayer.feature.explore
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,16 +61,16 @@ import gomeng.dev.stashplayer.core.model.StashSceneDeleteOptions
 import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.SceneSelectionState
 import gomeng.dev.stashplayer.core.model.StashScenesViewMode
-import gomeng.dev.stashplayer.core.model.StashSearchPageState
-import gomeng.dev.stashplayer.core.model.StashSearchSortOption
+import gomeng.dev.stashplayer.core.model.StashExplorePageState
+import gomeng.dev.stashplayer.core.model.StashExploreSortOption
 import gomeng.dev.stashplayer.core.model.StashSortDirection
-import gomeng.dev.stashplayer.core.model.defaultStashSearchPageSizeOptions
-import gomeng.dev.stashplayer.core.model.defaultStashSearchSortOptions
+import gomeng.dev.stashplayer.core.model.defaultStashExplorePageSizeOptions
+import gomeng.dev.stashplayer.core.model.defaultStashExploreSortOptions
 import gomeng.dev.stashplayer.core.model.initialFromPersisted
 import gomeng.dev.stashplayer.core.model.normalizeStashSearchQuery
-import gomeng.dev.stashplayer.core.model.shouldLoadSearchResultsFromServer
+import gomeng.dev.stashplayer.core.model.shouldLoadExploreResultsFromServer
 import gomeng.dev.stashplayer.core.model.shouldShowSceneCardQuickActionsInMediaGrid
-import gomeng.dev.stashplayer.core.model.shouldUseLocalFavoriteSearchResults
+import gomeng.dev.stashplayer.core.model.shouldUseLocalFavoriteExploreResults
 import gomeng.dev.stashplayer.core.model.stashDiscoveryResultCountLabel
 import gomeng.dev.stashplayer.core.model.stashMediaGridColumnCount
 import gomeng.dev.stashplayer.core.model.stashMediaGridThumbnailHeightDp
@@ -104,13 +104,13 @@ import gomeng.dev.stashplayer.core.ui.i18n.stashString
 private val SEARCH_DEBOUNCE_MS = 500L
 
 @Composable
-fun SearchRoute(
+fun ExploreRoute(
     isFoldLikeLayout: Boolean,
     onOpenScene: (String, List<SceneCardModel>, Boolean, PlayerPlaybackQueueContinuation?) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val sortOptions = remember { defaultStashSearchSortOptions() }
-    val pageSizeOptions = remember { defaultStashSearchPageSizeOptions() }
+    val sortOptions = remember { defaultStashExploreSortOptions() }
+    val pageSizeOptions = remember { defaultStashExplorePageSizeOptions() }
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
@@ -120,12 +120,12 @@ fun SearchRoute(
     val watchLaterSceneIds by localRepository.watchLaterSceneIds.collectAsState(initial = emptySet())
     val queueSceneIds by localRepository.queueSceneIds.collectAsState(initial = emptySet())
     val savedVideoFilters by localRepository.savedVideoFilters.collectAsState(initial = emptyList())
-    val persistedSearchFilterState by localRepository.persistedSearchFilterState.collectAsState(initial = null)
-    val recentSearchFilters by localRepository.recentSearchVideoFilters.collectAsState(initial = emptyList())
+    val persistedExploreFilterState by localRepository.persistedExploreFilterState.collectAsState(initial = null)
+    val recentExploreFilters by localRepository.recentExploreVideoFilters.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     var inputText by remember { mutableStateOf("") }
-    var pageState by remember { mutableStateOf(StashSearchPageState.initial(sortOptions.first())) }
-    var didApplyPersistedSearchState by remember { mutableStateOf(false) }
+    var pageState by remember { mutableStateOf(StashExplorePageState.initial(sortOptions.first())) }
+    var didApplyPersistedExploreState by remember { mutableStateOf(false) }
     var reloadToken by remember { mutableIntStateOf(0) }
     var requestSerial by remember { mutableLongStateOf(0L) }
     var openSheet by remember { mutableStateOf<StashDiscoveryOpenSheet>(StashDiscoveryOpenSheet.None) }
@@ -166,8 +166,8 @@ fun SearchRoute(
     fun loadPage(page: Int, reset: Boolean = false) {
         val activeProfile = profile ?: return
         val activeQuery = pageState.query
-        if (!pageState.hasSearchIntent) return
-        if (!shouldLoadSearchResultsFromServer(activeQuery, pageState.videoFilter)) return
+        if (!pageState.hasExploreIntent) return
+        if (!shouldLoadExploreResultsFromServer(activeQuery, pageState.videoFilter)) return
         if (!reset && pageState.isLoading) return
         val activeSort = pageState.sortOption
         val activeDirection = pageState.sortDirection
@@ -176,7 +176,7 @@ fun SearchRoute(
         val requestId = requestSerial + 1L
         requestSerial = requestId
         pageState = if (reset) {
-            StashSearchPageState.initial(activeSort)
+            StashExplorePageState.initial(activeSort)
                 .copy(
                     query = activeQuery,
                     sortDirection = activeDirection,
@@ -192,7 +192,7 @@ fun SearchRoute(
                 StashGraphQlClient(activeProfile).findSceneCardsPage(
                     perPage = activePageSize,
                     page = page,
-                    query = activeQuery,
+                    query = activeQuery.ifBlank { null },
                     sort = activeSort.sort,
                     direction = activeDirection,
                     videoFilter = activeVideoFilter,
@@ -210,7 +210,7 @@ fun SearchRoute(
                     return@onSuccess
                 }
                 pageState = if (page == 1) {
-                    StashSearchPageState.initial(activeSort)
+                    StashExplorePageState.initial(activeSort)
                         .copy(
                             query = activeQuery,
                             sortDirection = activeDirection,
@@ -238,7 +238,7 @@ fun SearchRoute(
         }
     }
 
-    fun applySearchFilterAction(
+    fun applyExploreFilterAction(
         action: StashDiscoveryFilterAction,
         saveRecent: Boolean = action.shouldPromoteRecent,
     ) {
@@ -247,7 +247,7 @@ fun SearchRoute(
             pageState = pageState.withVideoFilter(action.videoFilter)
         }
         if (saveRecent) {
-            scope.launch { localRepository.saveRecentSearchVideoFilter(action.videoFilter) }
+            scope.launch { localRepository.saveRecentExploreVideoFilter(action.videoFilter) }
         }
     }
 
@@ -260,32 +260,32 @@ fun SearchRoute(
         }
     }
 
-    LaunchedEffect(persistedSearchFilterState) {
-        val persisted = persistedSearchFilterState ?: return@LaunchedEffect
-        if (!didApplyPersistedSearchState) {
-            val restored = StashSearchPageState.initialFromPersisted(sortOptions, pageSizeOptions, persisted)
+    LaunchedEffect(persistedExploreFilterState) {
+        val persisted = persistedExploreFilterState ?: return@LaunchedEffect
+        if (!didApplyPersistedExploreState) {
+            val restored = StashExplorePageState.initialFromPersisted(sortOptions, pageSizeOptions, persisted)
             pageState = restored
             inputText = restored.query
-            didApplyPersistedSearchState = true
+            didApplyPersistedExploreState = true
         }
     }
 
     LaunchedEffect(
-        didApplyPersistedSearchState,
+        didApplyPersistedExploreState,
         pageState.query,
         pageState.sortOption,
         pageState.sortDirection,
         pageState.pageSize,
         pageState.videoFilter,
     ) {
-        if (didApplyPersistedSearchState) {
-            localRepository.saveSearchFilterState(pageState.toPersistedFilterState())
+        if (didApplyPersistedExploreState) {
+            localRepository.saveExploreFilterState(pageState.toPersistedFilterState())
         }
     }
 
     LaunchedEffect(
         profile,
-        didApplyPersistedSearchState,
+        didApplyPersistedExploreState,
         pageState.query,
         pageState.sortOption,
         pageState.sortDirection,
@@ -295,9 +295,9 @@ fun SearchRoute(
     ) {
         if (
             profile != null &&
-            didApplyPersistedSearchState &&
-            pageState.hasSearchIntent &&
-            shouldLoadSearchResultsFromServer(pageState.query, pageState.videoFilter)
+            didApplyPersistedExploreState &&
+            pageState.hasExploreIntent &&
+            shouldLoadExploreResultsFromServer(pageState.query, pageState.videoFilter)
         ) {
             loadPage(page = 1, reset = true)
         }
@@ -305,16 +305,16 @@ fun SearchRoute(
 
     LaunchedEffect(
         favoriteScenes,
-        didApplyPersistedSearchState,
+        didApplyPersistedExploreState,
         pageState.query,
         pageState.sortOption,
         pageState.sortDirection,
         pageState.pageSize,
         pageState.videoFilter,
     ) {
-        if (didApplyPersistedSearchState && shouldUseLocalFavoriteSearchResults(pageState.query, pageState.videoFilter)) {
+        if (didApplyPersistedExploreState && shouldUseLocalFavoriteExploreResults(pageState.query, pageState.videoFilter)) {
             requestSerial += 1L
-            pageState = StashSearchPageState.initial(pageState.sortOption)
+            pageState = StashExplorePageState.initial(pageState.sortOption)
                 .copy(
                     query = pageState.query,
                     sortDirection = pageState.sortDirection,
@@ -335,19 +335,19 @@ fun SearchRoute(
     StashDiscoveryFilterSheets(
         openSheet = openSheet,
         videoFilter = pageState.videoFilter,
-        recentFilters = recentSearchFilters,
+        recentFilters = recentExploreFilters,
         savedFilters = savedVideoFilters,
         savedFilterName = savedFilterName,
         tagOptionsState = tagOptionsState,
         onSavedFilterNameChange = { savedFilterName = it },
-        onApplyFilterAction = ::applySearchFilterAction,
+        onApplyFilterAction = ::applyExploreFilterAction,
         onOpenSheet = { target -> openSheet = openSheet.open(target) },
         onDismiss = { openSheet = openSheet.dismiss() },
         onSaveCurrentFilter = { name, filterToSave ->
             scope.launch {
                 val saved = localRepository.saveVideoFilter(name, filterToSave)
                 savedFilterName = ""
-                applySearchFilterAction(
+                applyExploreFilterAction(
                     applyStashDiscoverySavedFilter(pageState.videoFilter, saved.appliedFilterState()),
                     saveRecent = false,
                 )
@@ -360,7 +360,7 @@ fun SearchRoute(
                     filterState = filterToSave,
                     overwriteExisting = false,
                 )
-                applySearchFilterAction(
+                applyExploreFilterAction(
                     applyStashDiscoverySavedFilter(pageState.videoFilter, saved.appliedFilterState()),
                     saveRecent = false,
                 )
@@ -370,7 +370,7 @@ fun SearchRoute(
             scope.launch {
                 localRepository.deleteSavedVideoFilter(saved.id)
                 if (pageState.videoFilter.savedFilter?.id == saved.id) {
-                    applySearchFilterAction(
+                    applyExploreFilterAction(
                         clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.SavedFilter),
                         saveRecent = false,
                     )
@@ -381,14 +381,14 @@ fun SearchRoute(
         onRetryTags = { loadTags(tagOptionsState.query) },
         onToggleLocalFavoriteOnly = {
             val updated = pageState.videoFilter.copy(localFavoriteOnly = !pageState.videoFilter.localFavoriteOnly)
-            applySearchFilterAction(applyStashDiscoveryManualFilter(pageState.videoFilter, updated), saveRecent = false)
+            applyExploreFilterAction(applyStashDiscoveryManualFilter(pageState.videoFilter, updated), saveRecent = false)
         },
         onClearSavedFilter = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.SavedFilter), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.SavedFilter), saveRecent = false)
         },
     )
 
-    SearchContent(
+    ExploreContent(
         isFoldLikeLayout = isFoldLikeLayout,
         inputText = inputText,
         onInputTextChange = { inputText = it },
@@ -434,34 +434,34 @@ fun SearchRoute(
         onOpenRatingMediaFormatFilter = { openSheet = openSheet.open(StashDiscoveryOpenSheet.RatingMedia) },
         onOpenLocalLibraryFilter = { openSheet = openSheet.open(StashDiscoveryOpenSheet.LocalLibrary) },
         onClearTags = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.Tags), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.Tags), saveRecent = false)
         },
         onClearDateRange = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.DateRange), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.DateRange), saveRecent = false)
         },
         onClearDurationRange = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.DurationRange), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.DurationRange), saveRecent = false)
         },
         onClearPlaybackState = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.PlaybackState), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.PlaybackState), saveRecent = false)
         },
         onClearRatingRange = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.RatingRange), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.RatingRange), saveRecent = false)
         },
         onClearMediaFormat = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.MediaFormat), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.MediaFormat), saveRecent = false)
         },
         onClearLocalFavoriteOnly = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.LocalFavorite), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.LocalFavorite), saveRecent = false)
         },
         onClearSavedFilter = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.SavedFilter), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.SavedFilter), saveRecent = false)
         },
         onClearRandomShuffle = {
-            applySearchFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.RandomShuffle), saveRecent = false)
+            applyExploreFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.RandomShuffle), saveRecent = false)
         },
         onToggleRandomShuffle = {
-            applySearchFilterAction(applyStashDiscoveryRandomShuffleAction(pageState.videoFilter))
+            applyExploreFilterAction(applyStashDiscoveryRandomShuffleAction(pageState.videoFilter))
         },
         onToggleFavorite = { scene ->
             val decision = buildStashDiscoveryFavoriteToggleDecision(scene.id, favoriteSceneIds)
@@ -525,30 +525,41 @@ fun SearchRoute(
                 sceneId,
                 scenes,
                 randomShuffle,
-                PlayerPlaybackQueueContinuation.Search(
-                    query = pageState.query,
-                    sort = pageState.sortOption.sort,
-                    direction = pageState.sortDirection,
-                    videoFilter = pageState.videoFilter,
-                    nextPage = pageState.nextPage,
-                    pageSize = pageState.pageSize,
-                    hasMore = pageState.hasMore,
-                ),
+                if (pageState.query.isBlank()) {
+                    PlayerPlaybackQueueContinuation.Browse(
+                        sort = pageState.sortOption.sort,
+                        direction = pageState.sortDirection,
+                        videoFilter = pageState.videoFilter,
+                        nextPage = pageState.nextPage,
+                        pageSize = pageState.pageSize,
+                        hasMore = pageState.hasMore,
+                    )
+                } else {
+                    PlayerPlaybackQueueContinuation.Search(
+                        query = pageState.query,
+                        sort = pageState.sortOption.sort,
+                        direction = pageState.sortDirection,
+                        videoFilter = pageState.videoFilter,
+                        nextPage = pageState.nextPage,
+                        pageSize = pageState.pageSize,
+                        hasMore = pageState.hasMore,
+                    )
+                },
             )
         },
     )
 }
 
 @Composable
-private fun SearchContent(
+private fun ExploreContent(
     isFoldLikeLayout: Boolean,
     inputText: String,
     onInputTextChange: (String) -> Unit,
     onClearInput: () -> Unit,
-    sortOptions: List<StashSearchSortOption>,
+    sortOptions: List<StashExploreSortOption>,
     pageSizeOptions: List<Int>,
-    pageState: StashSearchPageState,
-    onSelectSort: (StashSearchSortOption) -> Unit,
+    pageState: StashExplorePageState,
+    onSelectSort: (StashExploreSortOption) -> Unit,
     onToggleSortDirection: () -> Unit,
     onSelectPageSize: (Int) -> Unit,
     isConfigured: Boolean,
@@ -656,14 +667,7 @@ private fun SearchContent(
             modifier = Modifier.padding(horizontal = horizontalPadding),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(stashString(R.string.auto_kr_0003), style = MaterialTheme.typography.headlineLarge)
-            Text(
-                text = stashString(R.string.auto_kr_0519),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Text(stashString(R.string.navigation_explore_label), style = MaterialTheme.typography.headlineLarge)
         }
 
         StashScenesToolbar(
@@ -727,7 +731,7 @@ private fun SearchContent(
             onClearRandomShuffle = onClearRandomShuffle,
         )
 
-        if (pageState.hasSearchIntent) {
+        if (pageState.hasExploreIntent) {
             Column(
                 modifier = Modifier.padding(horizontal = horizontalPadding),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -760,16 +764,16 @@ private fun SearchContent(
             !isConfigured -> StashEmptyState(
                 state = StashEmptyStateModel(
                     title = stashString(R.string.auto_kr_0415),
-                    message = stashString(R.string.auto_kr_0522),
+                    message = stashString(R.string.explore_requires_server_message),
                     primaryActionLabel = stashString(R.string.auto_kr_0270),
                 ),
                 modifier = Modifier.padding(horizontal = horizontalPadding),
                 onPrimaryAction = onOpenSettings,
             )
-            !pageState.hasSearchIntent -> StashEmptyState(
+            !pageState.hasExploreIntent -> StashEmptyState(
                 state = StashEmptyStateModel(
-                    title = stashString(R.string.auto_kr_0523),
-                    message = stashString(R.string.auto_kr_0524),
+                    title = stashString(R.string.explore_empty_prompt_title),
+                    message = stashString(R.string.explore_empty_prompt_message),
                 ),
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             )
@@ -778,7 +782,7 @@ private fun SearchContent(
             }
             pageState.error != null && results.isEmpty() -> StashErrorState(
                 state = StashErrorStateModel(
-                    title = stashString(R.string.auto_kr_0525),
+                    title = stashString(R.string.explore_load_failed_title),
                     message = pageState.error,
                     secondaryActionLabel = stashString(R.string.auto_kr_0270),
                 ),
@@ -819,7 +823,7 @@ private fun SearchContent(
                             )
                         }
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            SearchFooter(
+                            ExploreFooter(
                                 pageState = pageState,
                                 onRetry = onRetry,
                                 onLoadMore = onLoadMore,
@@ -856,7 +860,7 @@ private fun SearchContent(
                             )
                         }
                         item {
-                            SearchFooter(
+                            ExploreFooter(
                                 pageState = pageState,
                                 onRetry = onRetry,
                                 onLoadMore = onLoadMore,
@@ -875,8 +879,8 @@ private fun SearchContent(
 }
 
 @Composable
-private fun SearchFooter(
-    pageState: StashSearchPageState,
+private fun ExploreFooter(
+    pageState: StashExplorePageState,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
 ) {
@@ -890,8 +894,8 @@ private fun SearchFooter(
             pageState.hasMore -> StashSecondaryButton(text = stashString(R.string.auto_kr_0418), onClick = onLoadMore)
             pageState.results.isEmpty() -> StashEmptyState(
                 state = StashEmptyStateModel(
-                    title = stashString(R.string.auto_kr_0526),
-                    message = stashString(R.string.auto_kr_0527),
+                    title = stashString(R.string.explore_no_results_title),
+                    message = stashString(R.string.explore_no_results_message),
                 ),
             )
             else -> Text(stashString(R.string.auto_kr_0528), style = MaterialTheme.typography.bodySmall)
@@ -908,3 +912,4 @@ private fun directionSymbol(direction: StashSortDirection): String = when (direc
     StashSortDirection.Desc -> "↓"
     StashSortDirection.Asc -> "↑"
 }
+

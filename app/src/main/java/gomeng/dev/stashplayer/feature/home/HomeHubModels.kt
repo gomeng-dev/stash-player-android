@@ -1,16 +1,20 @@
 package gomeng.dev.stashplayer.feature.home
 
 import gomeng.dev.stashplayer.core.model.SceneCardModel
+import gomeng.dev.stashplayer.core.model.ShortsExplicitFeedback
+import gomeng.dev.stashplayer.core.model.ShortsInteractionRecord
+import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.network.redactStashCredentialText
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
+import java.util.Locale
 
 enum class HomeHubSectionId {
     ServerStatus,
+    Recommended,
     Queue,
     WatchLater,
     Favorites,
-    Discovery,
 }
 
 enum class HomeHubAction {
@@ -18,6 +22,8 @@ enum class HomeHubAction {
     RetryServerSections,
     OpenQueue,
     OpenFavorites,
+    OpenExplore,
+    OpenShorts,
     OpenBrowse,
     OpenSearch,
     PlayQueue,
@@ -32,7 +38,7 @@ data class HomeHubServerState(
 data class HomeHubSection(
     val id: HomeHubSectionId,
     val title: String,
-    val subtitle: String,
+    val subtitle: String?,
     val count: Int? = null,
 )
 
@@ -47,7 +53,7 @@ data class HomeDashboardStat(
     val sectionId: HomeHubSectionId,
     val label: String,
     val value: String,
-    val subtitle: String,
+    val subtitle: String?,
 )
 
 data class HomeQuickActionModel(
@@ -56,15 +62,15 @@ data class HomeQuickActionModel(
     val enabled: Boolean,
 )
 
-data class HomeDiscoveryEntryModel(
-    val title: String,
-    val subtitle: String,
-    val action: HomeHubAction,
-)
-
 data class HomeHeroSelection(
     val scene: SceneCardModel,
     val playbackScenes: List<SceneCardModel>,
+)
+
+data class HomeRecommendationAnchor(
+    val sceneId: String,
+    val tagIds: Set<String> = emptySet(),
+    val studio: String? = null,
 )
 
 fun selectHomeHeroScene(
@@ -94,19 +100,19 @@ fun buildHomeDashboardStats(
         sectionId = HomeHubSectionId.Queue,
         label = stashString(R.string.auto_kr_0004),
         value = queueCount.coerceAtLeast(0).toString(),
-        subtitle = if (queueCount > 0) stashString(R.string.auto_kr_0424) else stashString(R.string.auto_kr_0425),
+        subtitle = null,
     ),
     HomeDashboardStat(
         sectionId = HomeHubSectionId.WatchLater,
         label = stashString(R.string.auto_kr_0016),
         value = watchLaterCount.coerceAtLeast(0).toString(),
-        subtitle = if (watchLaterCount > 0) stashString(R.string.auto_kr_0426) else stashString(R.string.auto_kr_0425),
+        subtitle = null,
     ),
     HomeDashboardStat(
         sectionId = HomeHubSectionId.Favorites,
         label = stashString(R.string.auto_kr_0238),
         value = favoriteCount.coerceAtLeast(0).toString(),
-        subtitle = if (favoriteCount > 0) stashString(R.string.auto_kr_0427) else stashString(R.string.auto_kr_0425),
+        subtitle = null,
     ),
 )
 
@@ -119,31 +125,100 @@ fun buildHomeQuickActions(
     HomeQuickActionModel(stashString(R.string.auto_kr_0004), HomeHubAction.OpenQueue, true),
     HomeQuickActionModel(stashString(R.string.auto_kr_0016), HomeHubAction.OpenQueue, true),
     HomeQuickActionModel(stashString(R.string.auto_kr_0238), HomeHubAction.OpenFavorites, true),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0002), HomeHubAction.OpenBrowse, true),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0003), HomeHubAction.OpenSearch, true),
+    HomeQuickActionModel(stashString(R.string.navigation_explore_label), HomeHubAction.OpenExplore, true),
+    HomeQuickActionModel(stashString(R.string.navigation_shorts_label), HomeHubAction.OpenShorts, true),
     HomeQuickActionModel(stashString(R.string.auto_kr_0005), HomeHubAction.OpenSettings, true),
 )
 
 fun homePreviewSectionTitle(sectionId: HomeHubSectionId): String = when (sectionId) {
+    HomeHubSectionId.Recommended -> stashString(R.string.home_recommended_section_title)
     HomeHubSectionId.Queue -> stashString(R.string.auto_kr_0004)
     HomeHubSectionId.WatchLater -> stashString(R.string.auto_kr_0016)
     HomeHubSectionId.Favorites -> stashString(R.string.auto_kr_0238)
-    HomeHubSectionId.Discovery -> stashString(R.string.auto_kr_0430)
     HomeHubSectionId.ServerStatus -> stashString(R.string.auto_kr_0431)
 }
 
-fun homeDiscoveryEntryModels(): List<HomeDiscoveryEntryModel> = listOf(
-    HomeDiscoveryEntryModel(
-        title = stashString(R.string.auto_kr_0002),
-        subtitle = stashString(R.string.auto_kr_0432),
-        action = HomeHubAction.OpenBrowse,
-    ),
-    HomeDiscoveryEntryModel(
-        title = stashString(R.string.auto_kr_0003),
-        subtitle = stashString(R.string.auto_kr_0433),
-        action = HomeHubAction.OpenSearch,
-    ),
-)
+fun buildHomeRecommendationAnchors(
+    favoriteScenes: List<SceneCardModel>,
+    shortsInteractions: List<ShortsInteractionRecord>,
+    maxAnchors: Int = 5,
+): List<HomeRecommendationAnchor> {
+    val shortsAnchors = shortsInteractions
+        .asSequence()
+        .filter { it.explicitFeedback == ShortsExplicitFeedback.Liked }
+        .sortedByDescending { it.updatedAt }
+        .mapNotNull { interaction ->
+            interaction.sceneId.trim().takeIf { it.isNotBlank() }?.let { sceneId ->
+                HomeRecommendationAnchor(
+                    sceneId = sceneId,
+                    tagIds = interaction.tagIdsSnapshot.mapNotNull { it.normalizedTokenOrNull() }.toSet(),
+                    studio = interaction.studioSnapshot?.normalizedTokenOrNull(),
+                )
+            }
+        }
+
+    val favoriteAnchors = favoriteScenes.asSequence().mapNotNull { scene ->
+        scene.id.trim().takeIf { it.isNotBlank() }?.let { sceneId ->
+            HomeRecommendationAnchor(
+                sceneId = sceneId,
+                tagIds = scene.tagChips.mapNotNull { it.id.normalizedTokenOrNull() }.toSet(),
+                studio = scene.studio.normalizedTokenOrNull(),
+            )
+        }
+    }
+
+    return (shortsAnchors + favoriteAnchors)
+        .distinctBy { it.sceneId }
+        .take(maxAnchors.coerceAtLeast(0))
+        .toList()
+}
+
+fun rankHomeRecommendedScenes(
+    candidates: List<SceneCardModel>,
+    anchors: List<HomeRecommendationAnchor>,
+    hybridRecommendations: List<SimilarSceneRecommendation>,
+    limit: Int = 12,
+): List<SceneCardModel> {
+    if (anchors.isEmpty()) return emptyList()
+    val anchorIds = anchors.map { it.sceneId }.toSet()
+    val candidateById = linkedMapOf<String, SceneCardModel>()
+    candidates.forEach { scene ->
+        if (scene.id !in anchorIds) candidateById.putIfAbsent(scene.id, scene)
+    }
+    hybridRecommendations.forEach { recommendation ->
+        if (recommendation.sceneId !in anchorIds && recommendation.scene.id !in anchorIds) {
+            candidateById.putIfAbsent(recommendation.sceneId, recommendation.toSceneCardModel())
+        }
+    }
+
+    val hybridScores = hybridRecommendations
+        .filterNot { it.sceneId in anchorIds || it.scene.id in anchorIds }
+        .groupBy { it.sceneId }
+        .mapValues { (_, rows) -> rows.maxOf { it.score.coerceAtLeast(0.0) } }
+
+    return candidateById.values
+        .mapNotNull { scene ->
+            val score = homeRecommendationScore(
+                scene = scene,
+                anchors = anchors,
+                hybridScore = hybridScores[scene.id] ?: 0.0,
+            )
+            if (score > 0.0) scene to score else null
+        }
+        .sortedWith(
+            compareByDescending<Pair<SceneCardModel, Double>> { it.second }
+                .thenBy { it.first.title.lowercase() }
+                .thenBy { it.first.id },
+        )
+        .take(limit.coerceAtLeast(0))
+        .map { it.first }
+}
+
+fun homeRecommendationCandidatePool(
+    libraryCandidates: List<SceneCardModel>,
+    sectionCandidates: List<SceneCardModel>,
+): List<SceneCardModel> = (libraryCandidates + sectionCandidates)
+    .distinctBy { it.id }
 
 fun homeHubErrorText(message: String?): String? = message
     ?.let(::redactStashCredentialText)
@@ -178,8 +253,8 @@ fun buildHomeHubState(
         if (hasProfile) {
             add(HomeHubAction.OpenQueue)
             add(HomeHubAction.OpenFavorites)
-            add(HomeHubAction.OpenBrowse)
-            add(HomeHubAction.OpenSearch)
+            add(HomeHubAction.OpenExplore)
+            add(HomeHubAction.OpenShorts)
         }
         if (queueCount > 0) {
             add(HomeHubAction.PlayQueue)
@@ -220,13 +295,6 @@ fun buildHomeHubState(
                     count = favoriteCount,
                 ),
             )
-            add(
-                HomeHubSection(
-                    id = HomeHubSectionId.Discovery,
-                    title = stashString(R.string.auto_kr_0430),
-                    subtitle = stashString(R.string.auto_kr_0446),
-                ),
-            )
         }
     }
 
@@ -237,3 +305,42 @@ fun buildHomeHubState(
         requiresSetup = !hasProfile,
     )
 }
+
+private fun homeRecommendationScore(
+    scene: SceneCardModel,
+    anchors: List<HomeRecommendationAnchor>,
+    hybridScore: Double,
+): Double {
+    val sceneTagIds = scene.tagChips.mapNotNull { it.id.normalizedTokenOrNull() }.toSet()
+    val sceneStudio = scene.studio.normalizedTokenOrNull()?.lowercase()
+    val sharedTagScore = anchors.sumOf { anchor ->
+        sceneTagIds.intersect(anchor.tagIds).size
+    } * 10.0
+    val studioScore = if (sceneStudio != null && anchors.any { it.studio?.lowercase() == sceneStudio }) 6.0 else 0.0
+    return hybridScore * 100.0 + sharedTagScore + studioScore
+}
+
+private fun SimilarSceneRecommendation.toSceneCardModel(): SceneCardModel = SceneCardModel(
+    id = sceneId.ifBlank { scene.id },
+    title = scene.title.ifBlank { scene.fileName.orEmpty() }.ifBlank { stashString(R.string.auto_kr_0168, sceneId) },
+    durationText = scene.durationSeconds?.let { formatHomeRecommendationDuration(it) }.orEmpty(),
+    studio = "",
+    progress = 0f,
+    thumbnailUrl = scene.thumbnailUrl ?: scene.spriteImageUrl,
+    playCount = scene.playCount,
+)
+
+private fun formatHomeRecommendationDuration(durationSeconds: Double): String {
+    val totalSeconds = durationSeconds.toLong().coerceAtLeast(0L)
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    return if (hours > 0) {
+        String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format(Locale.US, "%d:%02d", minutes, seconds)
+    }
+}
+
+private fun String.normalizedTokenOrNull(): String? = trim()
+    .takeIf { it.isNotBlank() }

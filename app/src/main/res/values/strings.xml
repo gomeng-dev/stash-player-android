@@ -3,9 +3,49 @@
     <string name="app_name">Stash Player</string>
     <string name="navigation_home_label">홈</string>
     <string name="navigation_browse_label">둘러보기</string>
+    <string name="navigation_explore_label">탐색</string>
     <string name="navigation_search_label">검색</string>
+    <string name="navigation_shorts_label">숏츠</string>
+    <string name="home_recommended_section_title">추천 영상</string>
     <string name="navigation_queue_label">재생 대기열</string>
     <string name="navigation_settings_label">설정</string>
+    <string name="explore_screen_subtitle">검색·필터·정렬·보기 작업을 한 화면에서 조정합니다.</string>
+    <string name="explore_requires_server_message">탐색 결과를 가져오려면 Stash 서버 연결이 필요합니다.</string>
+    <string name="explore_empty_prompt_title">탐색을 시작해 보세요</string>
+    <string name="explore_empty_prompt_message">검색어를 입력하거나 필터를 설정하면 Stash 영상 결과가 여기에 표시됩니다.</string>
+    <string name="explore_load_failed_title">탐색 결과를 가져오지 못했습니다</string>
+    <string name="explore_no_results_title">탐색 결과가 없습니다</string>
+    <string name="explore_no_results_message">검색어를 바꾸거나 필터를 줄여 보세요.</string>
+    <string name="explore_home_section_title">탐색과 숏츠</string>
+    <string name="explore_home_section_subtitle">영상 라이브러리를 찾거나 짧은 영상 흐름을 준비하세요.</string>
+    <string name="explore_home_entry_subtitle">전체 영상과 검색 결과를 한 화면에서 탐색합니다.</string>
+    <string name="shorts_home_entry_subtitle">1분 미만 짧은 영상을 세로 피드로 랜덤 재생합니다.</string>
+    <string name="shorts_placeholder_title">숏츠</string>
+    <string name="shorts_placeholder_message">1분 미만 영상을 세로 피드처럼 랜덤 재생합니다.</string>
+    <string name="shorts_requires_server_title">Stash 연결 필요</string>
+    <string name="shorts_requires_server_message">숏츠를 불러오려면 먼저 Stash 서버에 연결하세요.</string>
+    <string name="shorts_loading_title">숏츠 불러오는 중</string>
+    <string name="shorts_loading_message">1분 미만 영상을 랜덤 순서로 준비하고 있습니다.</string>
+    <string name="shorts_empty_title">표시할 숏츠가 없습니다</string>
+    <string name="shorts_empty_message">Stash 라이브러리에 1분 미만 영상이 있는지 확인해 주세요.</string>
+    <string name="shorts_error_title">숏츠를 불러오지 못했습니다</string>
+    <string name="shorts_error_message">잠시 후 다시 시도해 주세요.</string>
+    <string name="shorts_stream_error_title">이 숏츠를 재생하지 못했습니다</string>
+    <string name="shorts_retry_action">다시 시도</string>
+    <string name="shorts_skip_action">다음</string>
+    <string name="shorts_play_content_description">숏츠 재생</string>
+    <string name="shorts_pause_content_description">숏츠 일시정지</string>
+    <string name="shorts_like_content_description">숏츠 좋아요</string>
+    <string name="shorts_liked_content_description">숏츠 좋아요 취소</string>
+    <string name="shorts_not_interested_content_description">관심없음</string>
+    <string name="shorts_not_interested_selected_content_description">관심없음 취소</string>
+    <string name="shorts_delete_content_description">숏츠 영상 삭제</string>
+    <string name="shorts_delete_failed_message">숏츠 영상을 삭제하지 못했습니다.</string>
+    <string name="shorts_seek_content_description">숏츠 재생 위치</string>
+    <string name="shorts_seek_preview">%1$s / %2$s</string>
+    <string name="shorts_speed_hold_feedback">1.5x 빠른 재생</string>
+    <string name="queue_explore_entry_label">탐색으로 이동</string>
+    <string name="queue_library_subtitle">탐색 카드에서 대기열 추가 또는 나중에 보기로 보낸 로컬 재생 목록입니다.</string>
     <string name="scene_card_queue_remove_content_description">대기열에서 제거</string>
     <string name="scene_card_queue_removed_feedback">재생 대기열에서 제거했습니다.</string>
     <string name="settings_title">설정</string>
@@ -47,6 +87,17 @@
     <string name="settings_pip_title">PiP 활성화</string>
     <string name="settings_pip_label">PiP 사용</string>
     <string name="settings_pip_description">홈으로 이동할 때 작은 플레이어로 전환하고 플레이어에서 PiP 버튼을 표시합니다.</string>
+    <string name="settings_shorts_max_duration_title">숏츠 최대 길이</string>
+    <string name="settings_shorts_max_duration_description">숏츠 탭에 표시할 영상의 최대 길이를 정합니다.</string>
+    <string name="settings_shorts_max_duration_value_label">%1$d초</string>
+    <string name="settings_shorts_recommendation_reset_title">숏츠 추천 학습 초기화</string>
+    <string name="settings_shorts_recommendation_reset_description">좋아요, 관심없음, 시청 완료/스킵 같은 숏츠 전용 학습 기록만 삭제합니다.</string>
+    <string name="settings_shorts_recommendation_reset_button">학습 기록 초기화</string>
+    <string name="settings_shorts_recommendation_reset_confirm_title">숏츠 추천 학습을 초기화할까요?</string>
+    <string name="settings_shorts_recommendation_reset_confirm_message">Favorite, Watch Later, Queue, 재생 기록, 서버 설정은 유지됩니다.</string>
+    <string name="settings_shorts_recommendation_reset_confirm_button">초기화</string>
+    <string name="settings_shorts_recommendation_reset_cancel_button">취소</string>
+    <string name="settings_shorts_recommendation_reset_success">숏츠 추천 학습을 초기화했습니다.</string>
     <string name="settings_playback_orientation_title">자동 화면 방향 제어</string>
     <string name="settings_playback_orientation_description">플레이어 화면에서 기기 센서에 따라 화면 방향을 바꿀지 정합니다.</string>
     <string name="settings_playback_orientation_off_label">꺼짐</string>
@@ -157,6 +208,24 @@
     <string name="settings_support_version_title">버전</string>
     <string name="settings_support_version_description">현재 버전: %1$s. 누르면 GitHub Releases를 엽니다.</string>
     <string name="settings_support_unknown_version">알 수 없음</string>
+    <string name="settings_support_update_check_title">업데이트 확인</string>
+    <string name="settings_support_update_check_description">GitHub Releases에서 최신 앱 버전을 확인합니다. 새 버전이 있으면 앱 안에서 알려줍니다.</string>
+    <string name="settings_support_update_check_button">최신 버전 확인</string>
+    <string name="settings_support_update_checking">확인 중...</string>
+    <string name="settings_support_update_available">새 버전 %1$s 사용 가능. 현재 버전: %2$s.</string>
+    <string name="settings_support_update_available_snackbar">새 버전 %1$s 사용 가능</string>
+    <string name="settings_support_update_current">최신 버전을 사용 중입니다. (%1$s)</string>
+    <string name="settings_support_update_failed">업데이트를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.</string>
+    <string name="settings_support_update_download_button">업데이트 다운로드</string>
+    <string name="settings_support_update_downloading">업데이트 다운로드 중...</string>
+    <string name="settings_support_update_download_failed">업데이트 APK를 다운로드하지 못했습니다. 릴리즈 페이지에서 다시 시도해 주세요.</string>
+    <string name="settings_support_update_install_started">다운로드가 완료되어 설치 화면을 열었습니다.</string>
+    <string name="settings_support_update_install_permission_required">이 앱의 APK 설치 권한을 허용한 뒤 다시 시도해 주세요.</string>
+    <string name="settings_support_update_changelog_action">변경사항</string>
+    <string name="settings_support_update_changelog_title">버전 %1$s 변경사항</string>
+    <string name="settings_support_update_changelog_empty">이 릴리즈에는 표시할 변경사항이 없습니다.</string>
+    <string name="settings_support_update_changelog_close">닫기</string>
+    <string name="settings_support_update_open_action">릴리즈 보기</string>
     <string name="settings_support_issue_title">문제 신고</string>
     <string name="settings_support_issue_description">GitHub Issues에서 문제를 신고하거나 진행 상황을 확인합니다.</string>
     <string name="settings_support_link_open_failed">링크를 열 수 없습니다.</string>
@@ -516,7 +585,7 @@
     <string name="auto_kr_0300">추천 점수 %1$s</string>
     <string name="auto_kr_0301">상세 필터%1$s</string>
     <string name="auto_kr_0302" formatted="false">상세 필터</string>
-    <string name="auto_kr_0303" formatted="false">날짜, 영상 길이, 시청 상태를 둘러보기/검색 결과에 적용합니다.</string>
+    <string name="auto_kr_0303" formatted="false">날짜, 영상 길이, 시청 상태를 탐색 결과에 적용합니다.</string>
     <string name="auto_kr_0304" formatted="false">날짜</string>
     <string name="auto_kr_0305" formatted="false">날짜 해제</string>
     <string name="auto_kr_0306" formatted="false">시작일</string>
@@ -545,7 +614,7 @@
     <string name="auto_kr_0329">%1$s · 적용 중</string>
     <string name="auto_kr_0330">화질·평점%1$s</string>
     <string name="auto_kr_0331" formatted="false">화질·평점 필터</string>
-    <string name="auto_kr_0332" formatted="false">평점, 해상도, 파일 형식을 둘러보기/검색 결과에 적용합니다.</string>
+    <string name="auto_kr_0332" formatted="false">평점, 해상도, 파일 형식을 탐색 결과에 적용합니다.</string>
     <string name="auto_kr_0333" formatted="false">평점 해제</string>
     <string name="auto_kr_0334" formatted="false">플레이어와 같은 별점 슬라이더로 최저점/최고점을 고릅니다. 최고점은 비워둘 수 있고, 설정 시 최저점보다 낮아지지 않습니다.</string>
     <string name="auto_kr_0335" formatted="false">해상도</string>
@@ -582,7 +651,7 @@
     <string name="auto_kr_0366" formatted="false">저장 필터 해제</string>
     <string name="auto_kr_0367" formatted="false">무작위 해제</string>
     <string name="auto_kr_0368" formatted="false">태그 필터</string>
-    <string name="auto_kr_0369" formatted="false">검색하며 태그를 고르고, 적용을 눌러야 둘러보기/검색 결과에 반영됩니다.</string>
+    <string name="auto_kr_0369" formatted="false">검색하며 태그를 고르고, 적용을 눌러야 탐색 결과에 반영됩니다.</string>
     <string name="auto_kr_0370" formatted="false">태그 검색</string>
     <string name="auto_kr_0371" formatted="false">태그 이름…</string>
     <string name="auto_kr_0372" formatted="false">태그를 가져오지 못했습니다.</string>
@@ -719,15 +788,15 @@
     <string name="auto_kr_0502" formatted="false">전체 대기열 추가</string>
     <string name="auto_kr_0503" formatted="false">나중에 보기 전체 대기열 추가</string>
     <string name="auto_kr_0504" formatted="false">제거</string>
-    <string name="auto_kr_0505" formatted="false">둘러보기/검색 카드에서 대기열 추가 또는 나중에 보기로 보낸 로컬 재생 목록입니다.</string>
+    <string name="auto_kr_0505" formatted="false">탐색 카드에서 대기열 추가 또는 나중에 보기로 보낸 로컬 재생 목록입니다.</string>
     <string name="auto_kr_0506" formatted="false">다음 재생 대기열</string>
     <string name="auto_kr_0507" formatted="false">재생 대기열이 비어 있습니다</string>
     <string name="auto_kr_0508" formatted="false">둘러보기에서 영상을 골라 바로 이어 볼 대기열을 만들어 보세요.</string>
-    <string name="auto_kr_0509" formatted="false">둘러보기로 이동</string>
+    <string name="auto_kr_0509" formatted="false">탐색으로 이동</string>
     <string name="auto_kr_0510" formatted="false">언젠가 볼 후보를 모아 두고, 준비되면 재생 대기열로 보냅니다.</string>
     <string name="auto_kr_0511" formatted="false">나중에 볼 영상이 없습니다</string>
     <string name="auto_kr_0512" formatted="false">검색에서 마음에 드는 영상을 나중에 보기로 저장해 두세요.</string>
-    <string name="auto_kr_0513" formatted="false">검색으로 이동</string>
+    <string name="auto_kr_0513" formatted="false">탐색으로 이동</string>
     <string name="auto_kr_0514" formatted="false">즐겨찾기 영상이 없습니다</string>
     <string name="auto_kr_0515" formatted="false">둘러보기에서 자주 보는 영상을 즐겨찾기로 저장해 두세요.</string>
     <string name="auto_kr_0516" formatted="false">나중에 보기 항목을 지금 볼 대기열로 보냅니다.</string>
