@@ -6,6 +6,16 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-05-10
+
+### English
+
+- Fixed the device authentication app lock option so devices with weak biometric enrollment or device credentials can enable and use app lock.
+
+### 한국어
+
+- 약한 생체 인증 등록 또는 기기 잠금 인증을 사용할 수 있는 기기에서 앱 잠금 옵션을 켜고 사용할 수 있도록 수정했습니다.
+
 ## [1.5.0] - 2026-05-10
 
 ### English

@@ -2,7 +2,7 @@ package gomeng.dev.stashplayer.feature.security
 
 import android.os.Build
 import androidx.annotation.StringRes
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.Composable
@@ -80,9 +80,11 @@ private fun buildDeviceAuthenticationPromptInfo(title: String): BiometricPrompt.
     val builder = BiometricPrompt.PromptInfo.Builder()
         .setTitle(title)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        builder.setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+        builder.setAllowedAuthenticators(deviceAuthenticationPromptAuthenticators())
     } else {
         builder.setDeviceCredentialAllowed(true)
     }
     return builder.build()
 }
+
+fun deviceAuthenticationPromptAuthenticators(): Int = BIOMETRIC_WEAK or DEVICE_CREDENTIAL
