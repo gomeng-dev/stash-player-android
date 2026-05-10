@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.security.DeviceAuthenticationAvailability
@@ -28,7 +29,20 @@ fun rememberDeviceAuthenticationLauncher(
     onAuthenticationError: (CharSequence) -> Unit,
 ): (() -> Unit)? {
     val context = LocalContext.current
-    val activity = remember(context) { context.findFragmentActivity() }
+    val viewContext = LocalView.current.context
+    val contextActivity = remember(context) { context.findFragmentActivity() }
+    val viewActivity = remember(viewContext) { viewContext.findFragmentActivity() }
+    val activitySource = remember(contextActivity, viewActivity) {
+        resolveDeviceAuthenticationActivitySource(
+            localContextHasFragmentActivity = contextActivity != null,
+            viewContextHasFragmentActivity = viewActivity != null,
+        )
+    }
+    val activity = when (activitySource) {
+        DeviceAuthenticationActivitySource.LocalContext -> contextActivity
+        DeviceAuthenticationActivitySource.ViewContext -> viewActivity
+        DeviceAuthenticationActivitySource.Missing -> null
+    }
     val executor = remember(context) { ContextCompat.getMainExecutor(context) }
     val onAuthenticatedState by rememberUpdatedState(onAuthenticated)
     val onAuthenticationErrorState by rememberUpdatedState(onAuthenticationError)
@@ -88,3 +102,18 @@ private fun buildDeviceAuthenticationPromptInfo(title: String): BiometricPrompt.
 }
 
 fun deviceAuthenticationPromptAuthenticators(): Int = BIOMETRIC_WEAK or DEVICE_CREDENTIAL
+
+internal enum class DeviceAuthenticationActivitySource {
+    LocalContext,
+    ViewContext,
+    Missing,
+}
+
+internal fun resolveDeviceAuthenticationActivitySource(
+    localContextHasFragmentActivity: Boolean,
+    viewContextHasFragmentActivity: Boolean,
+): DeviceAuthenticationActivitySource = when {
+    localContextHasFragmentActivity -> DeviceAuthenticationActivitySource.LocalContext
+    viewContextHasFragmentActivity -> DeviceAuthenticationActivitySource.ViewContext
+    else -> DeviceAuthenticationActivitySource.Missing
+}

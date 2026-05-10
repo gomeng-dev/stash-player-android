@@ -6,6 +6,16 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-05-11
+
+### English
+
+- Fixed device authentication app lock activation when the app uses an in-app language context, so the biometric/device-credential prompt can still open from Settings.
+
+### 한국어
+
+- 앱 언어 설정용 컨텍스트를 사용하는 상태에서도 Settings에서 생체/기기 인증 프롬프트가 열리도록, 기기 인증 앱 잠금 활성화 문제를 수정했습니다.
+
 ## [1.5.1] - 2026-05-10
 
 ### English
