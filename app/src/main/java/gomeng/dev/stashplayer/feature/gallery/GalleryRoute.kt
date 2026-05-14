@@ -560,7 +560,7 @@ fun GalleryRoute(
         val activePageSize = imagePageState.pageSize
         val activeSortOption = imagePageState.sortOption
         val activeSort = imagePageState.serverSort
-        val activeDirection = imagePageState.sortDirection
+        val activeDirection = imagePageState.serverDirection
         val activeImageFilter = imagePageState.imageFilter
         val activeImageFilterIdentity = activeImageFilter.identityKey
         val activeRandomSeed = imagePageState.randomSeed
@@ -593,7 +593,8 @@ fun GalleryRoute(
                     imagePageState.query != activeQuery ||
                     imagePageState.pageSize != activePageSize ||
                     imagePageState.sortOption != activeSortOption ||
-                    imagePageState.sortDirection != activeDirection ||
+                    imagePageState.serverSort != activeSort ||
+                    imagePageState.serverDirection != activeDirection ||
                     imagePageState.imageFilter.identityKey != activeImageFilterIdentity ||
                     imagePageState.randomSeed != activeRandomSeed
                 ) {
@@ -611,7 +612,8 @@ fun GalleryRoute(
                     imagePageState.query != activeQuery ||
                     imagePageState.pageSize != activePageSize ||
                     imagePageState.sortOption != activeSortOption ||
-                    imagePageState.sortDirection != activeDirection ||
+                    imagePageState.serverSort != activeSort ||
+                    imagePageState.serverDirection != activeDirection ||
                     imagePageState.imageFilter.identityKey != activeImageFilterIdentity ||
                     imagePageState.randomSeed != activeRandomSeed
                 ) {
@@ -695,7 +697,7 @@ fun GalleryRoute(
         }
     }
 
-    LaunchedEffect(profile, browseMode, galleryBrowseModeRestored, imageToolbarPreferencesRestored, imagePageState.query, imagePageState.sortOption, imagePageState.sortDirection, imagePageState.imageFilter.identityKey, imagePageState.randomSeed, imagePageState.pageSize, imageReloadToken) {
+    LaunchedEffect(profile, browseMode, galleryBrowseModeRestored, imageToolbarPreferencesRestored, imagePageState.query, imagePageState.sortOption, imagePageState.sortDirection, imagePageState.displayMode, imagePageState.imageFilter.identityKey, imagePageState.randomSeed, imagePageState.pageSize, imageReloadToken) {
         if (profile == null) {
             imagePageState = imagePageState.copy(
                 images = emptyList(),
@@ -2272,11 +2274,13 @@ private fun GalleryContent(
                     val folderGroups = groupGalleryImagesByParentFolder(
                         images = images,
                         unfiledLabel = stashString(R.string.gallery_image_unfiled_folder_label),
-                        sortDirection = if (imagePageState.sortOption.serverValue == "path") {
+                        sortDirection = if (imagePageState.sortOption.serverValue == "path" || imagePageState.sortOption.serverValue == "random") {
                             imagePageState.sortDirection
                         } else {
                             StashSortDirection.Asc
                         },
+                        sortOption = imagePageState.sortOption,
+                        randomSeed = imagePageState.randomSeed,
                     )
                     val selectedGroup = selectedImageFolderPath?.let { path ->
                         folderGroups.firstOrNull { group -> group.path == path }

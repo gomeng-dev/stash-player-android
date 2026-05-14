@@ -1177,7 +1177,19 @@ data class StashGalleryGlobalImageGridPageState(
         displayMode = if (displayMode in stashGalleryImageDisplayModes()) displayMode else StashGalleryDisplayMode.Grid,
     )
 
-    val serverSort: String get() = imageServerSortValue(sortOption, randomSeed)
+    val serverSort: String
+        get() = if (displayMode == StashGalleryDisplayMode.Folders && sortOption.isRandomSort()) {
+            defaultStashImageSortOption().serverValue
+        } else {
+            imageServerSortValue(sortOption, randomSeed)
+        }
+
+    val serverDirection: StashSortDirection
+        get() = if (displayMode == StashGalleryDisplayMode.Folders && sortOption.isRandomSort()) {
+            defaultStashImageSortOption().defaultDirection
+        } else {
+            sortDirection
+        }
 
     fun loading(): StashGalleryGlobalImageGridPageState = copy(isLoading = true, error = null)
 
@@ -1373,6 +1385,8 @@ fun groupGalleryImagesByParentFolder(
     images: List<GalleryImageModel>,
     unfiledLabel: String,
     sortDirection: StashSortDirection = StashSortDirection.Asc,
+    sortOption: StashGallerySortOption = defaultStashImageSortOption(),
+    randomSeed: Int? = null,
 ): List<GalleryImageFolderGroup> {
     val groups = linkedMapOf<String, MutableList<GalleryImageFolderItem>>()
     images.forEachIndexed { index, image ->
@@ -1383,12 +1397,24 @@ fun groupGalleryImagesByParentFolder(
     val folderComparator = compareBy<Map.Entry<String, MutableList<GalleryImageFolderItem>>> { entry ->
         if (entry.key.isBlank()) 1 else 0
     }.thenBy { entry -> entry.key.lowercase(Locale.US) }
-    val sortedFolders = when (sortDirection) {
-        StashSortDirection.Asc -> groups.entries.sortedWith(folderComparator)
-        StashSortDirection.Desc -> groups.entries.sortedWith(folderComparator).let { sorted ->
-            val filed = sorted.filter { it.key.isNotBlank() }.reversed()
-            val unfiled = sorted.filter { it.key.isBlank() }
-            filed + unfiled
+    val pathSortedFolders = groups.entries.sortedWith(folderComparator)
+    val sortedFolders = if (sortOption.isRandomSort()) {
+        val seed = normalizeStashRandomSortSeed(randomSeed ?: 0)
+        val randomComparator = compareBy<Map.Entry<String, MutableList<GalleryImageFolderItem>>> { entry ->
+            entry.key.toStableFolderRandomSortKey(seed)
+        }.thenBy { entry -> entry.key.lowercase(Locale.US) }
+        when (sortDirection) {
+            StashSortDirection.Asc -> pathSortedFolders.sortedWith(randomComparator)
+            StashSortDirection.Desc -> pathSortedFolders.sortedWith(randomComparator.reversed())
+        }
+    } else {
+        when (sortDirection) {
+            StashSortDirection.Asc -> pathSortedFolders
+            StashSortDirection.Desc -> pathSortedFolders.let { sorted ->
+                val filed = sorted.filter { it.key.isNotBlank() }.reversed()
+                val unfiled = sorted.filter { it.key.isBlank() }
+                filed + unfiled
+            }
         }
     }
     val itemComparator = compareBy<GalleryImageFolderItem> { item ->
@@ -1405,6 +1431,19 @@ fun groupGalleryImagesByParentFolder(
             items = items.sortedWith(sortedItemComparator),
         )
     }
+}
+
+private fun String.toStableFolderRandomSortKey(seed: Int): Long {
+    val normalized = ifBlank { "__unfiled__" }.lowercase(Locale.US)
+    var hash = seed.toLong() xor 0x9E3779B97F4A7C15UL.toLong()
+    normalized.forEach { char ->
+        hash = (hash xor char.code.toLong()) * 0x100000001B3L
+    }
+    hash = hash xor (hash ushr 33)
+    hash *= 0xff51afd7ed558ccdUL.toLong()
+    hash = hash xor (hash ushr 33)
+    hash *= 0xc4ceb9fe1a85ec53UL.toLong()
+    return hash xor (hash ushr 33)
 }
 
 data class GalleryPhotoDetailRow(

@@ -6,6 +6,20 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-05-15
+
+### English
+
+- Fixed Gallery > Images Folders mode so Random sort fetches images by path first and then applies a stable seed-based shuffle to folder cards, instead of grouping an image-randomized page.
+- Kept non-folder image modes on Stash's seeded random server sort, preserving the existing grid and wall random behavior.
+- Added regression coverage for folder-mode random server sorting and folder-level randomization that is independent of the loaded image order.
+
+### 한국어
+
+- Gallery > Images의 폴더별 보기에서 무작위 정렬 시 이미지 목록을 먼저 랜덤으로 받아온 뒤 폴더로 묶던 문제를 수정하고, 경로 기준으로 폴더를 만든 다음 폴더 카드 단위로 안정적인 seed 기반 셔플을 적용하도록 변경했습니다.
+- 폴더별 보기가 아닌 이미지 그리드/벽 모드에서는 기존처럼 Stash의 seed 기반 랜덤 서버 정렬을 유지합니다.
+- 폴더별 무작위 정렬이 로딩된 이미지 순서가 아니라 폴더 단위 순서에 적용되는지 검증하는 회귀 테스트를 추가했습니다.
+
 ## [1.6.2] - 2026-05-14
 
 ### English
