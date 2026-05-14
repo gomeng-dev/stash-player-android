@@ -9,10 +9,13 @@ import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -57,6 +60,7 @@ import androidx.navigation.compose.rememberNavController
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.local.applyLocalFavoriteFilter
+import gomeng.dev.stashplayer.core.model.GalleryImageModel
 import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
@@ -75,6 +79,9 @@ import gomeng.dev.stashplayer.core.network.shouldRefreshPasswordSessionOnStartup
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScale
 import gomeng.dev.stashplayer.core.ui.theme.StashUiScaleProvider
+import gomeng.dev.stashplayer.feature.gallery.GalleryDetailRoute
+import gomeng.dev.stashplayer.feature.gallery.GalleryPhotoViewerOverlay
+import gomeng.dev.stashplayer.feature.gallery.GalleryRoute
 import gomeng.dev.stashplayer.feature.home.HomeRoute
 import gomeng.dev.stashplayer.feature.player.PlayerRoute
 import gomeng.dev.stashplayer.feature.queue.QueueRoute
@@ -94,9 +101,15 @@ private enum class TopLevelDestination(
     Home("home", topLevelDestinationLabelResource("home"), Icons.Outlined.Home),
     Explore("browse", topLevelDestinationLabelResource("browse"), Icons.Outlined.VideoLibrary),
     Shorts("shorts", topLevelDestinationLabelResource("shorts"), Icons.Outlined.PlayCircle),
+    Gallery("gallery", topLevelDestinationLabelResource("gallery"), Icons.Outlined.PhotoLibrary),
     Queue("queue", topLevelDestinationLabelResource("queue"), Icons.AutoMirrored.Outlined.PlaylistPlay),
     Settings("settings", topLevelDestinationLabelResource("settings"), Icons.Outlined.Settings),
 }
+
+private data class ActiveGalleryPhotoViewer(
+    val initialIndex: Int,
+    val images: List<GalleryImageModel>,
+)
 
 @Composable
 private fun TopLevelDestinationIcon(
@@ -139,6 +152,7 @@ fun StashNavHost(
     var refreshedPasswordSessionKey by remember { mutableStateOf<String?>(null) }
     var availableUpdateNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
     var updateChangelogNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
+    var activeGalleryPhotoViewer by remember { mutableStateOf<ActiveGalleryPhotoViewer?>(null) }
     val navigationChromePolicy = stashNavigationChromeVisualPolicy()
     val activeUiScale = if (isPlayerRoute(currentRoute)) StashUiScale.Default else uiScale
     val activity = remember(context) { context.findActivity() }
@@ -322,56 +336,57 @@ fun StashNavHost(
                 onDismiss = { updateChangelogNotice = null },
             )
         }
-        Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            if (shouldShowBottomNavigation(currentRoute, isFoldLikeLayout)) {
-                val navigationDividerColor = navigationChromePolicy.dividerRole.toNavigationChromeColor()
-                    .copy(alpha = navigationChromePolicy.dividerAlpha)
-                val navigationContainerColor = navigationChromePolicy.containerRole.toNavigationChromeColor()
-                    .copy(alpha = navigationChromePolicy.containerAlpha)
-                NavigationBar(
-                    modifier = Modifier
-                        .drawBehind {
-                            drawLine(
-                                color = navigationDividerColor,
-                                start = Offset.Zero,
-                                end = Offset(size.width, 0f),
-                                strokeWidth = 1.dp.toPx(),
-                            )
-                    },
-                    containerColor = navigationContainerColor,
-                    tonalElevation = 0.dp,
-                    windowInsets = NavigationBarDefaults.windowInsets,
-                ) {
-                    topLevelDestinations.forEach { destination ->
-                        val destinationLabel = stringResource(destination.labelRes)
-                        NavigationBarItem(
-                            selected = isTopLevelDestinationSelected(currentRoute, currentDestination?.hierarchy?.map { it.route }, destination),
-                            onClick = {
-                                navigateTopLevel(destination)
-                            },
-                            icon = {
-                                TopLevelDestinationIcon(
-                                    destination = destination,
-                                    label = destinationLabel,
-                                    showBadge = destination == TopLevelDestination.Settings &&
-                                        availableUpdateNotice != null,
+        Box(Modifier.fillMaxSize()) {
+            Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                bottomBar = {
+                    if (shouldShowBottomNavigation(currentRoute, isFoldLikeLayout)) {
+                        val navigationDividerColor = navigationChromePolicy.dividerRole.toNavigationChromeColor()
+                            .copy(alpha = navigationChromePolicy.dividerAlpha)
+                        val navigationContainerColor = navigationChromePolicy.containerRole.toNavigationChromeColor()
+                            .copy(alpha = navigationChromePolicy.containerAlpha)
+                        NavigationBar(
+                            modifier = Modifier
+                                .drawBehind {
+                                    drawLine(
+                                        color = navigationDividerColor,
+                                        start = Offset.Zero,
+                                        end = Offset(size.width, 0f),
+                                        strokeWidth = 1.dp.toPx(),
+                                    )
+                                },
+                            containerColor = navigationContainerColor,
+                            tonalElevation = 0.dp,
+                            windowInsets = NavigationBarDefaults.windowInsets,
+                        ) {
+                            topLevelDestinations.forEach { destination ->
+                                val destinationLabel = stringResource(destination.labelRes)
+                                NavigationBarItem(
+                                    selected = isTopLevelDestinationSelected(currentRoute, currentDestination?.hierarchy?.map { it.route }, destination),
+                                    onClick = {
+                                        navigateTopLevel(destination)
+                                    },
+                                    icon = {
+                                        TopLevelDestinationIcon(
+                                            destination = destination,
+                                            label = destinationLabel,
+                                            showBadge = destination == TopLevelDestination.Settings &&
+                                                availableUpdateNotice != null,
+                                        )
+                                    },
+                                    colors = navigationChromePolicy.navigationBarItemColors(),
+                                    label = {
+                                        Text(
+                                            destinationLabel,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                                        )
+                                    },
                                 )
-                            },
-                            colors = navigationChromePolicy.navigationBarItemColors(),
-                            label = {
-                                Text(
-                                    destinationLabel,
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                                )
-                            },
-                        )
+                            }
+                        }
                     }
-                }
-            }
-        },
-        ) { paddingValues ->
+                },
+            ) { paddingValues ->
             androidx.compose.foundation.layout.Row {
                 val navHostModifier = if (shouldApplyScaffoldChromePadding(currentRoute)) {
                     Modifier.weight(1f).padding(paddingValues)
@@ -474,6 +489,43 @@ fun StashNavHost(
                             isFoldLikeLayout = isFoldLikeLayout,
                         )
                     }
+                    composable(TopLevelDestination.Gallery.route) {
+                        GalleryRoute(
+                            isFoldLikeLayout = isFoldLikeLayout,
+                            onOpenGallery = { galleryId ->
+                                navController.navigate(galleryDetailRouteForGallery(galleryId))
+                            },
+                            onOpenPhoto = { index, images ->
+                                activeGalleryPhotoViewer = ActiveGalleryPhotoViewer(
+                                    initialIndex = index,
+                                    images = images,
+                                )
+                            },
+                            onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
+                        )
+                    }
+                    composable("gallery/{galleryId}") { backStackEntry ->
+                        GalleryDetailRoute(
+                            galleryId = backStackEntry.arguments?.getString("galleryId") ?: "",
+                            isFoldLikeLayout = isFoldLikeLayout,
+                            onNavigateBack = {
+                                if (!navController.popBackStack()) {
+                                    navController.navigate(TopLevelDestination.Gallery.route) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            },
+                            onOpenPhoto = { _, index, images ->
+                                activeGalleryPhotoViewer = ActiveGalleryPhotoViewer(
+                                    initialIndex = index,
+                                    images = images,
+                                )
+                            },
+                            onOpenScene = { sceneId -> navController.navigate(playerRouteForScene(sceneId)) },
+                            onOpenGallery = { linkedGalleryId -> navController.navigate(galleryDetailRouteForGallery(linkedGalleryId)) },
+                            onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
+                        )
+                    }
                     composable(TopLevelDestination.Queue.route) {
                         QueueRoute(
                             isFoldLikeLayout = isFoldLikeLayout,
@@ -529,6 +581,20 @@ fun StashNavHost(
                         )
                     }
                 }
+            }
+        }
+            activeGalleryPhotoViewer?.let { viewer ->
+                GalleryPhotoViewerOverlay(
+                    images = viewer.images,
+                    initialIndex = viewer.initialIndex,
+                    serverProfile = savedProfile,
+                    onDismiss = { activeGalleryPhotoViewer = null },
+                    modifier = Modifier.fillMaxSize(),
+                    onOpenLinkedGallery = { galleryId ->
+                        activeGalleryPhotoViewer = null
+                        navController.navigate(galleryDetailRouteForGallery(galleryId))
+                    },
+                )
             }
         }
     }

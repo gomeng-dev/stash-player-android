@@ -1,9 +1,19 @@
 package gomeng.dev.stashplayer.core.network
 
 import android.net.Uri
+import gomeng.dev.stashplayer.core.model.GalleryCardModel
+import gomeng.dev.stashplayer.core.model.GalleryChapterModel
+import gomeng.dev.stashplayer.core.model.GalleryFileInfoModel
+import gomeng.dev.stashplayer.core.model.GalleryImageModel
+import gomeng.dev.stashplayer.core.model.GalleryLinkedGalleryModel
+import gomeng.dev.stashplayer.core.model.GalleryLinkedSceneModel
 import gomeng.dev.stashplayer.core.model.SceneCardMetadataBadge
 import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.SceneCardTagChip
+import gomeng.dev.stashplayer.core.model.StashGalleryDetailModel
+import gomeng.dev.stashplayer.core.model.StashGalleryPage
+import gomeng.dev.stashplayer.core.model.StashImagePage
+import gomeng.dev.stashplayer.core.model.StashSelectedEntity
 import gomeng.dev.stashplayer.core.model.StashSelectedTag
 import gomeng.dev.stashplayer.core.model.normalizeStashVideoFilterText
 import gomeng.dev.stashplayer.core.player.formatPlayerPosition
@@ -13,6 +23,7 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
+import java.net.URLDecoder
 import java.net.URLEncoder
 
 private val stashMoshi: Moshi = Moshi.Builder()
@@ -89,11 +100,52 @@ fun parseFindScenesPageResponse(json: String): StashSceneCardPage {
     )
 }
 
+fun parseFindGalleriesPageResponse(json: String): StashGalleryPage {
+    val envelope = parseJson<FindGalleriesEnvelope>(json)
+    envelope.throwIfErrors()
+    val result = envelope.data?.findGalleries
+    return StashGalleryPage(
+        galleries = result?.galleries.orEmpty().map { it.toCard() },
+        totalCount = result?.count ?: result?.galleries.orEmpty().size,
+    )
+}
+
+fun parseFindGalleryDetailResponse(json: String): StashGalleryDetailModel? {
+    val envelope = parseJson<FindGalleryEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.findGallery?.toDetail()
+}
+
+fun parseFindImagesPageResponse(json: String): StashImagePage {
+    val envelope = parseJson<FindImagesEnvelope>(json)
+    envelope.throwIfErrors()
+    val result = envelope.data?.findImages
+    return StashImagePage(
+        images = result?.images.orEmpty().map { it.toImage() },
+        totalCount = result?.count ?: result?.images.orEmpty().size,
+    )
+}
+
 fun parseFindTagsResponse(json: String): List<StashSelectedTag> {
     val envelope = parseJson<FindTagsEnvelope>(json)
     envelope.throwIfErrors()
     return envelope.data?.findTags?.tags.orEmpty().mapNotNull { tag -> tag.toSelectedTagOrNull() }
 }
+
+fun parseFindStudiosResponse(json: String): List<StashSelectedEntity> {
+    val envelope = parseJson<FindStudiosEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.findStudios?.studios.orEmpty().mapNotNull { entity -> entity.toSelectedEntityOrNull() }
+}
+
+fun parseFindPerformersResponse(json: String): List<StashSelectedEntity> {
+    val envelope = parseJson<FindPerformersEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.findPerformers?.performers.orEmpty().mapNotNull { entity -> entity.toSelectedEntityOrNull() }
+}
+
+fun parseFindSceneEntitiesResponse(json: String): List<StashSelectedEntity> = parseFindScenesPageResponse(json).scenes
+    .map { scene -> StashSelectedEntity(id = scene.id, name = scene.title.ifBlank { scene.id }) }
 
 fun parseTagCreateResponse(json: String): SceneCardTagChip {
     val envelope = parseJson<TagCreateEnvelope>(json)
@@ -230,6 +282,35 @@ private data class ApiFindScenes(
     val scenes: List<ApiScene> = emptyList(),
 )
 
+private data class FindGalleriesEnvelope(
+    val data: FindGalleriesData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindGalleriesData(val findGalleries: ApiFindGalleries? = null)
+private data class ApiFindGalleries(
+    val count: Int? = null,
+    val galleries: List<ApiGallery> = emptyList(),
+)
+
+private data class FindGalleryEnvelope(
+    val data: FindGalleryData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindGalleryData(val findGallery: ApiGallery? = null)
+
+private data class FindImagesEnvelope(
+    val data: FindImagesData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindImagesData(val findImages: ApiFindImages? = null)
+private data class ApiFindImages(
+    val count: Int? = null,
+    val images: List<ApiImage> = emptyList(),
+)
+
 private data class FindTagsEnvelope(
     val data: FindTagsData? = null,
     override val errors: List<GraphQlError>? = null,
@@ -240,6 +321,38 @@ private data class ApiFindTags(
     val count: Int? = null,
     val tags: List<ApiTag> = emptyList(),
 )
+
+private data class FindStudiosEnvelope(
+    val data: FindStudiosData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindStudiosData(val findStudios: ApiFindStudios? = null)
+private data class ApiFindStudios(
+    val count: Int? = null,
+    val studios: List<ApiNamedEntity> = emptyList(),
+)
+
+private data class FindPerformersEnvelope(
+    val data: FindPerformersData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindPerformersData(val findPerformers: ApiFindPerformers? = null)
+private data class ApiFindPerformers(
+    val count: Int? = null,
+    val performers: List<ApiNamedEntity> = emptyList(),
+)
+
+private data class ApiNamedEntity(
+    val id: String,
+    val name: String? = null,
+) {
+    fun toSelectedEntityOrNull(): StashSelectedEntity? {
+        val normalizedName = normalizeStashVideoFilterText(name.orEmpty()).takeIf { it.isNotBlank() } ?: return null
+        return StashSelectedEntity(id = id, name = normalizedName)
+    }
+}
 
 private data class TagCreateEnvelope(
     val data: TagCreateData? = null,
@@ -265,6 +378,174 @@ private data class ApiTag(
         val normalizedName = normalizeStashVideoFilterText(name.orEmpty()).takeIf { it.isNotBlank() } ?: return null
         return StashSelectedTag(id = id, name = normalizedName)
     }
+}
+
+private data class ApiGallery(
+    val id: String,
+    val title: String? = null,
+    val date: String? = null,
+    val rating100: Int? = null,
+    @Json(name = "image_count") val imageCount: Int? = null,
+    @Json(name = "file_count") val fileCount: Int? = null,
+    val details: String? = null,
+    val code: String? = null,
+    val photographer: String? = null,
+    val organized: Boolean? = null,
+    @Json(name = "performer_count") val performerCount: Int? = null,
+    @Json(name = "scene_count") val sceneCount: Int? = null,
+    val studio: ApiStudio? = null,
+    val tags: List<ApiTag> = emptyList(),
+    val performers: List<ApiNamedEntity> = emptyList(),
+    val scenes: List<ApiScene> = emptyList(),
+    val files: List<ApiGalleryFile> = emptyList(),
+    val chapters: List<ApiGalleryChapter> = emptyList(),
+    val paths: ApiGalleryPaths? = null,
+) {
+    fun toCard(): GalleryCardModel = GalleryCardModel(
+        id = id,
+        title = displayTitle(),
+        coverUrl = paths?.cover?.trim()?.takeIf { it.isNotBlank() },
+        previewUrl = paths?.preview?.trim()?.takeIf { it.isNotBlank() },
+        imageCount = imageCount,
+        date = date?.trim()?.takeIf { it.isNotBlank() },
+        studio = studio?.name?.trim()?.takeIf { it.isNotBlank() },
+        rating100 = rating100,
+        details = details?.trim()?.takeIf { it.isNotBlank() },
+        organized = organized,
+        performerCount = performerCount ?: performers.size,
+        sceneCount = sceneCount ?: scenes.size,
+        tagChips = tags.mapNotNull { it.toSceneCardTagChipOrNull() },
+        performerChips = performers.mapNotNull { it.toSceneCardChipOrNull() },
+        sceneChips = scenes.mapNotNull { it.toGallerySceneChipOrNull() },
+    )
+
+    fun toDetail(): StashGalleryDetailModel = StashGalleryDetailModel(
+        gallery = toCard(),
+        code = code?.trim()?.takeIf { it.isNotBlank() },
+        photographer = photographer?.trim()?.takeIf { it.isNotBlank() },
+        fileCount = fileCount ?: files.size,
+        linkedScenes = scenes.mapNotNull { it.toLinkedGallerySceneOrNull() },
+        files = files.mapNotNull { it.toFileInfoOrNull() },
+        chapters = chapters.mapNotNull { it.toChapterOrNull() },
+    )
+
+    private fun displayTitle(): String = title?.trim()?.takeIf { it.isNotBlank() }
+        ?: files.firstNotNullOfOrNull { it.displayFileNameOrNull() }
+        ?: id
+}
+
+private data class ApiGalleryFile(
+    val path: String? = null,
+    val basename: String? = null,
+    val size: Long? = null,
+) {
+    fun displayFileNameOrNull(): String? = basename?.toStashDisplayFileNameOrNull()
+        ?: path?.toStashFileNameOrNull()
+
+    fun toFileInfoOrNull(): GalleryFileInfoModel? {
+        val fileName = displayFileNameOrNull() ?: return null
+        return GalleryFileInfoModel(
+            fileName = fileName,
+            sizeBytes = size,
+        )
+    }
+}
+
+private data class ApiGalleryChapter(
+    val id: String? = null,
+    val title: String? = null,
+    @Json(name = "image_index") val imageIndex: Int? = null,
+) {
+    fun toChapterOrNull(): GalleryChapterModel? {
+        val normalizedTitle = title?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        return GalleryChapterModel(
+            id = id?.trim()?.takeIf { it.isNotBlank() } ?: normalizedTitle,
+            title = normalizedTitle,
+            imageIndex = imageIndex ?: 0,
+        )
+    }
+}
+
+private data class ApiGalleryPaths(
+    val cover: String? = null,
+    val preview: String? = null,
+)
+
+private data class ApiImage(
+    val id: String,
+    val title: String? = null,
+    val date: String? = null,
+    val rating100: Int? = null,
+    val details: String? = null,
+    val photographer: String? = null,
+    val organized: Boolean? = null,
+    @Json(name = "o_counter") val oCounter: Int? = null,
+    val paths: ApiImagePaths? = null,
+    @Json(name = "visual_files") val visualFiles: List<ApiImageVisualFile> = emptyList(),
+    val studio: ApiStudio? = null,
+    val tags: List<ApiTag> = emptyList(),
+    val performers: List<ApiNamedEntity> = emptyList(),
+    val galleries: List<ApiImageGallery> = emptyList(),
+) {
+    fun toImage(): GalleryImageModel {
+        val visualFile = visualFiles.firstOrNull()
+        return GalleryImageModel(
+            id = id,
+            title = displayTitle(),
+            thumbnailUrl = paths?.thumbnail?.trim()?.takeIf { it.isNotBlank() },
+            previewUrl = paths?.preview?.trim()?.takeIf { it.isNotBlank() },
+            imageUrl = paths?.image?.trim()?.takeIf { it.isNotBlank() },
+            date = date?.trim()?.takeIf { it.isNotBlank() },
+            studio = studio?.name?.trim()?.takeIf { it.isNotBlank() },
+            rating100 = rating100,
+            width = visualFile?.width,
+            height = visualFile?.height,
+            sizeBytes = visualFile?.size,
+            tagChips = tags.mapNotNull { it.toSceneCardTagChipOrNull() },
+            performerChips = performers.mapNotNull { it.toSceneCardChipOrNull() },
+            linkedGalleries = galleries.mapNotNull { it.toLinkedGalleryOrNull() },
+            details = details?.trim()?.takeIf { it.isNotBlank() },
+            photographer = photographer?.trim()?.takeIf { it.isNotBlank() },
+            organized = organized,
+            oCounter = oCounter,
+            fileName = visualFile?.displayFileNameOrNull(),
+            filePath = visualFile?.displayPathOrNull(),
+        )
+    }
+
+    private fun displayTitle(): String = title?.trim()?.takeIf { it.isNotBlank() }
+        ?: visualFiles.firstNotNullOfOrNull { it.displayFileNameOrNull() }
+        ?: id
+}
+
+private data class ApiImagePaths(
+    val thumbnail: String? = null,
+    val preview: String? = null,
+    val image: String? = null,
+)
+
+private data class ApiImageGallery(
+    val id: String? = null,
+    val title: String? = null,
+) {
+    fun toLinkedGalleryOrNull(): GalleryLinkedGalleryModel? {
+        val normalizedId = id?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val normalizedTitle = normalizeStashVideoFilterText(title.orEmpty()).takeIf { it.isNotBlank() } ?: normalizedId
+        return GalleryLinkedGalleryModel(id = normalizedId, title = normalizedTitle)
+    }
+}
+
+private data class ApiImageVisualFile(
+    val path: String? = null,
+    val basename: String? = null,
+    val width: Int? = null,
+    val height: Int? = null,
+    val size: Long? = null,
+) {
+    fun displayFileNameOrNull(): String? = basename?.toStashDisplayFileNameOrNull()
+        ?: path?.toStashFileNameOrNull()
+
+    fun displayPathOrNull(): String? = path?.trim()?.takeIf { it.isNotBlank() }
 }
 
 private data class ApiScene(
@@ -362,7 +643,7 @@ private data class ApiVideoFile(
     val basename: String? = null,
 ) {
     fun displayFileNameOrNull(): String? =
-        basename?.trim()?.takeIf { it.isNotBlank() }
+        basename?.toStashDisplayFileNameOrNull()
             ?: path?.toStashFileNameOrNull()
 }
 private data class ApiScenePaths(
@@ -402,9 +683,36 @@ private fun ApiTag.toSceneCardTagChipOrNull(): SceneCardTagChip? {
     return SceneCardTagChip(id = id, label = normalizedName)
 }
 
+private fun ApiNamedEntity.toSceneCardChipOrNull(): SceneCardTagChip? {
+    val normalizedName = normalizeStashVideoFilterText(name.orEmpty()).takeIf { it.isNotBlank() } ?: return null
+    return SceneCardTagChip(id = id, label = normalizedName)
+}
+
+private fun ApiScene.toGallerySceneChipOrNull(): SceneCardTagChip? {
+    val normalizedTitle = normalizeStashVideoFilterText(title.orEmpty()).takeIf { it.isNotBlank() } ?: return null
+    return SceneCardTagChip(id = id, label = normalizedTitle)
+}
+
+private fun ApiScene.toLinkedGallerySceneOrNull(): GalleryLinkedSceneModel? {
+    val normalizedTitle = normalizeStashVideoFilterText(title.orEmpty()).takeIf { it.isNotBlank() } ?: return null
+    return GalleryLinkedSceneModel(id = id, title = normalizedTitle)
+}
+
 private fun String.toStashFileNameOrNull(): String? {
     val normalizedPath = trim().substringBefore('?').substringBefore('#')
-    return normalizedPath.substringAfterLast('/').substringAfterLast('\\').takeIf { it.isNotBlank() }
+    return normalizedPath.substringAfterLast('/').substringAfterLast('\\').toStashDisplayFileNameOrNull()
+}
+
+private fun String.toStashDisplayFileNameOrNull(): String? {
+    val normalizedName = trim().takeIf { it.isNotBlank() } ?: return null
+    val decodedName = normalizedName.decodeStashPercentEncodedFileName()
+    return decodedName.trim().takeIf { it.isNotBlank() } ?: normalizedName
+}
+
+private fun String.decodeStashPercentEncodedFileName(): String {
+    if (!contains('%')) return this
+    val plusSafeValue = replace("+", "%2B")
+    return runCatching { URLDecoder.decode(plusSafeValue, Charsets.UTF_8.name()) }.getOrDefault(this)
 }
 
 private fun buildSceneCardMetadataBadges(

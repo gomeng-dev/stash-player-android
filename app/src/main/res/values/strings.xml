@@ -6,6 +6,7 @@
     <string name="navigation_explore_label">탐색</string>
     <string name="navigation_search_label">검색</string>
     <string name="navigation_shorts_label">숏츠</string>
+    <string name="navigation_gallery_label">갤러리</string>
     <string name="home_recommended_section_title">추천 영상</string>
     <string name="navigation_queue_label">재생 대기열</string>
     <string name="navigation_settings_label">설정</string>
@@ -22,6 +23,160 @@
     <string name="shorts_home_entry_subtitle">1분 미만 짧은 영상을 세로 피드로 랜덤 재생합니다.</string>
     <string name="shorts_placeholder_title">숏츠</string>
     <string name="shorts_placeholder_message">1분 미만 영상을 세로 피드처럼 랜덤 재생합니다.</string>
+    <string name="gallery_screen_title">갤러리</string>
+    <string name="gallery_browse_mode_galleries">갤러리</string>
+    <string name="gallery_browse_mode_images">이미지</string>
+    <string name="gallery_global_images_load_failed_title">이미지 로드 실패</string>
+    <string name="gallery_global_images_load_failed_message">다시 시도</string>
+    <string name="gallery_global_images_no_results_title">이미지 없음</string>
+    <string name="gallery_global_images_no_results_message">검색/스캔 확인</string>
+    <string name="gallery_global_images_loading_label">불러오는 중</string>
+    <string name="gallery_global_images_result_count_label">%1$d / %2$d</string>
+    <string name="gallery_global_images_load_more_action">더 보기</string>
+    <string name="gallery_global_images_end_of_results_label">끝</string>
+    <string name="gallery_requires_server_title">Stash 연결 필요</string>
+    <string name="gallery_requires_server_message">갤러리를 불러오려면 먼저 Stash 서버에 연결하세요.</string>
+    <string name="gallery_load_failed_title">갤러리를 불러오지 못했습니다</string>
+    <string name="gallery_load_failed_message">잠시 후 다시 시도해 주세요.</string>
+    <string name="gallery_no_results_title">표시할 갤러리가 없습니다</string>
+    <string name="gallery_no_results_message">Stash 라이브러리에 갤러리가 있는지 확인해 주세요.</string>
+    <string name="gallery_image_count_label">사진 %1$d장</string>
+    <string name="gallery_rating_label">평점 %1$s</string>
+    <string name="gallery_tag_count_label">태그 %1$d개</string>
+    <string name="gallery_performer_count_label">출연자 %1$d명</string>
+    <string name="gallery_scene_count_label">영상 %1$d개</string>
+    <string name="gallery_card_thumbnail_content_description">%1$s 갤러리 표지</string>
+    <string name="gallery_result_count_label">%1$d개 표시 / 전체 %2$d개</string>
+    <string name="gallery_metadata_separator"> · </string>
+    <string name="gallery_filter_chip_title">제목 %1$s</string>
+    <string name="gallery_filter_chip_details">상세 필터</string>
+    <string name="gallery_filter_chip_code">코드 %1$s</string>
+    <string name="gallery_filter_chip_photographer">촬영자 %1$s</string>
+    <string name="gallery_filter_chip_path">경로 필터</string>
+    <string name="gallery_filter_chip_url">URL 필터</string>
+    <string name="gallery_filter_chip_checksum">체크섬 필터</string>
+    <string name="gallery_filter_chip_created_at">생성일 %1$s</string>
+    <string name="gallery_filter_chip_updated_at">수정일 %1$s</string>
+    <string name="gallery_filter_chip_boolean_flags">상태 필터</string>
+    <string name="gallery_filter_chip_counts">수량 필터</string>
+    <string name="gallery_filter_chip_average_resolution">해상도 %1$s</string>
+    <string name="gallery_filter_chip_tags">태그 %1$s</string>
+    <string name="gallery_filter_chip_studios">스튜디오 %1$s</string>
+    <string name="gallery_filter_chip_performers">출연자 %1$s</string>
+    <string name="gallery_filter_chip_scenes">영상 %1$s</string>
+    <string name="gallery_filter_chip_parent_folders">상위 폴더 %1$d개</string>
+    <string name="image_filter_orientation_landscape">가로</string>
+    <string name="image_filter_orientation_portrait">세로</string>
+    <string name="image_filter_orientation_square">정사각</string>
+    <string name="image_filter_chip_o_counter">O 카운트 %1$s</string>
+    <string name="image_filter_chip_orientation">방향 %1$s</string>
+    <string name="image_filter_chip_file_type">파일 형식 %1$s</string>
+    <string name="image_filter_chip_performer_age">출연자 나이 %1$s</string>
+    <string name="image_filter_chip_performer_favorite">출연자 즐겨찾기 필터</string>
+    <string name="image_filter_chip_performer_tags">출연자 태그 %1$s</string>
+    <string name="image_filter_chip_galleries">갤러리 %1$s</string>
+    <string name="image_filter_count_min_label">%1$d 이상</string>
+    <string name="image_filter_count_max_label">%1$d 이하</string>
+    <string name="gallery_filter_button_tags">태그 %1$d</string>
+    <string name="gallery_filter_button_studios">스튜디오 %1$d</string>
+    <string name="gallery_filter_button_performers">출연자 %1$d</string>
+    <string name="gallery_filter_button_scenes">연결 영상 %1$d</string>
+    <string name="gallery_filter_button_parent_folders">상위 폴더 %1$d</string>
+    <string name="gallery_filter_button_performer_tags">출연자 태그 %1$d</string>
+    <string name="gallery_filter_button_galleries">갤러리 %1$d</string>
+    <string name="gallery_filter_sheet_tags_title">갤러리 태그 필터</string>
+    <string name="gallery_filter_sheet_studios_title">갤러리 스튜디오 필터</string>
+    <string name="gallery_filter_sheet_performers_title">갤러리 출연자 필터</string>
+    <string name="gallery_filter_sheet_scenes_title">갤러리 연결 영상 필터</string>
+    <string name="gallery_filter_sheet_parent_folders_title">갤러리 상위 폴더 필터</string>
+    <string name="gallery_filter_sheet_performer_tags_title">이미지 출연자 태그 필터</string>
+    <string name="gallery_filter_sheet_galleries_title">이미지 갤러리 필터</string>
+    <string name="gallery_filter_sheet_tags_search">태그 검색</string>
+    <string name="gallery_filter_sheet_studios_search">스튜디오 검색</string>
+    <string name="gallery_filter_sheet_performers_search">출연자 검색</string>
+    <string name="gallery_filter_sheet_scenes_search">영상 검색</string>
+    <string name="gallery_filter_sheet_parent_folders_search">상위 폴더 경로 입력</string>
+    <string name="gallery_filter_sheet_performer_tags_search">출연자 태그 검색</string>
+    <string name="gallery_filter_sheet_galleries_search">갤러리 검색</string>
+    <string name="gallery_load_more_action">갤러리 더 불러오기</string>
+    <string name="gallery_end_of_results_label">모든 갤러리를 불러왔습니다.</string>
+    <string name="gallery_detail_title_fallback">갤러리 %1$s</string>
+    <string name="gallery_detail_subtitle">사진을 탭하면 전체 화면 사진 뷰어로 이어집니다.</string>
+    <string name="gallery_detail_result_count_label">사진 %1$d장 표시 / 전체 %2$d장</string>
+    <string name="gallery_detail_load_failed_title">사진을 불러오지 못했습니다</string>
+    <string name="gallery_detail_load_failed_message">잠시 후 다시 시도해 주세요.</string>
+    <string name="gallery_detail_no_results_title">표시할 사진이 없습니다</string>
+    <string name="gallery_detail_no_results_message">이 갤러리에 연결된 사진이 있는지 확인해 주세요.</string>
+    <string name="gallery_detail_load_more_action">사진 더 불러오기</string>
+    <string name="gallery_detail_end_of_results_label">모든 사진을 불러왔습니다.</string>
+    <string name="gallery_detail_metadata_title">갤러리 정보</string>
+    <string name="gallery_detail_linked_scenes_title">연결된 영상</string>
+    <string name="gallery_detail_files_title">파일 정보</string>
+    <string name="gallery_detail_chapters_title">챕터</string>
+    <string name="gallery_file_count_label">파일 %1$d개</string>
+    <string name="gallery_code_label">코드 %1$s</string>
+    <string name="gallery_photographer_label">촬영자 %1$s</string>
+    <string name="gallery_file_name_label">파일 %1$s</string>
+    <string name="gallery_file_size_label">크기 %1$s</string>
+    <string name="gallery_detail_chapter_row">%1$s · 사진 %2$d</string>
+    <string name="gallery_photo_open_content_description">%1$s 사진 열기</string>
+    <string name="gallery_image_card_performers_label">출연자: %1$s</string>
+    <string name="gallery_image_card_linked_galleries_label">연결 갤러리: %1$s</string>
+    <string name="gallery_image_o_counter_label">O %1$d</string>
+    <string name="gallery_image_organized_label">정리됨</string>
+    <string name="gallery_image_unorganized_label">미정리</string>
+    <string name="gallery_photo_viewer_close_action">닫기</string>
+    <string name="gallery_photo_viewer_previous_action">이전</string>
+    <string name="gallery_photo_viewer_next_action">다음</string>
+    <string name="gallery_photo_viewer_close_content_description">전체 화면 사진 뷰어 닫기</string>
+    <string name="gallery_photo_viewer_previous_content_description">이전 사진으로 이동</string>
+    <string name="gallery_photo_viewer_next_content_description">다음 사진으로 이동</string>
+    <string name="gallery_photo_viewer_empty_message">표시할 사진이 없습니다.</string>
+    <string name="gallery_photo_viewer_missing_image_message">사진 URL을 사용할 수 없습니다.</string>
+    <string name="gallery_photo_viewer_appreciation_mode_on">감상 켜짐</string>
+    <string name="gallery_photo_viewer_appreciation_mode_off">감상 모드</string>
+    <string name="gallery_photo_viewer_appreciation_mode_content_description">감상 모드 켜기 또는 끄기</string>
+    <string name="gallery_photo_viewer_tap_navigation_on">탭 이동 켜짐</string>
+    <string name="gallery_photo_viewer_tap_navigation_off">탭 이동 꺼짐</string>
+    <string name="gallery_photo_viewer_tap_navigation_content_description">감상 모드에서 좌우 탭 사진 이동 켜기 또는 끄기</string>
+    <string name="gallery_photo_viewer_first_image_feedback">첫 이미지</string>
+    <string name="gallery_photo_viewer_last_image_feedback">마지막 이미지</string>
+    <string name="gallery_photo_viewer_slideshow_play">슬라이드쇼</string>
+    <string name="gallery_photo_viewer_slideshow_pause">일시정지</string>
+    <string name="gallery_photo_viewer_slideshow_content_description">사진 슬라이드쇼 재생 또는 일시정지</string>
+    <string name="gallery_photo_viewer_fit_mode">맞춤</string>
+    <string name="gallery_photo_viewer_original_mode">원본</string>
+    <string name="gallery_photo_viewer_display_mode_content_description">사진 맞춤/원본 크기 전환</string>
+    <string name="gallery_photo_viewer_details_content_description">현재 사진 상세정보 보기</string>
+    <string name="gallery_photo_viewer_more_tools_content_description">사진 도구 더 보기</string>
+    <string name="gallery_photo_viewer_details_title">이미지 상세정보</string>
+    <string name="gallery_photo_viewer_details_dismiss">닫기</string>
+    <string name="gallery_photo_detail_title_label">제목</string>
+    <string name="gallery_photo_detail_id_label">ID</string>
+    <string name="gallery_photo_detail_dimensions_label">해상도</string>
+    <string name="gallery_photo_detail_file_size_label">파일 크기</string>
+    <string name="gallery_photo_detail_file_name_label">파일명</string>
+    <string name="gallery_photo_detail_path_label">경로</string>
+    <string name="gallery_photo_detail_date_label">날짜</string>
+    <string name="gallery_photo_detail_studio_label">스튜디오</string>
+    <string name="gallery_photo_detail_rating_label">별점</string>
+    <string name="gallery_photo_detail_o_counter_label">O 카운트</string>
+    <string name="gallery_photo_detail_organized_label">정리 상태</string>
+    <string name="gallery_photo_detail_photographer_label">촬영자</string>
+    <string name="gallery_photo_detail_performers_label">출연자</string>
+    <string name="gallery_photo_detail_tags_label">태그</string>
+    <string name="gallery_photo_detail_linked_galleries_label">연결 갤러리</string>
+    <string name="gallery_photo_detail_details_label">상세</string>
+    <string name="gallery_photo_viewer_o_decrement">-O</string>
+    <string name="gallery_photo_viewer_o_increment">+O</string>
+    <string name="gallery_photo_viewer_o_reset">O 초기화</string>
+    <string name="gallery_photo_viewer_o_decrement_content_description">현재 사진 O 카운트 줄이기</string>
+    <string name="gallery_photo_viewer_o_increment_content_description">현재 사진 O 카운트 늘리기</string>
+    <string name="gallery_photo_viewer_o_reset_content_description">현재 사진 O 카운트 초기화</string>
+    <string name="gallery_photo_viewer_open_linked_gallery">갤러리: %1$s</string>
+    <string name="gallery_photo_viewer_open_linked_gallery_content_description">연결 갤러리 %1$s 열기</string>
+    <string name="gallery_photo_viewer_rating_save_failed">사진 평점 저장 실패</string>
+    <string name="gallery_photo_viewer_server_missing">Stash 연결이 없어 저장할 수 없습니다.</string>
     <string name="shorts_requires_server_title">Stash 연결 필요</string>
     <string name="shorts_requires_server_message">숏츠를 불러오려면 먼저 Stash 서버에 연결하세요.</string>
     <string name="shorts_loading_title">숏츠 불러오는 중</string>
@@ -829,6 +984,7 @@
     <string name="auto_kr_0535" formatted="false">연결 실패</string>
     <string name="auto_kr_0536" formatted="false">연결 테스트 후 저장</string>
     <string name="auto_kr_0537" formatted="false">테스트 생략하고 저장</string>
+    <string name="auto_kr_0538" formatted="false">자동 이름으로 저장</string>
     <string name="player_o_counter_label" formatted="false">싼 횟수</string>
     <string name="player_o_counter_value_label">%1$d회</string>
     <string name="player_o_counter_add_content_description">싼 횟수 추가, 현재 %1$s</string>
@@ -865,5 +1021,16 @@
     <string name="stash_sort_studio_label" formatted="false">스튜디오</string>
     <string name="stash_sort_tag_count_label" formatted="false">태그 수</string>
     <string name="stash_sort_performer_age_label" formatted="false">출연자 나이</string>
+    <string name="gallery_sort_date_label" formatted="false">날짜</string>
+    <string name="gallery_sort_images_count_label" formatted="false">사진 수</string>
+    <string name="gallery_sort_created_at_label" formatted="false">생성일</string>
+    <string name="gallery_sort_updated_at_label" formatted="false">수정일</string>
+    <string name="gallery_display_mode_wall_label" formatted="false">벽면</string>
+    <string name="gallery_toolbar_content_description" formatted="false">갤러리 발견 도구막대</string>
+    <string name="gallery_toolbar_operations_content_description">갤러리 작업 메뉴, 현재 %1$d개 표시</string>
+    <string name="gallery_operations_open_first_action" formatted="false">첫 갤러리 열기</string>
+    <string name="gallery_operations_open_random_action" formatted="false">무작위 갤러리 열기</string>
+    <string name="gallery_selection_open_action" formatted="false">선택 열기</string>
+    <string name="gallery_selection_random_action" formatted="false">선택 무작위</string>
 </resources>
 

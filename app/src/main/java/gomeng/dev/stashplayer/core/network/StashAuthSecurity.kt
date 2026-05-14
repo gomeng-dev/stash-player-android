@@ -1,6 +1,5 @@
 package gomeng.dev.stashplayer.core.network
 
-import java.net.InetAddress
 import java.net.URI
 
 enum class StashCredentialTransportDecision {
@@ -26,9 +25,8 @@ fun resolveStashCredentialTransportDecision(
         }
     }
     if (uri.scheme.equals("https", ignoreCase = true)) return StashCredentialTransportDecision.Secure
-    if (!uri.scheme.equals("http", ignoreCase = true)) return StashCredentialTransportDecision.Blocked
-    if (!uri.isLocalHttpHost()) return StashCredentialTransportDecision.Blocked
-    return StashCredentialTransportDecision.InsecureLocalAllowed
+    if (uri.scheme.equals("http", ignoreCase = true)) return StashCredentialTransportDecision.InsecureLocalAllowed
+    return StashCredentialTransportDecision.Blocked
 }
 
 fun canAttemptStashCredentialTransport(
@@ -50,19 +48,4 @@ fun canAttemptStashCredentialTransport(
 private fun parseStashAuthUri(baseUrl: String): URI? {
     val normalized = StashServerProfile(baseUrl = baseUrl).normalizedBaseUrl()
     return runCatching { URI(normalized) }.getOrNull()?.takeIf { it.host != null }
-}
-
-private fun URI.isLocalHttpHost(): Boolean {
-    val normalizedHost = host?.trim()?.lowercase().orEmpty()
-    if (normalizedHost == "localhost") return true
-    val address = runCatching { InetAddress.getByName(normalizedHost) }.getOrNull() ?: return false
-    val bytes = address.address
-    if (address.isLoopbackAddress || address.isSiteLocalAddress) return true
-    if (bytes.size != 4) return false
-    val first = bytes[0].toInt() and 0xff
-    val second = bytes[1].toInt() and 0xff
-    return first == 10 ||
-        first == 127 ||
-        (first == 172 && second in 16..31) ||
-        (first == 192 && second == 168)
 }

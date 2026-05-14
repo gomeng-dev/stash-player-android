@@ -19,6 +19,8 @@ import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.ShortsExplicitFeedback
 import gomeng.dev.stashplayer.core.model.ShortsInteractionOutcome
 import gomeng.dev.stashplayer.core.model.ShortsInteractionRecord
+import gomeng.dev.stashplayer.core.model.StashGalleryFilterState
+import gomeng.dev.stashplayer.core.model.StashImageFilterState
 import gomeng.dev.stashplayer.core.model.StashPersistedBrowseFilterState
 import gomeng.dev.stashplayer.core.model.StashPersistedExploreFilterState
 import gomeng.dev.stashplayer.core.model.StashPersistedSearchFilterState
@@ -28,10 +30,18 @@ import gomeng.dev.stashplayer.core.model.deserializeStashPersistedBrowseFilterSt
 import gomeng.dev.stashplayer.core.model.deserializeStashPersistedExploreFilterState
 import gomeng.dev.stashplayer.core.model.deserializeStashPersistedSearchFilterState
 import gomeng.dev.stashplayer.core.model.deserializeStashVideoFilterState
+import gomeng.dev.stashplayer.core.model.deserializeStashGalleryFilterState
+import gomeng.dev.stashplayer.core.model.deserializeStashImageFilterState
 import gomeng.dev.stashplayer.core.model.mergeRecentExploreVideoFilters
 import gomeng.dev.stashplayer.core.model.normalizeStashVideoFilterText
+import gomeng.dev.stashplayer.core.model.promoteStashRecentGalleryFilter
+import gomeng.dev.stashplayer.core.model.promoteStashRecentImageFilter
 import gomeng.dev.stashplayer.core.model.promoteStashRecentVideoFilter
+import gomeng.dev.stashplayer.core.model.toGallerySavedFilterPayload
+import gomeng.dev.stashplayer.core.model.toImageSavedFilterPayload
 import gomeng.dev.stashplayer.core.model.toSavedFilterPayload
+import gomeng.dev.stashplayer.core.model.toRecentGalleryFilterSnapshot
+import gomeng.dev.stashplayer.core.model.toRecentImageFilterSnapshot
 import gomeng.dev.stashplayer.core.model.withSavedFilterReference
 import gomeng.dev.stashplayer.core.model.withGeneratedStashRandomShuffleSeedIfNeeded
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +64,22 @@ data class LocalSavedVideoFilter(
     val id: String,
     val name: String,
     val filterState: StashVideoFilterState,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+data class LocalSavedGalleryFilter(
+    val id: String,
+    val name: String,
+    val filterState: StashGalleryFilterState,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+data class LocalSavedImageFilter(
+    val id: String,
+    val name: String,
+    val filterState: StashImageFilterState,
     val createdAt: Long,
     val updatedAt: Long,
 )
@@ -86,6 +112,24 @@ data class LocalSceneListItemEntity(
 
 @Entity(tableName = "local_saved_video_filters")
 data class LocalSavedVideoFilterEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val serializedFilter: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+@Entity(tableName = "local_saved_gallery_filters")
+data class LocalSavedGalleryFilterEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val serializedFilter: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+@Entity(tableName = "local_saved_image_filters")
+data class LocalSavedImageFilterEntity(
     @PrimaryKey val id: String,
     val name: String,
     val serializedFilter: String,
@@ -161,6 +205,24 @@ interface StashLocalLibraryDao {
     @Query("DELETE FROM local_saved_video_filters WHERE id = :id")
     suspend fun deleteSavedVideoFilter(id: String)
 
+    @Query("SELECT * FROM local_saved_gallery_filters ORDER BY updatedAt DESC")
+    fun observeSavedGalleryFilters(): Flow<List<LocalSavedGalleryFilterEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertSavedGalleryFilter(filter: LocalSavedGalleryFilterEntity)
+
+    @Query("DELETE FROM local_saved_gallery_filters WHERE id = :id")
+    suspend fun deleteSavedGalleryFilter(id: String)
+
+    @Query("SELECT * FROM local_saved_image_filters ORDER BY updatedAt DESC")
+    fun observeSavedImageFilters(): Flow<List<LocalSavedImageFilterEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertSavedImageFilter(filter: LocalSavedImageFilterEntity)
+
+    @Query("DELETE FROM local_saved_image_filters WHERE id = :id")
+    suspend fun deleteSavedImageFilter(id: String)
+
     @Query("SELECT * FROM local_shorts_interactions ORDER BY updatedAt DESC")
     fun observeShortsInteractions(): Flow<List<LocalShortsInteractionEntity>>
 
@@ -179,9 +241,11 @@ interface StashLocalLibraryDao {
         LocalFavoriteSceneEntity::class,
         LocalSceneListItemEntity::class,
         LocalSavedVideoFilterEntity::class,
+        LocalSavedGalleryFilterEntity::class,
+        LocalSavedImageFilterEntity::class,
         LocalShortsInteractionEntity::class,
     ],
-    version = 2,
+    version = 4,
     exportSchema = false,
 )
 abstract class StashLocalDatabase : RoomDatabase() {
@@ -197,7 +261,7 @@ abstract class StashLocalDatabase : RoomDatabase() {
                 StashLocalDatabase::class.java,
                 LOCAL_DATABASE_NAME,
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
                 .also { instance = it }
         }
@@ -217,6 +281,38 @@ abstract class StashLocalDatabase : RoomDatabase() {
                         lastProgress REAL NOT NULL,
                         tagIdsSnapshot TEXT NOT NULL,
                         studioSnapshot TEXT,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS local_saved_gallery_filters (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        serializedFilter TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS local_saved_image_filters (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        serializedFilter TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
                         updatedAt INTEGER NOT NULL
                     )
                     """.trimIndent(),
@@ -246,6 +342,12 @@ class StashLocalLibraryRepository(context: Context) {
         items.map { it.toSceneCardModel(isInWatchLater = false) }
     }
     val savedVideoFilters: Flow<List<LocalSavedVideoFilter>> = dao.observeSavedVideoFilters().map { filters ->
+        filters.map { it.toModel() }
+    }
+    val savedGalleryFilters: Flow<List<LocalSavedGalleryFilter>> = dao.observeSavedGalleryFilters().map { filters ->
+        filters.map { it.toModel() }
+    }
+    val savedImageFilters: Flow<List<LocalSavedImageFilter>> = dao.observeSavedImageFilters().map { filters ->
         filters.map { it.toModel() }
     }
     val shortsInteractions: Flow<List<ShortsInteractionRecord>> = dao.observeShortsInteractions().map { interactions ->
@@ -306,6 +408,16 @@ class StashLocalLibraryRepository(context: Context) {
                 limit = LOCAL_RECENT_FILTER_LIMIT,
             )
         }
+    }
+    val recentGalleryFilters: Flow<List<StashGalleryFilterState>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
+        prefs[LocalFilterKeys.RecentGallery]
+            .orEmpty()
+            .parseRecentGalleryFilters()
+    }
+    val recentImageFilters: Flow<List<StashImageFilterState>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
+        prefs[LocalFilterKeys.RecentImage]
+            .orEmpty()
+            .parseRecentImageFilters()
     }
 
     suspend fun setFavorite(scene: SceneCardModel, isFavorite: Boolean, nowMillis: Long = System.currentTimeMillis()) {
@@ -396,6 +508,64 @@ class StashLocalLibraryRepository(context: Context) {
         dao.deleteSavedVideoFilter(id)
     }
 
+    suspend fun saveGalleryFilter(
+        name: String,
+        filterState: StashGalleryFilterState,
+        nowMillis: Long = System.currentTimeMillis(),
+        overwriteExisting: Boolean = true,
+    ): LocalSavedGalleryFilter {
+        val normalizedName = normalizeStashVideoFilterText(name).ifBlank { stashString(R.string.auto_kr_0017) }
+        val id = buildLocalSavedVideoFilterIdForSave(
+            name = normalizedName,
+            nowMillis = nowMillis,
+            savedFilter = filterState.savedFilter,
+            overwriteExisting = overwriteExisting,
+        )
+        val payload = filterState.toGallerySavedFilterPayload().serializeForStorage()
+        val entity = LocalSavedGalleryFilterEntity(
+            id = id,
+            name = normalizedName,
+            serializedFilter = payload,
+            createdAt = nowMillis,
+            updatedAt = nowMillis,
+        )
+        dao.upsertSavedGalleryFilter(entity)
+        return entity.toModel()
+    }
+
+    suspend fun deleteSavedGalleryFilter(id: String) {
+        dao.deleteSavedGalleryFilter(id)
+    }
+
+    suspend fun saveImageFilter(
+        name: String,
+        filterState: StashImageFilterState,
+        nowMillis: Long = System.currentTimeMillis(),
+        overwriteExisting: Boolean = true,
+    ): LocalSavedImageFilter {
+        val normalizedName = normalizeStashVideoFilterText(name).ifBlank { stashString(R.string.auto_kr_0017) }
+        val id = buildLocalSavedImageFilterIdForSave(
+            name = normalizedName,
+            nowMillis = nowMillis,
+            savedFilter = filterState.savedFilter,
+            overwriteExisting = overwriteExisting,
+        )
+        val payload = filterState.toImageSavedFilterPayload().serializeForStorage()
+        val entity = LocalSavedImageFilterEntity(
+            id = id,
+            name = normalizedName,
+            serializedFilter = payload,
+            createdAt = nowMillis,
+            updatedAt = nowMillis,
+        )
+        dao.upsertSavedImageFilter(entity)
+        return entity.toModel()
+    }
+
+    suspend fun deleteSavedImageFilter(id: String) {
+        dao.deleteSavedImageFilter(id)
+    }
+
     suspend fun recordShortsInteraction(
         scene: SceneCardModel,
         outcome: ShortsInteractionOutcome,
@@ -469,6 +639,30 @@ class StashLocalLibraryRepository(context: Context) {
         saveRecentFilter(LocalFilterKeys.RecentExplore, filterState)
     }
 
+    suspend fun saveRecentGalleryFilter(filterState: StashGalleryFilterState) {
+        val recentSnapshot = filterState.toRecentGalleryFilterSnapshot()
+        appContext.stashLocalFilterDataStore.edit { prefs ->
+            val updated = promoteStashRecentGalleryFilter(
+                existing = prefs[LocalFilterKeys.RecentGallery].orEmpty().parseRecentGalleryFilters(),
+                candidate = recentSnapshot,
+                limit = LOCAL_RECENT_FILTER_LIMIT,
+            )
+            prefs[LocalFilterKeys.RecentGallery] = updated.joinToString("\n") { it.serializeForStorage() }
+        }
+    }
+
+    suspend fun saveRecentImageFilter(filterState: StashImageFilterState) {
+        val recentSnapshot = filterState.toRecentImageFilterSnapshot()
+        appContext.stashLocalFilterDataStore.edit { prefs ->
+            val updated = promoteStashRecentImageFilter(
+                existing = prefs[LocalFilterKeys.RecentImage].orEmpty().parseRecentImageFilters(),
+                candidate = recentSnapshot,
+                limit = LOCAL_RECENT_FILTER_LIMIT,
+            )
+            prefs[LocalFilterKeys.RecentImage] = updated.joinToString("\n") { it.serializeForStorage() }
+        }
+    }
+
     private suspend fun saveRecentFilter(
         key: androidx.datastore.preferences.core.Preferences.Key<String>,
         filterState: StashVideoFilterState,
@@ -493,8 +687,22 @@ class StashLocalLibraryRepository(context: Context) {
         val RecentBrowse = stringPreferencesKey("recent_browse_filter_state")
         val RecentSearch = stringPreferencesKey("recent_search_filter_state")
         val RecentExplore = stringPreferencesKey("recent_explore_filter_state")
+        val RecentGallery = stringPreferencesKey("recent_gallery_filter_state")
+        val RecentImage = stringPreferencesKey("recent_image_filter_state")
     }
 }
+
+private fun String.parseRecentGalleryFilters(): List<StashGalleryFilterState> = lineSequence()
+    .map { it.trim() }
+    .filter { it.isNotBlank() }
+    .map(::deserializeStashGalleryFilterState)
+    .toList()
+
+private fun String.parseRecentImageFilters(): List<StashImageFilterState> = lineSequence()
+    .map { it.trim() }
+    .filter { it.isNotBlank() }
+    .map(::deserializeStashImageFilterState)
+    .toList()
 
 private fun String.parseRecentFilters(): List<StashVideoFilterState> = lineSequence()
     .map { it.trim() }
@@ -523,14 +731,57 @@ fun buildLocalSavedVideoFilterIdForSave(
     buildLocalSavedVideoFilterId(name, nowMillis)
 }
 
+fun buildLocalSavedImageFilterId(name: String, nowMillis: Long): String {
+    val slug = normalizeStashVideoFilterText(name)
+        .lowercase()
+        .replace(Regex(stashString(R.string.auto_kr_0018)), "-")
+        .trim('-')
+        .ifBlank { "image-filter" }
+        .take(40)
+    return "image-local-$nowMillis-$slug"
+}
+
+fun buildLocalSavedImageFilterIdForSave(
+    name: String,
+    nowMillis: Long,
+    savedFilter: StashSavedFilterRef?,
+    overwriteExisting: Boolean,
+): String = if (overwriteExisting && savedFilter != null) {
+    savedFilter.id
+} else {
+    buildLocalSavedImageFilterId(name, nowMillis)
+}
+
 fun LocalSavedVideoFilter.appliedFilterState(): StashVideoFilterState = filterState
     .withSavedFilterReference(StashSavedFilterRef(id = id, name = name))
     .withGeneratedStashRandomShuffleSeedIfNeeded()
+
+fun LocalSavedGalleryFilter.appliedFilterState(): StashGalleryFilterState = filterState
+    .withSavedFilterReference(StashSavedFilterRef(id = id, name = name))
+
+fun LocalSavedImageFilter.appliedFilterState(): StashImageFilterState = filterState
+    .withSavedFilterReference(StashSavedFilterRef(id = id, name = name))
 
 private fun LocalSavedVideoFilterEntity.toModel(): LocalSavedVideoFilter = LocalSavedVideoFilter(
     id = id,
     name = name,
     filterState = deserializeStashVideoFilterState(serializedFilter),
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+)
+
+private fun LocalSavedGalleryFilterEntity.toModel(): LocalSavedGalleryFilter = LocalSavedGalleryFilter(
+    id = id,
+    name = name,
+    filterState = deserializeStashGalleryFilterState(serializedFilter),
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+)
+
+private fun LocalSavedImageFilterEntity.toModel(): LocalSavedImageFilter = LocalSavedImageFilter(
+    id = id,
+    name = name,
+    filterState = deserializeStashImageFilterState(serializedFilter),
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

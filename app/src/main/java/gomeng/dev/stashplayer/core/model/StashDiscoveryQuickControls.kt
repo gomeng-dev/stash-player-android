@@ -44,6 +44,50 @@ data class StashFilterSurfaceDescriptor(
     val editTarget: StashVideoFilterEditTarget? = null,
 )
 
+enum class StashMediaToolbarSurface {
+    Scenes,
+    Galleries,
+}
+
+enum class StashMediaToolbarControl {
+    SearchInput,
+    SavedFilters,
+    TagFilters,
+    DateDurationPlaybackFilters,
+    RatingMediaFilters,
+    LocalLibraryFilters,
+    GalleryEntityFilters,
+    Filters,
+    SortField,
+    SortDirection,
+    RandomShuffle,
+    PageSize,
+    OperationsOverflow,
+    ViewMode,
+}
+
+data class StashMediaToolbarItem(
+    val control: StashMediaToolbarControl,
+    val label: String,
+    val role: StashFilterSurfaceRole,
+    val activeCount: Int = 0,
+    val sourceKey: String = control.name,
+)
+
+data class StashMediaToolbarState(
+    val surface: StashMediaToolbarSurface,
+    val items: List<StashMediaToolbarItem>,
+    val isSelectionMode: Boolean = false,
+) {
+    fun item(control: StashMediaToolbarControl): StashMediaToolbarItem? = items.firstOrNull { it.control == control }
+}
+
+enum class StashGalleryDisplayMode {
+    Grid,
+    List,
+    Wall,
+}
+
 enum class StashScenesViewMode(@StringRes val labelRes: Int) {
     Grid(R.string.auto_kr_0083),
     List(R.string.auto_kr_0084),
@@ -78,6 +122,92 @@ fun stashScenesToolbarNormalControlLabels(
     supportsPageSize = supportsPageSize,
     supportsSortDirection = supportsSortDirection,
 ).map { it.label }
+
+fun stashSceneMediaToolbarState(
+    hasSearchInput: Boolean,
+    supportsPageSize: Boolean,
+    videoFilter: StashVideoFilterState,
+    savedFilterCount: Int,
+    supportsSortDirection: Boolean = true,
+    selectionCount: Int = 0,
+): StashMediaToolbarState = StashMediaToolbarState(
+    surface = StashMediaToolbarSurface.Scenes,
+    isSelectionMode = selectionCount > 0,
+    items = stashScenesToolbarNormalControls(
+        hasSearchInput = hasSearchInput,
+        supportsPageSize = supportsPageSize,
+        supportsSortDirection = supportsSortDirection,
+    ).map { control ->
+        control.toMediaToolbarItem(
+            videoFilter = videoFilter,
+            savedFilterCount = savedFilterCount,
+        )
+    },
+)
+
+fun stashGalleryMediaToolbarFoundationState(
+    hasSearchInput: Boolean,
+    supportsSortDirection: Boolean,
+    supportsPageSize: Boolean,
+): StashMediaToolbarState = StashMediaToolbarState(
+    surface = StashMediaToolbarSurface.Galleries,
+    items = buildList {
+        if (hasSearchInput) add(StashScenesToolbarControl.SearchInput.toMediaToolbarItem())
+        add(StashScenesToolbarControl.SortField.toMediaToolbarItem())
+        if (supportsSortDirection) add(StashScenesToolbarControl.SortDirection.toMediaToolbarItem())
+        add(StashScenesToolbarControl.RandomShuffle.toMediaToolbarItem())
+        if (supportsPageSize) add(StashScenesToolbarControl.PageSize.toMediaToolbarItem())
+        add(StashScenesToolbarControl.OperationsOverflow.toMediaToolbarItem())
+        add(StashScenesToolbarControl.ViewMode.toMediaToolbarItem())
+    },
+)
+
+fun stashGalleryDisplayModes(): List<StashGalleryDisplayMode> = StashGalleryDisplayMode.entries.toList()
+
+fun StashGalleryDisplayMode.next(): StashGalleryDisplayMode {
+    val modes = stashGalleryDisplayModes()
+    return modes[(modes.indexOf(this) + 1).floorMod(modes.size)]
+}
+
+fun StashScenesToolbarControl.toMediaToolbarItem(
+    videoFilter: StashVideoFilterState = StashVideoFilterState(),
+    savedFilterCount: Int = 0,
+): StashMediaToolbarItem {
+    val descriptor = filterSurfaceDescriptor()
+    return StashMediaToolbarItem(
+        control = toMediaToolbarControl(),
+        label = descriptor.label,
+        role = descriptor.role,
+        activeCount = when (this) {
+            StashScenesToolbarControl.SavedFilters -> savedFilterCount
+            StashScenesToolbarControl.TagFilters -> videoFilter.stashToolbarTagFilterBadgeCount()
+            StashScenesToolbarControl.DateDurationPlaybackFilters -> videoFilter.stashToolbarDateDurationPlaybackBadgeCount()
+            StashScenesToolbarControl.RatingMediaFilters -> videoFilter.stashToolbarRatingMediaBadgeCount()
+            StashScenesToolbarControl.LocalLibraryFilters -> videoFilter.stashToolbarLocalLibraryBadgeCount()
+            StashScenesToolbarControl.Filters -> videoFilter.stashToolbarAllFiltersBadgeCount()
+            else -> 0
+        },
+        sourceKey = name,
+    )
+}
+
+private fun StashScenesToolbarControl.toMediaToolbarControl(): StashMediaToolbarControl = when (this) {
+    StashScenesToolbarControl.SearchInput -> StashMediaToolbarControl.SearchInput
+    StashScenesToolbarControl.SavedFilters -> StashMediaToolbarControl.SavedFilters
+    StashScenesToolbarControl.TagFilters -> StashMediaToolbarControl.TagFilters
+    StashScenesToolbarControl.DateDurationPlaybackFilters -> StashMediaToolbarControl.DateDurationPlaybackFilters
+    StashScenesToolbarControl.RatingMediaFilters -> StashMediaToolbarControl.RatingMediaFilters
+    StashScenesToolbarControl.LocalLibraryFilters -> StashMediaToolbarControl.LocalLibraryFilters
+    StashScenesToolbarControl.Filters -> StashMediaToolbarControl.Filters
+    StashScenesToolbarControl.SortField -> StashMediaToolbarControl.SortField
+    StashScenesToolbarControl.SortDirection -> StashMediaToolbarControl.SortDirection
+    StashScenesToolbarControl.RandomShuffle -> StashMediaToolbarControl.RandomShuffle
+    StashScenesToolbarControl.PageSize -> StashMediaToolbarControl.PageSize
+    StashScenesToolbarControl.OperationsOverflow -> StashMediaToolbarControl.OperationsOverflow
+    StashScenesToolbarControl.ViewMode -> StashMediaToolbarControl.ViewMode
+}
+
+private fun Int.floorMod(modulus: Int): Int = ((this % modulus) + modulus) % modulus
 
 fun StashScenesToolbarControl.filterSurfaceDescriptor(): StashFilterSurfaceDescriptor = when (this) {
     StashScenesToolbarControl.SearchInput -> StashFilterSurfaceDescriptor(

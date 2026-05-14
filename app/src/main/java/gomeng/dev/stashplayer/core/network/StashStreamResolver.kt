@@ -2,19 +2,28 @@ package gomeng.dev.stashplayer.core.network
 
 import android.net.Uri
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteResult
+import gomeng.dev.stashplayer.core.model.StashGalleryPage
+import gomeng.dev.stashplayer.core.model.StashImagePage
 import gomeng.dev.stashplayer.core.model.StashSceneDeleteOptions
 import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.SimilarSceneSummary
 import gomeng.dev.stashplayer.core.model.StashDateRange
 import gomeng.dev.stashplayer.core.model.StashDurationRange
+import gomeng.dev.stashplayer.core.model.StashGalleryFilterState
+import gomeng.dev.stashplayer.core.model.StashGalleryDetailModel
+import gomeng.dev.stashplayer.core.model.StashGalleryNumberRange
+import gomeng.dev.stashplayer.core.model.StashImageFileType
+import gomeng.dev.stashplayer.core.model.StashImageFilterState
 import gomeng.dev.stashplayer.core.model.StashMainTabSection
 import gomeng.dev.stashplayer.core.model.StashMainTabSectionSpec
 import gomeng.dev.stashplayer.core.model.StashMediaFormatFilter
 import gomeng.dev.stashplayer.core.model.StashPlaybackState
 import gomeng.dev.stashplayer.core.model.StashRatingRange
+import gomeng.dev.stashplayer.core.model.StashSelectedEntity
 import gomeng.dev.stashplayer.core.model.StashSelectedTag
 import gomeng.dev.stashplayer.core.model.StashSortDirection
+import gomeng.dev.stashplayer.core.model.normalizedGalleryEntities
 import gomeng.dev.stashplayer.core.model.StashVideoFileType
 import gomeng.dev.stashplayer.core.model.StashVideoFilterState
 import gomeng.dev.stashplayer.core.model.StashVideoResolution
@@ -161,6 +170,114 @@ class StashGraphQlClient(
         )
     }
 
+    suspend fun findGalleryCardsPage(
+        perPage: Int = 25,
+        page: Int = 1,
+        query: String? = null,
+        sort: String = "updated_at",
+        direction: StashSortDirection = StashSortDirection.Desc,
+        galleryFilter: StashGalleryFilterState = StashGalleryFilterState(),
+    ): StashGalleryPage {
+        val parsedPage = parseFindGalleriesPageResponse(
+            execute(
+                FIND_GALLERIES_QUERY,
+                buildFindGalleriesVariables(
+                    perPage = perPage,
+                    page = page,
+                    query = query,
+                    sort = sort,
+                    direction = direction,
+                    galleryFilter = galleryFilter,
+                ),
+            ),
+        )
+        return parsedPage.copy(
+            galleries = parsedPage.galleries.map { gallery ->
+                gallery.copy(
+                    coverUrl = gallery.coverUrl?.let(profile::authenticatedUrl),
+                    previewUrl = gallery.previewUrl?.let(profile::authenticatedUrl),
+                )
+            },
+        )
+    }
+
+    suspend fun findGalleryImagesPage(
+        galleryId: String,
+        perPage: Int = 50,
+        page: Int = 1,
+        sort: String = "title",
+        direction: StashSortDirection = StashSortDirection.Asc,
+    ): StashImagePage {
+        val parsedPage = parseFindImagesPageResponse(
+            execute(
+                FIND_GALLERY_IMAGES_QUERY,
+                buildFindGalleryImagesVariables(
+                    galleryId = galleryId,
+                    perPage = perPage,
+                    page = page,
+                    sort = sort,
+                    direction = direction,
+                ),
+            ),
+        )
+        return parsedPage.copy(
+            images = parsedPage.images.map { image ->
+                image.copy(
+                    thumbnailUrl = image.thumbnailUrl?.let(profile::authenticatedUrl),
+                    previewUrl = image.previewUrl?.let(profile::authenticatedUrl),
+                    imageUrl = image.imageUrl?.let(profile::authenticatedUrl),
+                )
+            },
+        )
+    }
+
+    suspend fun findImagesPage(
+        perPage: Int = 50,
+        page: Int = 1,
+        query: String? = null,
+        sort: String = "title",
+        direction: StashSortDirection = StashSortDirection.Asc,
+        imageFilter: StashImageFilterState = StashImageFilterState(),
+    ): StashImagePage {
+        val parsedPage = parseFindImagesPageResponse(
+            execute(
+                FIND_GALLERY_IMAGES_QUERY,
+                buildFindImagesVariables(
+                    perPage = perPage,
+                    page = page,
+                    query = query,
+                    sort = sort,
+                    direction = direction,
+                    imageFilter = imageFilter,
+                ),
+            ),
+        )
+        return parsedPage.copy(
+            images = parsedPage.images.map { image ->
+                image.copy(
+                    thumbnailUrl = image.thumbnailUrl?.let(profile::authenticatedUrl),
+                    previewUrl = image.previewUrl?.let(profile::authenticatedUrl),
+                    imageUrl = image.imageUrl?.let(profile::authenticatedUrl),
+                )
+            },
+        )
+    }
+
+    suspend fun findGalleryDetail(galleryId: String): StashGalleryDetailModel? {
+        val detail = parseFindGalleryDetailResponse(
+            execute(
+                FIND_GALLERY_DETAIL_QUERY,
+                buildFindGalleryDetailVariables(galleryId),
+            ),
+        ) ?: return null
+        return detail.copy(
+            gallery = detail.gallery.copy(
+                coverUrl = detail.gallery.coverUrl?.let(profile::authenticatedUrl),
+                previewUrl = detail.gallery.previewUrl?.let(profile::authenticatedUrl),
+            ),
+        )
+    }
+
     suspend fun findMainTabSections(
         specs: List<StashMainTabSectionSpec> = defaultStashMainTabSections(),
     ): List<StashMainTabSection> {
@@ -242,6 +359,41 @@ class StashGraphQlClient(
         return parseFindTagsResponse(execute(FIND_TAGS_QUERY, buildFindTagsVariables(perPage, page, query)))
     }
 
+    suspend fun findStudios(
+        perPage: Int = 50,
+        page: Int = 1,
+        query: String? = null,
+    ): List<StashSelectedEntity> {
+        return parseFindStudiosResponse(execute(FIND_STUDIOS_QUERY, buildFindTagsVariables(perPage, page, query)))
+    }
+
+    suspend fun findPerformers(
+        perPage: Int = 50,
+        page: Int = 1,
+        query: String? = null,
+    ): List<StashSelectedEntity> {
+        return parseFindPerformersResponse(execute(FIND_PERFORMERS_QUERY, buildFindTagsVariables(perPage, page, query)))
+    }
+
+    suspend fun findSceneEntities(
+        perPage: Int = 50,
+        page: Int = 1,
+        query: String? = null,
+    ): List<StashSelectedEntity> {
+        return parseFindSceneEntitiesResponse(
+            execute(
+                FIND_SCENES_QUERY,
+                buildFindScenesVariables(
+                    perPage = perPage,
+                    page = page,
+                    query = query,
+                    sort = "title",
+                    direction = StashSortDirection.Asc,
+                ),
+            ),
+        )
+    }
+
     suspend fun ensureShortsTagOnScene(scene: SceneCardModel): Boolean {
         val existingShortsTag = scene.tagChips.firstOrNull { it.label.equals(SHORTS_TAG_NAME, ignoreCase = true) }
             ?: findTags(perPage = 10, query = SHORTS_TAG_NAME).firstOrNull { it.name.equals(SHORTS_TAG_NAME, ignoreCase = true) }
@@ -294,6 +446,31 @@ class StashGraphQlClient(
 
     suspend fun updateSceneRating(sceneId: String, rating100: Int?): Boolean {
         return parseSceneRatingUpdateResponse(execute(SCENE_UPDATE_MUTATION, buildSceneRatingUpdateVariables(sceneId, rating100)))
+    }
+
+    suspend fun updateImageRating(imageId: String, rating100: Int?): Boolean {
+        return parseImageRatingUpdateResponse(execute(IMAGE_UPDATE_MUTATION, buildImageRatingUpdateVariables(imageId, rating100)))
+    }
+
+    suspend fun incrementImageO(imageId: String): Int {
+        return parseImageOCounterMutationResponse(
+            execute(IMAGE_INCREMENT_O_MUTATION, mapOf("id" to imageId.trim())),
+            "imageIncrementO",
+        )
+    }
+
+    suspend fun decrementImageO(imageId: String): Int {
+        return parseImageOCounterMutationResponse(
+            execute(IMAGE_DECREMENT_O_MUTATION, mapOf("id" to imageId.trim())),
+            "imageDecrementO",
+        )
+    }
+
+    suspend fun resetImageO(imageId: String): Int {
+        return parseImageOCounterMutationResponse(
+            execute(IMAGE_RESET_O_MUTATION, mapOf("id" to imageId.trim())),
+            "imageResetO",
+        )
     }
 
     suspend fun deleteScenes(
@@ -366,10 +543,108 @@ class StashGraphQlClient(
                   resume_time
                   play_count
                   studio { name }
-                  files { duration width height path basename }
+                  files {
+                    ... on VideoFile {
+                      duration
+                      width
+                      height
+                      path
+                      basename
+                    }
+                  }
                   paths { screenshot preview webp sprite }
                   tags { id name }
                 }
+              }
+            }
+        """
+
+        val FIND_GALLERIES_QUERY = """
+            query FindGalleries(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!, ${'$'}galleryFilter: GalleryFilterType) {
+              findGalleries(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }, gallery_filter: ${'$'}galleryFilter) {
+                count
+                galleries {
+                  id
+                  title
+                  date
+                  rating100
+                  image_count
+                  details
+                  organized
+                  studio { name }
+                  tags { id name }
+                  performers { id name }
+                  scenes { id title }
+                  files {
+                    path
+                    basename
+                    size
+                  }
+                  paths { cover preview }
+                }
+              }
+            }
+        """
+
+        val FIND_GALLERY_IMAGES_QUERY = """
+            query FindGalleryImages(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!, ${'$'}imageFilter: ImageFilterType) {
+              findImages(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }, image_filter: ${'$'}imageFilter) {
+                count
+                images {
+                  id
+                  title
+                  date
+                  rating100
+                  details
+                  photographer
+                  organized
+                  o_counter
+                  paths { thumbnail preview image }
+                  visual_files {
+                    ... on ImageFile {
+                      path
+                      basename
+                      width
+                      height
+                      size
+                    }
+                  }
+                  studio { name }
+                  tags { id name }
+                  performers { id name }
+                  galleries { id title }
+                }
+              }
+            }
+        """
+
+        val FIND_GALLERY_DETAIL_QUERY = """
+            query FindGalleryDetail(${'$'}id: ID!) {
+              findGallery(id: ${'$'}id) {
+                id
+                title
+                date
+                rating100
+                image_count
+                details
+                code
+                photographer
+                organized
+                studio { name }
+                tags { id name }
+                performers { id name }
+                scenes { id title }
+                files {
+                  path
+                  basename
+                  size
+                }
+                chapters {
+                  id
+                  title
+                  image_index
+                }
+                paths { cover preview }
               }
             }
         """
@@ -384,7 +659,15 @@ class StashGraphQlClient(
                 play_count
                 o_counter
                 studio { name }
-                files { duration width height path basename }
+                files {
+                  ... on VideoFile {
+                    duration
+                    width
+                    height
+                    path
+                    basename
+                  }
+                }
                 paths { stream screenshot vtt sprite caption }
                 captions { language_code caption_type }
                 tags { id name }
@@ -398,6 +681,30 @@ class StashGraphQlClient(
               findTags(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }) {
                 count
                 tags {
+                  id
+                  name
+                }
+              }
+            }
+        """
+
+        val FIND_STUDIOS_QUERY = """
+            query FindStudios(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!) {
+              findStudios(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }) {
+                count
+                studios {
+                  id
+                  name
+                }
+              }
+            }
+        """
+
+        val FIND_PERFORMERS_QUERY = """
+            query FindPerformers(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!) {
+              findPerformers(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }) {
+                count
+                performers {
                   id
                   name
                 }
@@ -457,6 +764,30 @@ class StashGraphQlClient(
             }
         """
 
+        val IMAGE_UPDATE_MUTATION = """
+            mutation ImageUpdate(${'$'}input: ImageUpdateInput!) {
+              imageUpdate(input: ${'$'}input) { id rating100 o_counter }
+            }
+        """
+
+        val IMAGE_INCREMENT_O_MUTATION = """
+            mutation ImageIncrementO(${'$'}id: ID!) {
+              imageIncrementO(id: ${'$'}id)
+            }
+        """
+
+        val IMAGE_DECREMENT_O_MUTATION = """
+            mutation ImageDecrementO(${'$'}id: ID!) {
+              imageDecrementO(id: ${'$'}id)
+            }
+        """
+
+        val IMAGE_RESET_O_MUTATION = """
+            mutation ImageResetO(${'$'}id: ID!) {
+              imageResetO(id: ${'$'}id)
+            }
+        """
+
         val SCENES_DESTROY_MUTATION = """
             mutation ScenesDestroy(${'$'}input: ScenesDestroyInput!) {
               scenesDestroy(input: ${'$'}input)
@@ -500,6 +831,59 @@ internal fun buildFindScenesVariables(
     put("direction", direction.graphQlValue)
     put("sceneFilter", videoFilter.toGraphQlSceneFilterOrNull())
 }
+
+internal fun buildFindGalleriesVariables(
+    perPage: Int,
+    page: Int,
+    query: String?,
+    sort: String,
+    direction: StashSortDirection,
+    galleryFilter: StashGalleryFilterState = StashGalleryFilterState(),
+): Map<String, Any?> = buildMap {
+    put("perPage", perPage)
+    put("page", page.coerceAtLeast(1))
+    put("q", query?.trim()?.takeIf { it.isNotBlank() })
+    put("sort", sort)
+    put("direction", direction.graphQlValue)
+    put("galleryFilter", galleryFilter.toGraphQlGalleryFilterOrNull())
+}
+
+internal fun buildFindGalleryImagesVariables(
+    galleryId: String,
+    perPage: Int,
+    page: Int,
+    sort: String,
+    direction: StashSortDirection,
+): Map<String, Any?> = buildFindImagesVariables(
+    perPage = perPage,
+    page = page,
+    query = null,
+    sort = sort,
+    direction = direction,
+    imageFilter = StashImageFilterState(
+        galleries = listOf(StashSelectedEntity(id = galleryId.trim(), name = galleryId.trim())),
+    ),
+)
+
+internal fun buildFindImagesVariables(
+    perPage: Int,
+    page: Int,
+    query: String?,
+    sort: String,
+    direction: StashSortDirection,
+    imageFilter: StashImageFilterState = StashImageFilterState(),
+): Map<String, Any?> = mapOf(
+    "perPage" to perPage,
+    "page" to page.coerceAtLeast(1),
+    "q" to query?.trim()?.takeIf { it.isNotBlank() },
+    "sort" to sort,
+    "direction" to direction.graphQlValue,
+    "imageFilter" to imageFilter.toGraphQlImageFilterOrNull(),
+)
+
+internal fun buildFindGalleryDetailVariables(galleryId: String): Map<String, Any?> = mapOf(
+    "id" to galleryId.trim(),
+)
 
 internal fun buildSimilarSceneCandidateVariables(
     tagIds: List<String>,
@@ -661,6 +1045,88 @@ private fun StashMediaFormatFilter.toGraphQlCriteria(): Map<String, Any?> = buil
     }
 }
 
+private fun StashGalleryFilterState.toGraphQlGalleryFilterOrNull(): Map<String, Any?>? = buildMap {
+    text.title.toTextCriterionOrNull()?.let { put("title", it) }
+    text.details.toTextCriterionOrNull()?.let { put("details", it) }
+    text.code.toTextCriterionOrNull()?.let { put("code", it) }
+    text.photographer.toTextCriterionOrNull()?.let { put("photographer", it) }
+    text.path.toTextCriterionOrNull()?.let { put("path", it) }
+    text.url.toTextCriterionOrNull()?.let { put("url", it) }
+    text.checksum.toTextCriterionOrNull()?.let { put("checksum", it) }
+    dateRange?.toDateCriterionOrNull()?.let { put("date", it) }
+    createdAtRange?.toDateCriterionOrNull()?.let { put("created_at", it) }
+    updatedAtRange?.toDateCriterionOrNull()?.let { put("updated_at", it) }
+    ratingRange?.toRatingCriterionOrNull()?.let { put("rating100", it) }
+    organized?.let { put("organized", it) }
+    isZip?.let { put("is_zip", it) }
+    hasChapters?.let { put("has_chapters", it) }
+    imageCountRange?.toIntCriterionOrNull()?.let { put("image_count", it) }
+    fileCountRange?.toIntCriterionOrNull()?.let { put("file_count", it) }
+    tagCountRange?.toIntCriterionOrNull()?.let { put("tag_count", it) }
+    averageResolution?.toGraphQlAtLeastResolutionCriterion()?.let { put("average_resolution", it) }
+    tags.toGalleryEntityCriterionOrNull()?.let { put("tags", it) }
+    studios.toGalleryEntityCriterionOrNull()?.let { put("studios", it) }
+    performers.toGalleryEntityCriterionOrNull()?.let { put("performers", it) }
+    scenes.toGalleryEntityCriterionOrNull()?.let { put("scenes", it) }
+    parentFolders.toGalleryEntityCriterionOrNull()?.let { put("parent_folder", it) }
+}.takeIf { it.isNotEmpty() }
+
+private fun StashImageFilterState.toGraphQlImageFilterOrNull(): Map<String, Any?>? = buildMap {
+    text.title.toTextCriterionOrNull()?.let { put("title", it) }
+    text.details.toTextCriterionOrNull()?.let { put("details", it) }
+    text.code.toTextCriterionOrNull()?.let { put("code", it) }
+    text.photographer.toTextCriterionOrNull()?.let { put("photographer", it) }
+    text.path.toTextCriterionOrNull()?.let { put("path", it) }
+    text.url.toTextCriterionOrNull()?.let { put("url", it) }
+    text.checksum.toTextCriterionOrNull()?.let { put("checksum", it) }
+    dateRange?.toDateCriterionOrNull()?.let { put("date", it) }
+    createdAtRange?.toDateCriterionOrNull()?.let { put("created_at", it) }
+    updatedAtRange?.toDateCriterionOrNull()?.let { put("updated_at", it) }
+    ratingRange?.toRatingCriterionOrNull()?.let { put("rating100", it) }
+    organized?.let { put("organized", it) }
+    oCounterRange?.toIntCriterionOrNull()?.let { put("o_counter", it) }
+    resolution?.toGraphQlAtLeastResolutionCriterion()?.let { put("resolution", it) }
+    orientations.takeIf { it.isNotEmpty() }?.let { values ->
+        put("orientation", mapOf("value" to values.distinct().map { it.serverValue }))
+    }
+    val fileTypePathCriterion = fileTypes.takeIf { it.isNotEmpty() }?.let { types ->
+        mapOf("value" to types.distinct().toImageFileExtensionRegex(), "modifier" to "MATCHES_REGEX")
+    }
+    if (fileTypePathCriterion != null) {
+        if (containsKey("path")) {
+            put("AND", mapOf("path" to fileTypePathCriterion))
+        } else {
+            put("path", fileTypePathCriterion)
+        }
+    }
+    fileCountRange?.toIntCriterionOrNull()?.let { put("file_count", it) }
+    tagCountRange?.toIntCriterionOrNull()?.let { put("tag_count", it) }
+    performerCountRange?.toIntCriterionOrNull()?.let { put("performer_count", it) }
+    performerAgeRange?.toIntCriterionOrNull()?.let { put("performer_age", it) }
+    performerFavorite?.let { put("performer_favorite", it) }
+    tags.toGalleryEntityCriterionOrNull()?.let { put("tags", it) }
+    performerTags.toGalleryEntityCriterionOrNull()?.let { put("performer_tags", it) }
+    studios.toGalleryEntityCriterionOrNull()?.let { put("studios", it) }
+    performers.toGalleryEntityCriterionOrNull()?.let { put("performers", it) }
+    galleries.toGalleryEntityCriterionOrNull()?.let { put("galleries", it) }
+}.takeIf { it.isNotEmpty() }
+
+private fun List<StashSelectedEntity>.toGalleryEntityCriterionOrNull(): Map<String, Any?>? {
+    val ids = normalizedGalleryEntities().map { it.id }
+    return ids.takeIf { it.isNotEmpty() }?.let { value ->
+        mapOf("value" to value, "modifier" to "INCLUDES")
+    }
+}
+
+private fun String.toTextCriterionOrNull(): Map<String, Any?>? = trim()
+    .takeIf { it.isNotBlank() }
+    ?.let { value -> mapOf("value" to value, "modifier" to "INCLUDES") }
+
+private fun StashGalleryNumberRange.toIntCriterionOrNull(): Map<String, Any?>? = rangeCriterion(
+    value = min,
+    value2 = max,
+)
+
 private fun StashVideoResolution.toGraphQlAtLeastResolutionCriterion(): Map<String, Any?> = when (this) {
     StashVideoResolution.P480 -> mapOf("value" to "STANDARD", "modifier" to "EQUALS")
     StashVideoResolution.P720 -> mapOf("value" to "STANDARD", "modifier" to "GREATER_THAN")
@@ -675,8 +1141,28 @@ private fun List<StashVideoFileType>.toFileExtensionRegex(): String = joinToStri
     postfix = ")$",
 ) { it.id.lowercase() }
 
+private fun List<StashImageFileType>.toImageFileExtensionRegex(): String = joinToString(
+    separator = "|",
+    prefix = """(?i)\.(""",
+    postfix = ")$",
+) { it.id.lowercase() }
+
 internal fun findSceneQueryForTesting(): String = StashGraphQlClient.FIND_SCENE_QUERY
 
 internal fun findScenesQueryForTesting(): String = StashGraphQlClient.FIND_SCENES_QUERY
+
+internal fun findGalleriesQueryForTesting(): String = StashGraphQlClient.FIND_GALLERIES_QUERY
+
+internal fun findGalleryImagesQueryForTesting(): String = StashGraphQlClient.FIND_GALLERY_IMAGES_QUERY
+
+internal fun findGalleryDetailQueryForTesting(): String = StashGraphQlClient.FIND_GALLERY_DETAIL_QUERY
+
+internal fun imageUpdateMutationForTesting(): String = StashGraphQlClient.IMAGE_UPDATE_MUTATION
+
+internal fun imageIncrementOMutationForTesting(): String = StashGraphQlClient.IMAGE_INCREMENT_O_MUTATION
+
+internal fun imageDecrementOMutationForTesting(): String = StashGraphQlClient.IMAGE_DECREMENT_O_MUTATION
+
+internal fun imageResetOMutationForTesting(): String = StashGraphQlClient.IMAGE_RESET_O_MUTATION
 
 internal fun findTagsQueryForTesting(): String = StashGraphQlClient.FIND_TAGS_QUERY

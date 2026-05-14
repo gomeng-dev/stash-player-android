@@ -33,17 +33,24 @@ fun PlayerOverlayTransportControls(
     onPlayPause: () -> Unit,
     onNextTransport: () -> Unit,
     modifier: Modifier = Modifier,
+    visualStyles: List<PlayerOverlayTransportButtonVisualStyle> = buildPlayerOverlayTransportButtonVisualStyles(
+        previousEnabled = state.previousEnabled,
+        playPauseEnabled = state.playPauseEnabled,
+        nextEnabled = state.nextEnabled,
+    ),
+    containerAlpha: Float = PlayerOverlayCenterTransportVisualPolicy.ContainerAlpha,
+    buttonSpacingDp: Int = PlayerOverlayCenterTransportVisualPolicy.ButtonSpacingDp,
 ) {
-    val visualStyles = buildPlayerOverlayTransportButtonVisualStyles(nextEnabled = state.nextEnabled)
     Row(
         modifier = modifier
-            .background(Color.Black.copy(alpha = PlayerOverlayCenterTransportVisualPolicy.ContainerAlpha), CircleShape),
-        horizontalArrangement = Arrangement.spacedBy(PlayerOverlayCenterTransportVisualPolicy.ButtonSpacingDp.dp),
+            .background(Color.Black.copy(alpha = containerAlpha), CircleShape),
+        horizontalArrangement = Arrangement.spacedBy(buttonSpacingDp.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         PlayerOverlayTransportButton(
             onClick = onPreviousTransport,
             contentDescription = state.previousContentDescription,
+            enabled = state.previousEnabled,
             visualStyle = visualStyles.styleFor(PlayerOverlayTransportAction.Previous),
         ) {
             val style = visualStyles.styleFor(PlayerOverlayTransportAction.Previous)
@@ -57,6 +64,7 @@ fun PlayerOverlayTransportControls(
         PlayerOverlayTransportButton(
             onClick = onPlayPause,
             contentDescription = state.playPauseContentDescription,
+            enabled = state.playPauseEnabled,
             visualStyle = visualStyles.styleFor(PlayerOverlayTransportAction.PlayPause),
         ) {
             val style = visualStyles.styleFor(PlayerOverlayTransportAction.PlayPause)

@@ -6,6 +6,7 @@
     <string name="navigation_explore_label">Explore</string>
     <string name="navigation_search_label">Search</string>
     <string name="navigation_shorts_label">Shorts</string>
+    <string name="navigation_gallery_label">Gallery</string>
     <string name="home_recommended_section_title">Recommended videos</string>
     <string name="navigation_queue_label">Queue</string>
     <string name="navigation_settings_label">Settings</string>
@@ -22,6 +23,160 @@
     <string name="shorts_home_entry_subtitle">Play under-one-minute videos as a vertical random feed.</string>
     <string name="shorts_placeholder_title">Shorts</string>
     <string name="shorts_placeholder_message">Play under-one-minute videos as a vertical random feed.</string>
+    <string name="gallery_screen_title">Gallery</string>
+    <string name="gallery_browse_mode_galleries">Gallery</string>
+    <string name="gallery_browse_mode_images">Images</string>
+    <string name="gallery_global_images_load_failed_title">Could not load images</string>
+    <string name="gallery_global_images_load_failed_message">Retry</string>
+    <string name="gallery_global_images_no_results_title">No images</string>
+    <string name="gallery_global_images_no_results_message">Check search/scan.</string>
+    <string name="gallery_global_images_loading_label">Loading</string>
+    <string name="gallery_global_images_result_count_label">%1$d / %2$d</string>
+    <string name="gallery_global_images_load_more_action">More</string>
+    <string name="gallery_global_images_end_of_results_label">End</string>
+    <string name="gallery_requires_server_title">Stash connection required</string>
+    <string name="gallery_requires_server_message">Connect to a Stash server before loading galleries.</string>
+    <string name="gallery_load_failed_title">Could not load galleries</string>
+    <string name="gallery_load_failed_message">Please try again in a moment.</string>
+    <string name="gallery_no_results_title">No galleries to show</string>
+    <string name="gallery_no_results_message">Check whether your Stash library has galleries.</string>
+    <string name="gallery_image_count_label">%1$d photos</string>
+    <string name="gallery_rating_label">Rating %1$s</string>
+    <string name="gallery_tag_count_label">%1$d tags</string>
+    <string name="gallery_performer_count_label">%1$d performers</string>
+    <string name="gallery_scene_count_label">%1$d scenes</string>
+    <string name="gallery_card_thumbnail_content_description">%1$s gallery cover</string>
+    <string name="gallery_result_count_label">Showing %1$d of %2$d</string>
+    <string name="gallery_metadata_separator"> · </string>
+    <string name="gallery_filter_chip_title">Title %1$s</string>
+    <string name="gallery_filter_chip_details">Details filter</string>
+    <string name="gallery_filter_chip_code">Code %1$s</string>
+    <string name="gallery_filter_chip_photographer">Photographer %1$s</string>
+    <string name="gallery_filter_chip_path">Path filter</string>
+    <string name="gallery_filter_chip_url">URL filter</string>
+    <string name="gallery_filter_chip_checksum">Checksum filter</string>
+    <string name="gallery_filter_chip_created_at">Created %1$s</string>
+    <string name="gallery_filter_chip_updated_at">Updated %1$s</string>
+    <string name="gallery_filter_chip_boolean_flags">Status filter</string>
+    <string name="gallery_filter_chip_counts">Count filter</string>
+    <string name="gallery_filter_chip_average_resolution">Resolution %1$s</string>
+    <string name="gallery_filter_chip_tags">Tag %1$s</string>
+    <string name="gallery_filter_chip_studios">Studio %1$s</string>
+    <string name="gallery_filter_chip_performers">Performer %1$s</string>
+    <string name="gallery_filter_chip_scenes">Scene %1$s</string>
+    <string name="gallery_filter_chip_parent_folders">Parent folders %1$d</string>
+    <string name="image_filter_orientation_landscape">Landscape</string>
+    <string name="image_filter_orientation_portrait">Portrait</string>
+    <string name="image_filter_orientation_square">Square</string>
+    <string name="image_filter_chip_o_counter">O-count %1$s</string>
+    <string name="image_filter_chip_orientation">Orientation %1$s</string>
+    <string name="image_filter_chip_file_type">File type %1$s</string>
+    <string name="image_filter_chip_performer_age">Performer age %1$s</string>
+    <string name="image_filter_chip_performer_favorite">Performer favorite filter</string>
+    <string name="image_filter_chip_performer_tags">Performer tag %1$s</string>
+    <string name="image_filter_chip_galleries">Gallery %1$s</string>
+    <string name="image_filter_count_min_label">%1$d+</string>
+    <string name="image_filter_count_max_label">Up to %1$d</string>
+    <string name="gallery_filter_button_tags">Tags %1$d</string>
+    <string name="gallery_filter_button_studios">Studios %1$d</string>
+    <string name="gallery_filter_button_performers">Performers %1$d</string>
+    <string name="gallery_filter_button_scenes">Linked scenes %1$d</string>
+    <string name="gallery_filter_button_parent_folders">Parent folders %1$d</string>
+    <string name="gallery_filter_button_performer_tags">Performer tags %1$d</string>
+    <string name="gallery_filter_button_galleries">Galleries %1$d</string>
+    <string name="gallery_filter_sheet_tags_title">Gallery tag filter</string>
+    <string name="gallery_filter_sheet_studios_title">Gallery studio filter</string>
+    <string name="gallery_filter_sheet_performers_title">Gallery performer filter</string>
+    <string name="gallery_filter_sheet_scenes_title">Gallery linked scene filter</string>
+    <string name="gallery_filter_sheet_parent_folders_title">Gallery parent folder filter</string>
+    <string name="gallery_filter_sheet_performer_tags_title">Image performer-tag filter</string>
+    <string name="gallery_filter_sheet_galleries_title">Image gallery filter</string>
+    <string name="gallery_filter_sheet_tags_search">Search tags</string>
+    <string name="gallery_filter_sheet_studios_search">Search studios</string>
+    <string name="gallery_filter_sheet_performers_search">Search performers</string>
+    <string name="gallery_filter_sheet_scenes_search">Search scenes</string>
+    <string name="gallery_filter_sheet_parent_folders_search">Enter parent folder path</string>
+    <string name="gallery_filter_sheet_performer_tags_search">Search performer tags</string>
+    <string name="gallery_filter_sheet_galleries_search">Search galleries</string>
+    <string name="gallery_load_more_action">Load more galleries</string>
+    <string name="gallery_end_of_results_label">All galleries loaded.</string>
+    <string name="gallery_detail_title_fallback">Gallery %1$s</string>
+    <string name="gallery_detail_subtitle">Tap a photo to continue into the full-screen photo viewer.</string>
+    <string name="gallery_detail_result_count_label">Showing %1$d of %2$d photos</string>
+    <string name="gallery_detail_load_failed_title">Could not load photos</string>
+    <string name="gallery_detail_load_failed_message">Please try again in a moment.</string>
+    <string name="gallery_detail_no_results_title">No photos to show</string>
+    <string name="gallery_detail_no_results_message">Check whether this gallery has linked photos.</string>
+    <string name="gallery_detail_load_more_action">Load more photos</string>
+    <string name="gallery_detail_end_of_results_label">All photos loaded.</string>
+    <string name="gallery_detail_metadata_title">Gallery info</string>
+    <string name="gallery_detail_linked_scenes_title">Linked scenes</string>
+    <string name="gallery_detail_files_title">File info</string>
+    <string name="gallery_detail_chapters_title">Chapters</string>
+    <string name="gallery_file_count_label">%1$d files</string>
+    <string name="gallery_code_label">Code %1$s</string>
+    <string name="gallery_photographer_label">Photographer %1$s</string>
+    <string name="gallery_file_name_label">File %1$s</string>
+    <string name="gallery_file_size_label">Size %1$s</string>
+    <string name="gallery_detail_chapter_row">%1$s · Photo %2$d</string>
+    <string name="gallery_photo_open_content_description">Open %1$s photo</string>
+    <string name="gallery_image_card_performers_label">Performers: %1$s</string>
+    <string name="gallery_image_card_linked_galleries_label">Linked galleries: %1$s</string>
+    <string name="gallery_image_o_counter_label">O %1$d</string>
+    <string name="gallery_image_organized_label">Organized</string>
+    <string name="gallery_image_unorganized_label">Unorganized</string>
+    <string name="gallery_photo_viewer_close_action">Close</string>
+    <string name="gallery_photo_viewer_previous_action">Previous</string>
+    <string name="gallery_photo_viewer_next_action">Next</string>
+    <string name="gallery_photo_viewer_close_content_description">Close full-screen photo viewer</string>
+    <string name="gallery_photo_viewer_previous_content_description">Move to previous photo</string>
+    <string name="gallery_photo_viewer_next_content_description">Move to next photo</string>
+    <string name="gallery_photo_viewer_empty_message">No photos to show.</string>
+    <string name="gallery_photo_viewer_missing_image_message">Photo URL is unavailable.</string>
+    <string name="gallery_photo_viewer_appreciation_mode_on">Mode on</string>
+    <string name="gallery_photo_viewer_appreciation_mode_off">Appreciation</string>
+    <string name="gallery_photo_viewer_appreciation_mode_content_description">Turn appreciation mode on or off</string>
+    <string name="gallery_photo_viewer_tap_navigation_on">Tap nav on</string>
+    <string name="gallery_photo_viewer_tap_navigation_off">Tap nav off</string>
+    <string name="gallery_photo_viewer_tap_navigation_content_description">Turn left and right tap photo navigation on or off in appreciation mode</string>
+    <string name="gallery_photo_viewer_first_image_feedback">First image</string>
+    <string name="gallery_photo_viewer_last_image_feedback">Last image</string>
+    <string name="gallery_photo_viewer_slideshow_play">Slideshow</string>
+    <string name="gallery_photo_viewer_slideshow_pause">Pause</string>
+    <string name="gallery_photo_viewer_slideshow_content_description">Play or pause photo slideshow</string>
+    <string name="gallery_photo_viewer_fit_mode">Fit</string>
+    <string name="gallery_photo_viewer_original_mode">Original</string>
+    <string name="gallery_photo_viewer_display_mode_content_description">Toggle photo fit/original size</string>
+    <string name="gallery_photo_viewer_details_content_description">Show current photo details</string>
+    <string name="gallery_photo_viewer_more_tools_content_description">Show more photo tools</string>
+    <string name="gallery_photo_viewer_details_title">Image details</string>
+    <string name="gallery_photo_viewer_details_dismiss">Close</string>
+    <string name="gallery_photo_detail_title_label">Title</string>
+    <string name="gallery_photo_detail_id_label">ID</string>
+    <string name="gallery_photo_detail_dimensions_label">Dimensions</string>
+    <string name="gallery_photo_detail_file_size_label">File size</string>
+    <string name="gallery_photo_detail_file_name_label">File name</string>
+    <string name="gallery_photo_detail_path_label">Path</string>
+    <string name="gallery_photo_detail_date_label">Date</string>
+    <string name="gallery_photo_detail_studio_label">Studio</string>
+    <string name="gallery_photo_detail_rating_label">Rating</string>
+    <string name="gallery_photo_detail_o_counter_label">O count</string>
+    <string name="gallery_photo_detail_organized_label">Organization</string>
+    <string name="gallery_photo_detail_photographer_label">Photographer</string>
+    <string name="gallery_photo_detail_performers_label">Performers</string>
+    <string name="gallery_photo_detail_tags_label">Tags</string>
+    <string name="gallery_photo_detail_linked_galleries_label">Linked galleries</string>
+    <string name="gallery_photo_detail_details_label">Details</string>
+    <string name="gallery_photo_viewer_o_decrement">-O</string>
+    <string name="gallery_photo_viewer_o_increment">+O</string>
+    <string name="gallery_photo_viewer_o_reset">Reset O</string>
+    <string name="gallery_photo_viewer_o_decrement_content_description">Decrease current photo O count</string>
+    <string name="gallery_photo_viewer_o_increment_content_description">Increase current photo O count</string>
+    <string name="gallery_photo_viewer_o_reset_content_description">Reset current photo O count</string>
+    <string name="gallery_photo_viewer_open_linked_gallery">Gallery: %1$s</string>
+    <string name="gallery_photo_viewer_open_linked_gallery_content_description">Open linked gallery %1$s</string>
+    <string name="gallery_photo_viewer_rating_save_failed">Failed to save photo rating</string>
+    <string name="gallery_photo_viewer_server_missing">Cannot save without a Stash connection.</string>
     <string name="shorts_requires_server_title">Stash connection required</string>
     <string name="shorts_requires_server_message">Connect a Stash server before loading Shorts.</string>
     <string name="shorts_loading_title">Loading Shorts</string>
@@ -828,6 +983,7 @@
     <string name="auto_kr_0535" formatted="false">Connection failed</string>
     <string name="auto_kr_0536" formatted="false">Test connection and save</string>
     <string name="auto_kr_0537" formatted="false">Save without testing</string>
+    <string name="auto_kr_0538" formatted="false">Save with automatic name</string>
     <string name="player_o_counter_label" formatted="false">O-count</string>
     <string name="player_o_counter_value_label">%1$d times</string>
     <string name="player_o_counter_add_content_description">Add O-count, current %1$s</string>
@@ -864,4 +1020,15 @@
     <string name="stash_sort_studio_label" formatted="false">Studio</string>
     <string name="stash_sort_tag_count_label" formatted="false">Tag Count</string>
     <string name="stash_sort_performer_age_label" formatted="false">Performer Age</string>
+    <string name="gallery_sort_date_label" formatted="false">Date</string>
+    <string name="gallery_sort_images_count_label" formatted="false">Image Count</string>
+    <string name="gallery_sort_created_at_label" formatted="false">Created At</string>
+    <string name="gallery_sort_updated_at_label" formatted="false">Updated At</string>
+    <string name="gallery_display_mode_wall_label" formatted="false">Wall</string>
+    <string name="gallery_toolbar_content_description" formatted="false">Gallery discovery toolbar</string>
+    <string name="gallery_toolbar_operations_content_description">Gallery operations menu, %1$d currently visible</string>
+    <string name="gallery_operations_open_first_action" formatted="false">Open first gallery</string>
+    <string name="gallery_operations_open_random_action" formatted="false">Open random gallery</string>
+    <string name="gallery_selection_open_action" formatted="false">Open selection</string>
+    <string name="gallery_selection_random_action" formatted="false">Random from selection</string>
 </resources>

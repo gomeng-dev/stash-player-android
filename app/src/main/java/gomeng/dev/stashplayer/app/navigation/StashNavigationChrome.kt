@@ -69,6 +69,9 @@ internal fun isPlayerRoute(route: String?): Boolean = route == PlayerRoutePatter
 internal fun playerRouteForScene(sceneId: String): String =
     "player/${sceneId.encodePlayerRouteSegment()}"
 
+internal fun galleryDetailRouteForGallery(galleryId: String): String =
+    "gallery/${galleryId.encodeRouteSegment()}"
+
 internal fun shouldShowBottomNavigation(
     route: String?,
     isFoldLikeLayout: Boolean,
@@ -119,6 +122,7 @@ private val TopLevelDestinationLabelResourcesByRoute = mapOf(
     "home" to R.string.navigation_home_label,
     "browse" to R.string.navigation_explore_label,
     "shorts" to R.string.navigation_shorts_label,
+    "gallery" to R.string.navigation_gallery_label,
     "queue" to R.string.navigation_queue_label,
     "settings" to R.string.navigation_settings_label,
 )
@@ -129,4 +133,7 @@ internal fun topLevelDestinationLabelResourcesByRoute(): Map<String, Int> = TopL
 internal fun topLevelDestinationLabelResource(route: String): Int = TopLevelDestinationLabelResourcesByRoute.getValue(route)
 
 private fun String.encodePlayerRouteSegment(): String =
+    encodeRouteSegment()
+
+private fun String.encodeRouteSegment(): String =
     URLEncoder.encode(this, Charsets.UTF_8.name()).replace("+", "%20")

@@ -18,6 +18,18 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import gomeng.dev.stashplayer.core.model.DEFAULT_STASH_GALLERY_GRID_PAGE_SIZE
+import gomeng.dev.stashplayer.core.model.StashGalleryBrowseMode
+import gomeng.dev.stashplayer.core.model.StashGalleryDisplayMode
+import gomeng.dev.stashplayer.core.model.StashGallerySortOption
+import gomeng.dev.stashplayer.core.model.StashGalleryToolbarPreferences
+import gomeng.dev.stashplayer.core.model.StashImageToolbarPreferences
+import gomeng.dev.stashplayer.core.model.StashSortDirection
+import gomeng.dev.stashplayer.core.model.defaultStashGallerySortOption
+import gomeng.dev.stashplayer.core.model.defaultStashImageSortOption
+import gomeng.dev.stashplayer.core.model.stashGalleryImageDisplayModes
+import gomeng.dev.stashplayer.core.model.stashGallerySortOptions
+import gomeng.dev.stashplayer.core.model.stashImageSortOptions
 import gomeng.dev.stashplayer.core.model.STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
 import gomeng.dev.stashplayer.core.model.coerceShortsMaxDurationSeconds
 import kotlinx.coroutines.flow.Flow
@@ -110,6 +122,36 @@ class StashSettingsRepository(private val context: Context) {
 
     val subtitleTextAlignment: Flow<SubtitleTextAlignment> = context.stashSettingsDataStore.data.map { prefs ->
         subtitleTextAlignmentFromPersistedValue(prefs[Keys.SubtitleTextAlignment])
+    }
+
+    val galleryToolbarPreferences: Flow<StashGalleryToolbarPreferences> = context.stashSettingsDataStore.data.map { prefs ->
+        val sortOption = galleryToolbarSortOptionFromPersistedValue(prefs[Keys.GalleryToolbarSortOption])
+        StashGalleryToolbarPreferences(
+            sortOption = sortOption,
+            sortDirection = galleryToolbarSortDirectionFromPersistedValue(
+                value = prefs[Keys.GalleryToolbarSortDirection],
+                fallback = sortOption.defaultDirection,
+            ),
+            pageSize = galleryToolbarPageSizeFromPersistedValue(prefs[Keys.GalleryToolbarPageSize]),
+            displayMode = galleryDisplayModeFromPersistedValue(prefs[Keys.GalleryDisplayMode]),
+        )
+    }
+
+    val imageToolbarPreferences: Flow<StashImageToolbarPreferences> = context.stashSettingsDataStore.data.map { prefs ->
+        val sortOption = imageToolbarSortOptionFromPersistedValue(prefs[Keys.ImageToolbarSortOption])
+        StashImageToolbarPreferences(
+            sortOption = sortOption,
+            sortDirection = imageToolbarSortDirectionFromPersistedValue(
+                value = prefs[Keys.ImageToolbarSortDirection],
+                fallback = sortOption.defaultDirection,
+            ),
+            pageSize = imageToolbarPageSizeFromPersistedValue(prefs[Keys.ImageToolbarPageSize]),
+            displayMode = imageDisplayModeFromPersistedValue(prefs[Keys.ImageDisplayMode]),
+        )
+    }
+
+    val galleryBrowseMode: Flow<StashGalleryBrowseMode> = context.stashSettingsDataStore.data.map { prefs ->
+        galleryBrowseModeFromPersistedValue(prefs[Keys.GalleryBrowseMode])
     }
 
     suspend fun saveServerProfile(profile: StashServerProfile) {
@@ -235,6 +277,30 @@ class StashSettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setGalleryToolbarPreferences(preferences: StashGalleryToolbarPreferences) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.GalleryToolbarSortOption] = persistGalleryToolbarSortOptionValue(preferences.sortOption)
+            prefs[Keys.GalleryToolbarSortDirection] = persistGalleryToolbarSortDirectionValue(preferences.sortDirection)
+            prefs[Keys.GalleryToolbarPageSize] = preferences.pageSize.coerceAtLeast(1)
+            prefs[Keys.GalleryDisplayMode] = persistGalleryDisplayModeValue(preferences.displayMode)
+        }
+    }
+
+    suspend fun setImageToolbarPreferences(preferences: StashImageToolbarPreferences) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.ImageToolbarSortOption] = persistImageToolbarSortOptionValue(preferences.sortOption)
+            prefs[Keys.ImageToolbarSortDirection] = persistImageToolbarSortDirectionValue(preferences.sortDirection)
+            prefs[Keys.ImageToolbarPageSize] = preferences.pageSize.coerceAtLeast(1)
+            prefs[Keys.ImageDisplayMode] = persistImageDisplayModeValue(preferences.displayMode)
+        }
+    }
+
+    suspend fun setGalleryBrowseMode(mode: StashGalleryBrowseMode) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.GalleryBrowseMode] = persistGalleryBrowseModeValue(mode)
+        }
+    }
+
     suspend fun clearServerProfile() {
         context.stashSettingsDataStore.edit { prefs ->
             prefs.remove(Keys.Name)
@@ -274,6 +340,15 @@ class StashSettingsRepository(private val context: Context) {
         val SubtitleFontScale = floatPreferencesKey("subtitle_font_scale")
         val SubtitlePosition = stringPreferencesKey("subtitle_position")
         val SubtitleTextAlignment = stringPreferencesKey("subtitle_text_alignment")
+        val GalleryToolbarSortOption = stringPreferencesKey("gallery_toolbar_sort_option")
+        val GalleryToolbarSortDirection = stringPreferencesKey("gallery_toolbar_sort_direction")
+        val GalleryToolbarPageSize = intPreferencesKey("gallery_toolbar_page_size")
+        val GalleryDisplayMode = stringPreferencesKey("gallery_display_mode")
+        val ImageToolbarSortOption = stringPreferencesKey("image_toolbar_sort_option")
+        val ImageToolbarSortDirection = stringPreferencesKey("image_toolbar_sort_direction")
+        val ImageToolbarPageSize = intPreferencesKey("image_toolbar_page_size")
+        val ImageDisplayMode = stringPreferencesKey("image_display_mode")
+        val GalleryBrowseMode = stringPreferencesKey("gallery_browse_mode")
     }
 
     companion object {
@@ -294,6 +369,13 @@ class StashSettingsRepository(private val context: Context) {
         const val DEFAULT_SUBTITLE_FONT_SCALE: Float = SUBTITLE_FONT_SCALE_DEFAULT
         val DEFAULT_SUBTITLE_POSITION: SubtitlePosition = SubtitlePosition.default
         val DEFAULT_SUBTITLE_TEXT_ALIGNMENT: SubtitleTextAlignment = SubtitleTextAlignment.default
+        val DEFAULT_GALLERY_TOOLBAR_PREFERENCES: StashGalleryToolbarPreferences = StashGalleryToolbarPreferences(
+            pageSize = DEFAULT_STASH_GALLERY_GRID_PAGE_SIZE,
+        )
+        val DEFAULT_IMAGE_TOOLBAR_PREFERENCES: StashImageToolbarPreferences = StashImageToolbarPreferences(
+            pageSize = DEFAULT_STASH_GALLERY_GRID_PAGE_SIZE,
+        )
+        val DEFAULT_GALLERY_BROWSE_MODE: StashGalleryBrowseMode = StashGalleryBrowseMode.Galleries
 
         fun persistThemeModeValue(mode: StashThemeMode): String = mode.persistedValue
 
@@ -352,5 +434,67 @@ class StashSettingsRepository(private val context: Context) {
 
         fun subtitleTextAlignmentFromPersistedValue(value: String?): SubtitleTextAlignment =
             SubtitleTextAlignment.fromPersistedValue(value)
+
+        fun persistGalleryToolbarSortOptionValue(option: StashGallerySortOption): String = option.id
+
+        fun galleryToolbarSortOptionFromPersistedValue(value: String?): StashGallerySortOption =
+            stashGallerySortOptions().firstOrNull { it.id == value } ?: defaultStashGallerySortOption()
+
+        fun persistGalleryToolbarSortDirectionValue(direction: StashSortDirection): String = when (direction) {
+            StashSortDirection.Asc -> "asc"
+            StashSortDirection.Desc -> "desc"
+        }
+
+        fun galleryToolbarSortDirectionFromPersistedValue(
+            value: String?,
+            fallback: StashSortDirection = defaultStashGallerySortOption().defaultDirection,
+        ): StashSortDirection = when (value?.lowercase()) {
+            "asc", "ascending" -> StashSortDirection.Asc
+            "desc", "descending" -> StashSortDirection.Desc
+            else -> fallback
+        }
+
+        fun persistGalleryDisplayModeValue(mode: StashGalleryDisplayMode): String = mode.name.lowercase()
+
+        fun galleryDisplayModeFromPersistedValue(value: String?): StashGalleryDisplayMode =
+            StashGalleryDisplayMode.entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+                ?: StashGalleryDisplayMode.Grid
+
+        fun galleryToolbarPageSizeFromPersistedValue(value: Int?): Int =
+            value?.takeIf { it > 0 } ?: DEFAULT_GALLERY_TOOLBAR_PREFERENCES.pageSize
+
+        fun persistImageToolbarSortOptionValue(option: StashGallerySortOption): String = option.id
+
+        fun imageToolbarSortOptionFromPersistedValue(value: String?): StashGallerySortOption =
+            stashImageSortOptions().firstOrNull { it.id == value } ?: defaultStashImageSortOption()
+
+        fun persistImageToolbarSortDirectionValue(direction: StashSortDirection): String =
+            persistGalleryToolbarSortDirectionValue(direction)
+
+        fun imageToolbarSortDirectionFromPersistedValue(
+            value: String?,
+            fallback: StashSortDirection = defaultStashImageSortOption().defaultDirection,
+        ): StashSortDirection = galleryToolbarSortDirectionFromPersistedValue(value, fallback)
+
+        fun persistImageDisplayModeValue(mode: StashGalleryDisplayMode): String = mode.name.lowercase()
+
+        fun imageDisplayModeFromPersistedValue(value: String?): StashGalleryDisplayMode =
+            StashGalleryDisplayMode.entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+                ?.takeIf { it in stashGalleryImageDisplayModes() }
+                ?: StashGalleryDisplayMode.Grid
+
+        fun imageToolbarPageSizeFromPersistedValue(value: Int?): Int =
+            value?.takeIf { it > 0 } ?: DEFAULT_IMAGE_TOOLBAR_PREFERENCES.pageSize
+
+        fun persistGalleryBrowseModeValue(mode: StashGalleryBrowseMode): String = when (mode) {
+            StashGalleryBrowseMode.Galleries -> "galleries"
+            StashGalleryBrowseMode.Images -> "images"
+        }
+
+        fun galleryBrowseModeFromPersistedValue(value: String?): StashGalleryBrowseMode = when (value?.lowercase()) {
+            "images" -> StashGalleryBrowseMode.Images
+            "galleries" -> StashGalleryBrowseMode.Galleries
+            else -> DEFAULT_GALLERY_BROWSE_MODE
+        }
     }
 }

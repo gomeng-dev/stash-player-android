@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import gomeng.dev.stashplayer.core.model.StashSelectedEntity
 import gomeng.dev.stashplayer.core.model.StashSelectedTag
 import gomeng.dev.stashplayer.core.model.StashVideoFilterCategory
 import gomeng.dev.stashplayer.core.model.StashVideoFilterEditTarget
@@ -403,6 +404,108 @@ fun StashTagFilterSheet(
                 },
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun StashEntityFilterSheet(
+    title: String,
+    searchLabel: String,
+    selectedEntities: List<StashSelectedEntity>,
+    availableEntities: List<StashSelectedEntity>,
+    searchQuery: String,
+    isLoading: Boolean,
+    onSearchQueryChange: (String) -> Unit,
+    onToggleEntity: (StashSelectedEntity) -> Unit,
+    onApply: () -> Unit,
+    onReset: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    allowTypedOption: Boolean = false,
+) {
+    val selectedIds = selectedEntities.map { it.id }.toSet()
+    val typedOption = searchQuery.trim().takeIf { allowTypedOption && it.isNotBlank() }?.let { value ->
+        StashSelectedEntity(id = value, name = value)
+    }
+    val options = buildList {
+        if (typedOption != null && availableEntities.none { it.id == typedOption.id }) add(typedOption)
+        addAll(availableEntities)
+    }.distinctBy { it.id }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = StashSpacing.CardPadding, vertical = StashSpacing.CardGap),
+            verticalArrangement = Arrangement.spacedBy(StashSpacing.CardGap),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Outlined.Close, contentDescription = stashString(R.string.auto_kr_0077))
+                }
+            }
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(searchLabel) },
+            )
+            if (selectedEntities.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
+                    verticalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
+                ) {
+                    selectedEntities.forEach { entity ->
+                        StashVisibilityFilterChip(
+                            selected = true,
+                            onClick = { onToggleEntity(entity) },
+                            label = { Text("${entity.name} ×", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        )
+                    }
+                }
+            }
+            Box(modifier = Modifier.fillMaxWidth()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(128.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 360.dp),
+                    contentPadding = PaddingValues(bottom = StashSpacing.SectionGap),
+                    horizontalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
+                    verticalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
+                ) {
+                    items(options, key = { it.id }) { entity ->
+                        StashVisibilityFilterChip(
+                            selected = entity.id in selectedIds,
+                            onClick = { onToggleEntity(entity) },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(entity.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        )
+                    }
+                }
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(StashSpacing.CardGap),
+            ) {
+                OutlinedButton(onClick = onReset, modifier = Modifier.weight(1f)) {
+                    Text(stashString(R.string.auto_kr_0078))
+                }
+                Button(onClick = onApply, modifier = Modifier.weight(1f)) {
+                    Text(stashString(R.string.auto_kr_0079))
+                }
+            }
         }
     }
 }

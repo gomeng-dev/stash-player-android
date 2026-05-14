@@ -6,6 +6,26 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-05-14
+
+### English
+
+- Added a native Gallery tab with GraphQL-backed gallery browsing, detail photo grids, full-screen photo viewing, zoom/pan gestures, preloading, and Web-parity toolbar controls.
+- Added a global Image browsing mode with sort/random/page-size/display controls, ImageFilterType GraphQL filtering, saved/recent image filters, and Gallery/Image mode persistence.
+- Expanded photo-viewer controls with slideshow, display mode, rating and O-count actions, linked gallery access, appreciation mode, compact one-row bottom chrome, and details rows including the image path.
+- Improved Gallery/Image metadata parsing and display fallbacks, including privacy-safe basename titles, decoded filenames, VisualFile field selections, count fields, and retained toolbar/filter preferences.
+- Polished Gallery selection, list/wall card views, read-only detail panels, entity filters, saved/recent filters, and final QA/debug-release handoff for the Gallery and Image workflows.
+- Fixed Stash GraphQL VisualFile selections and preserved user-chosen HTTP Stash auth behavior.
+
+### 한국어
+
+- GraphQL 기반 갤러리 탐색, 상세 사진 그리드, 전체 화면 사진 뷰어, 줌/팬 제스처, 다음 이미지 preloading, Web parity 툴바를 갖춘 네이티브 Gallery 탭을 추가했습니다.
+- 정렬/랜덤/페이지 크기/표시 모드, ImageFilterType GraphQL 필터, 이미지 저장/최근 필터, Gallery/Image 모드 저장을 갖춘 전역 Image 탐색 모드를 추가했습니다.
+- 슬라이드쇼, 표시 모드, 별점과 O-count 조작, 연결 갤러리 접근, 감상 모드, 한 줄 compact 하단 크롬, 이미지 경로를 포함한 상세정보 행으로 사진 뷰어 조작을 확장했습니다.
+- 개인정보 보호용 basename 제목 fallback, 파일명 디코딩, VisualFile 필드 선택, count 필드, 툴바/필터 선호 저장 등 Gallery/Image 메타데이터 파싱과 표시 안정성을 개선했습니다.
+- Gallery 선택, 목록/벽 카드 보기, 읽기 전용 상세 패널, 엔티티 필터, 저장/최근 필터, Gallery/Image 최종 QA/debug release 전달을 다듬었습니다.
+- Stash GraphQL VisualFile selection 문제를 수정하고 사용자가 선택한 HTTP Stash 인증 정책을 유지했습니다.
+
 ## [1.5.2] - 2026-05-11
 
 ### English

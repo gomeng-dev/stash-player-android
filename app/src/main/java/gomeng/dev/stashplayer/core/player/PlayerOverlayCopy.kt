@@ -119,6 +119,8 @@ data class PlayerOverlayTransportUiState(
     val previousContentDescription: String,
     val playPauseContentDescription: String,
     val nextContentDescription: String,
+    val previousEnabled: Boolean = true,
+    val playPauseEnabled: Boolean = true,
     val nextEnabled: Boolean,
     val actions: List<PlayerOverlayTransportAction> = listOf(
         PlayerOverlayTransportAction.Previous,
@@ -150,22 +152,107 @@ object PlayerOverlayCenterTransportVisualPolicy {
     val PrimaryContainerAlpha: Float = 0.94f
 }
 
+object ImageViewerTransportVisualPolicy {
+    val ContainerAlpha: Float = 0.30f
+    val ButtonSpacingDp: Int = 10
+    val SecondaryButtonSizeDp: Int = 48
+    val PrimaryButtonSizeDp: Int = 56
+    val SecondaryIconSizeDp: Int = 24
+    val PrimaryIconSizeDp: Int = 30
+    val SecondaryContainerAlpha: Float = 0.42f
+    val DisabledContainerAlpha: Float = 0.18f
+    val DisabledContentAlpha: Float = 0.34f
+    val EnabledContentAlpha: Float = 1f
+    val PrimaryContainerAlpha: Float = 0.92f
+}
+
+fun buildImageViewerTransportButtonVisualStyles(
+    previousEnabled: Boolean = true,
+    playPauseEnabled: Boolean = true,
+    nextEnabled: Boolean,
+): List<PlayerOverlayTransportButtonVisualStyle> = listOf(
+    PlayerOverlayTransportButtonVisualStyle(
+        action = PlayerOverlayTransportAction.Previous,
+        sizeDp = playerOverlayTouchTargetSizeDp(ImageViewerTransportVisualPolicy.SecondaryButtonSizeDp),
+        iconSizeDp = ImageViewerTransportVisualPolicy.SecondaryIconSizeDp,
+        containerAlpha = if (previousEnabled) {
+            ImageViewerTransportVisualPolicy.SecondaryContainerAlpha
+        } else {
+            ImageViewerTransportVisualPolicy.DisabledContainerAlpha
+        },
+        contentAlpha = if (previousEnabled) {
+            ImageViewerTransportVisualPolicy.EnabledContentAlpha
+        } else {
+            ImageViewerTransportVisualPolicy.DisabledContentAlpha
+        },
+    ),
+    PlayerOverlayTransportButtonVisualStyle(
+        action = PlayerOverlayTransportAction.PlayPause,
+        sizeDp = playerOverlayTouchTargetSizeDp(ImageViewerTransportVisualPolicy.PrimaryButtonSizeDp),
+        iconSizeDp = ImageViewerTransportVisualPolicy.PrimaryIconSizeDp,
+        containerAlpha = if (playPauseEnabled) {
+            ImageViewerTransportVisualPolicy.PrimaryContainerAlpha
+        } else {
+            ImageViewerTransportVisualPolicy.DisabledContainerAlpha
+        },
+        contentAlpha = if (playPauseEnabled) {
+            ImageViewerTransportVisualPolicy.EnabledContentAlpha
+        } else {
+            ImageViewerTransportVisualPolicy.DisabledContentAlpha
+        },
+        primary = true,
+    ),
+    PlayerOverlayTransportButtonVisualStyle(
+        action = PlayerOverlayTransportAction.Next,
+        sizeDp = playerOverlayTouchTargetSizeDp(ImageViewerTransportVisualPolicy.SecondaryButtonSizeDp),
+        iconSizeDp = ImageViewerTransportVisualPolicy.SecondaryIconSizeDp,
+        containerAlpha = if (nextEnabled) {
+            ImageViewerTransportVisualPolicy.SecondaryContainerAlpha
+        } else {
+            ImageViewerTransportVisualPolicy.DisabledContainerAlpha
+        },
+        contentAlpha = if (nextEnabled) {
+            ImageViewerTransportVisualPolicy.EnabledContentAlpha
+        } else {
+            ImageViewerTransportVisualPolicy.DisabledContentAlpha
+        },
+    ),
+)
+
 fun buildPlayerOverlayTransportButtonVisualStyles(
+    previousEnabled: Boolean = true,
+    playPauseEnabled: Boolean = true,
     nextEnabled: Boolean,
 ): List<PlayerOverlayTransportButtonVisualStyle> = listOf(
     PlayerOverlayTransportButtonVisualStyle(
         action = PlayerOverlayTransportAction.Previous,
         sizeDp = playerOverlayTouchTargetSizeDp(PlayerOverlayCenterTransportVisualPolicy.SecondaryButtonSizeDp),
         iconSizeDp = PlayerOverlayCenterTransportVisualPolicy.SecondaryIconSizeDp,
-        containerAlpha = PlayerOverlayCenterTransportVisualPolicy.SecondaryContainerAlpha,
-        contentAlpha = PlayerOverlayCenterTransportVisualPolicy.EnabledContentAlpha,
+        containerAlpha = if (previousEnabled) {
+            PlayerOverlayCenterTransportVisualPolicy.SecondaryContainerAlpha
+        } else {
+            PlayerOverlayCenterTransportVisualPolicy.DisabledContainerAlpha
+        },
+        contentAlpha = if (previousEnabled) {
+            PlayerOverlayCenterTransportVisualPolicy.EnabledContentAlpha
+        } else {
+            PlayerOverlayCenterTransportVisualPolicy.DisabledContentAlpha
+        },
     ),
     PlayerOverlayTransportButtonVisualStyle(
         action = PlayerOverlayTransportAction.PlayPause,
         sizeDp = playerOverlayTouchTargetSizeDp(PlayerOverlayCenterTransportVisualPolicy.PrimaryButtonSizeDp),
         iconSizeDp = PlayerOverlayCenterTransportVisualPolicy.PrimaryIconSizeDp,
-        containerAlpha = PlayerOverlayCenterTransportVisualPolicy.PrimaryContainerAlpha,
-        contentAlpha = PlayerOverlayCenterTransportVisualPolicy.EnabledContentAlpha,
+        containerAlpha = if (playPauseEnabled) {
+            PlayerOverlayCenterTransportVisualPolicy.PrimaryContainerAlpha
+        } else {
+            PlayerOverlayCenterTransportVisualPolicy.DisabledContainerAlpha
+        },
+        contentAlpha = if (playPauseEnabled) {
+            PlayerOverlayCenterTransportVisualPolicy.EnabledContentAlpha
+        } else {
+            PlayerOverlayCenterTransportVisualPolicy.DisabledContentAlpha
+        },
         primary = true,
     ),
     PlayerOverlayTransportButtonVisualStyle(
@@ -348,6 +435,8 @@ fun resolvePlayerOverlayTransportUiState(
     previousContentDescription = stashString(R.string.auto_kr_0223),
     playPauseContentDescription = if (isPlaying) stashString(R.string.auto_kr_0224) else stashString(R.string.auto_kr_0039),
     nextContentDescription = if (canOpenNextScene) stashString(R.string.auto_kr_0225) else stashString(R.string.auto_kr_0226),
+    previousEnabled = true,
+    playPauseEnabled = true,
     nextEnabled = canOpenNextScene,
 )
 

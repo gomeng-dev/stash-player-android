@@ -49,7 +49,10 @@ import androidx.compose.ui.semantics.semantics
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import gomeng.dev.stashplayer.core.model.StashGalleryDisplayMode
+import gomeng.dev.stashplayer.core.model.StashGallerySortOption
 import gomeng.dev.stashplayer.core.model.StashScenesViewMode
+import gomeng.dev.stashplayer.core.model.StashSortDirection
 import gomeng.dev.stashplayer.core.model.StashVideoFilterState
 import gomeng.dev.stashplayer.core.model.stashScenesToolbarDropdownContentDescription
 import gomeng.dev.stashplayer.core.model.stashScenesToolbarFilterContentDescription
@@ -65,6 +68,9 @@ import gomeng.dev.stashplayer.core.model.stashScenesToolbarSectionFilterLabel
 import gomeng.dev.stashplayer.core.model.stashScenesToolbarSavedFiltersLabel
 import gomeng.dev.stashplayer.core.model.stashToolbarAllFiltersBadgeCount
 import gomeng.dev.stashplayer.core.model.stashToolbarDateDurationPlaybackBadgeCount
+import gomeng.dev.stashplayer.core.model.isRandomSort
+import gomeng.dev.stashplayer.core.model.label
+import gomeng.dev.stashplayer.core.model.stashGalleryDisplayModes
 import gomeng.dev.stashplayer.core.model.stashScenesToolbarDropdownLabel
 import gomeng.dev.stashplayer.core.model.stashScenesToolbarFilterLabel
 import gomeng.dev.stashplayer.core.model.stashToolbarLocalLibraryBadgeCount
@@ -129,7 +135,7 @@ fun <T> StashScenesToolbar(
             verticalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
         ) {
             if (!isSelectionMode && searchValue != null && onSearchChange != null) {
-                ToolbarSearchInput(
+                StashDiscoverySearchInput(
                     value = searchValue,
                     enabled = isConfigured,
                     onValueChange = onSearchChange,
@@ -270,16 +276,132 @@ fun <T> StashScenesToolbar(
 }
 
 @Composable
-private fun ToolbarSearchInput(
+fun StashGalleryToolbar(
+    horizontalPadding: Dp,
+    isConfigured: Boolean,
+    sortOption: StashGallerySortOption,
+    sortOptions: List<StashGallerySortOption>,
+    sortDirection: StashSortDirection,
+    pageSize: Int,
+    pageSizeOptions: List<Int>,
+    displayMode: StashGalleryDisplayMode,
+    displayModeOptions: List<StashGalleryDisplayMode> = stashGalleryDisplayModes(),
+    visibleCount: Int,
+    onSelectSort: (StashGallerySortOption) -> Unit,
+    onToggleSortDirection: () -> Unit,
+    onRandomAction: () -> Unit,
+    onSelectPageSize: (Int) -> Unit,
+    onSelectDisplayMode: (StashGalleryDisplayMode) -> Unit,
+    modifier: Modifier = Modifier,
+    selectionCount: Int = 0,
+    onClearSelection: (() -> Unit)? = null,
+    onSelectAll: (() -> Unit)? = null,
+    onInvertSelection: (() -> Unit)? = null,
+    onOpenSelection: (() -> Unit)? = null,
+    onOpenFirst: (() -> Unit)? = null,
+    onOpenRandom: (() -> Unit)? = null,
+    onOpenRandomSelection: (() -> Unit)? = null,
+    showGalleryOperations: Boolean = true,
+) {
+    val isSelectionMode = selectionCount > 0
+    StashGlassSurface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = horizontalPadding)
+            .semantics { contentDescription = stashString(R.string.gallery_toolbar_content_description) },
+        cornerRadius = StashRadii.Card,
+        contentPadding = PaddingValues(StashSpacing.ChipGap),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
+        ) {
+            if (isSelectionMode) {
+                GallerySelectionToolbarContents(
+                    selectionCount = selectionCount,
+                    onClearSelection = onClearSelection,
+                    onSelectAll = onSelectAll,
+                    onInvertSelection = onInvertSelection,
+                    onOpenSelection = onOpenSelection,
+                    onOpenRandomSelection = onOpenRandomSelection,
+                )
+            } else {
+                ToolbarDropdown(
+                    icon = Icons.AutoMirrored.Outlined.Sort,
+                    label = stashString(R.string.auto_kr_0071),
+                    value = sortOption.label,
+                    enabled = isConfigured,
+                    options = sortOptions,
+                    optionLabel = { it.label },
+                    onSelect = onSelectSort,
+                )
+                ToolbarPillButton(
+                    icon = Icons.Outlined.SwapVert,
+                    label = stashScenesToolbarDropdownLabel(stashString(R.string.auto_kr_0072), sortDirection.galleryDirectionLabel()),
+                    contentDescription = stashScenesToolbarImmediateActionContentDescription(stashString(R.string.auto_kr_0401), sortDirection.galleryDirectionLabel()),
+                    enabled = isConfigured,
+                    onClick = onToggleSortDirection,
+                )
+                ToolbarPillButton(
+                    icon = Icons.Outlined.Shuffle,
+                    label = stashScenesToolbarRandomActionLabel(sortOption.isRandomSort()),
+                    contentDescription = stashScenesToolbarRandomActionContentDescription(sortOption.isRandomSort()),
+                    enabled = isConfigured,
+                    selected = sortOption.isRandomSort(),
+                    onClick = onRandomAction,
+                )
+                ToolbarDropdown(
+                    icon = Icons.AutoMirrored.Outlined.ViewList,
+                    label = stashString(R.string.auto_kr_0074),
+                    value = stashString(R.string.auto_kr_0398, pageSize),
+                    enabled = isConfigured,
+                    options = pageSizeOptions,
+                    optionLabel = { stashString(R.string.auto_kr_0398, it) },
+                    onSelect = onSelectPageSize,
+                )
+                ToolbarDropdown(
+                    icon = if (displayMode == StashGalleryDisplayMode.Grid) Icons.Outlined.GridView else Icons.AutoMirrored.Outlined.ViewList,
+                    label = stashString(R.string.auto_kr_0108),
+                    value = displayMode.label(),
+                    enabled = isConfigured,
+                    options = displayModeOptions,
+                    optionLabel = { it.label() },
+                    onSelect = onSelectDisplayMode,
+                )
+                if (showGalleryOperations) {
+                    GalleryOperationsOverflowMenu(
+                        enabled = isConfigured,
+                        visibleCount = visibleCount,
+                        onOpenFirst = onOpenFirst,
+                        onOpenRandom = onOpenRandom,
+                        onSelectAll = onSelectAll,
+                        onInvertSelection = onInvertSelection,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun StashSortDirection.galleryDirectionLabel(): String = when (this) {
+    StashSortDirection.Desc -> stashString(R.string.auto_kr_0422)
+    StashSortDirection.Asc -> stashString(R.string.auto_kr_0423)
+}
+
+@Composable
+fun StashDiscoverySearchInput(
     value: String,
     enabled: Boolean,
     onValueChange: (String) -> Unit,
     onClear: (() -> Unit)?,
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .widthIn(min = 220.dp),
         enabled = enabled,
@@ -376,6 +498,154 @@ private fun <T> ToolbarDropdown(
                     },
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun GalleryOperationsOverflowMenu(
+    enabled: Boolean,
+    visibleCount: Int,
+    onOpenFirst: (() -> Unit)?,
+    onOpenRandom: (() -> Unit)?,
+    onSelectAll: (() -> Unit)?,
+    onInvertSelection: (() -> Unit)?,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        ToolbarPillButton(
+            icon = Icons.Outlined.MoreVert,
+            label = stashString(R.string.auto_kr_0075),
+            contentDescription = stashString(R.string.gallery_toolbar_operations_content_description, visibleCount),
+            enabled = enabled,
+            onClick = { expanded = true },
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.gallery_operations_open_first_action)) },
+                onClick = {
+                    expanded = false
+                    onOpenFirst?.invoke()
+                },
+                enabled = onOpenFirst != null && visibleCount > 0,
+            )
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.gallery_operations_open_random_action)) },
+                onClick = {
+                    expanded = false
+                    onOpenRandom?.invoke()
+                },
+                enabled = onOpenRandom != null && visibleCount > 0,
+            )
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.auto_kr_0079)) },
+                onClick = {
+                    expanded = false
+                    onSelectAll?.invoke()
+                },
+                enabled = onSelectAll != null && visibleCount > 0,
+            )
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.auto_kr_0089)) },
+                onClick = {
+                    expanded = false
+                    onInvertSelection?.invoke()
+                },
+                enabled = onInvertSelection != null && visibleCount > 0,
+            )
+        }
+    }
+}
+
+@Composable
+private fun GallerySelectionToolbarContents(
+    selectionCount: Int,
+    onClearSelection: (() -> Unit)?,
+    onSelectAll: (() -> Unit)?,
+    onInvertSelection: (() -> Unit)?,
+    onOpenSelection: (() -> Unit)?,
+    onOpenRandomSelection: (() -> Unit)?,
+) {
+    CompactToolbarButton(
+        icon = Icons.Outlined.Clear,
+        label = stashString(R.string.auto_kr_0077),
+        enabled = onClearSelection != null,
+        onClick = { onClearSelection?.invoke() },
+    )
+    Text(
+        text = stashScenesToolbarSelectionCountLabel(selectionCount),
+        modifier = Modifier.semantics {
+            contentDescription = stashScenesToolbarSelectionCountContentDescription(selectionCount)
+        },
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+    CompactToolbarButton(
+        icon = Icons.Outlined.SelectAll,
+        label = stashString(R.string.auto_kr_0079),
+        enabled = onSelectAll != null,
+        onClick = { onSelectAll?.invoke() },
+    )
+    CompactToolbarButton(
+        icon = Icons.Outlined.PlayArrow,
+        label = stashString(R.string.gallery_selection_open_action),
+        enabled = onOpenSelection != null,
+        onClick = { onOpenSelection?.invoke() },
+    )
+    CompactToolbarButton(
+        icon = Icons.Outlined.Shuffle,
+        label = stashString(R.string.gallery_selection_random_action),
+        enabled = onOpenRandomSelection != null,
+        onClick = { onOpenRandomSelection?.invoke() },
+    )
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        ToolbarPillButton(
+            icon = Icons.Outlined.MoreVert,
+            label = stashString(R.string.auto_kr_0082),
+            contentDescription = stashString(R.string.auto_kr_0405),
+            enabled = true,
+            onClick = { expanded = true },
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.auto_kr_0077)) },
+                onClick = {
+                    expanded = false
+                    onClearSelection?.invoke()
+                },
+                enabled = onClearSelection != null,
+            )
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.auto_kr_0079)) },
+                onClick = {
+                    expanded = false
+                    onSelectAll?.invoke()
+                },
+                enabled = onSelectAll != null,
+            )
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.auto_kr_0089)) },
+                onClick = {
+                    expanded = false
+                    onInvertSelection?.invoke()
+                },
+                enabled = onInvertSelection != null,
+            )
+            DropdownMenuItem(
+                text = { Text(stashString(R.string.gallery_selection_random_action)) },
+                onClick = {
+                    expanded = false
+                    onOpenRandomSelection?.invoke()
+                },
+                enabled = onOpenRandomSelection != null,
+            )
         }
     }
 }
