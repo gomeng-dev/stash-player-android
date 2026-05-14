@@ -6,6 +6,18 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-05-15
+
+### English
+
+- Fixed Gallery > Images Folders drill-in so opening a photo uses the selected folder grid's image order for the full-screen viewer and next/previous navigation.
+- Added regression coverage that protects folder viewer requests from falling back to original flat-image indexes after folder sorting.
+
+### 한국어
+
+- Gallery > Images의 폴더별 보기에서 폴더 안 사진을 열 때 전체화면 뷰어와 이전/다음 이동이 선택한 폴더 그리드 순서를 그대로 따르도록 수정했습니다.
+- 폴더 정렬 이후에도 뷰어가 원래 전체 이미지 목록 인덱스로 되돌아가지 않도록 회귀 테스트를 추가했습니다.
+
 ## [1.6.3] - 2026-05-15
 
 ### English

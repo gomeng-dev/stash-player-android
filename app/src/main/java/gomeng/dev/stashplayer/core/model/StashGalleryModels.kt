@@ -68,6 +68,11 @@ data class GalleryImageFolderItem(
     val originalIndex: Int,
 )
 
+data class GalleryImageFolderViewerRequest(
+    val initialIndex: Int,
+    val images: List<GalleryImageModel>,
+)
+
 data class GalleryImageFolderGroup(
     val title: String,
     val path: String,
@@ -77,6 +82,15 @@ data class GalleryImageFolderGroup(
     val imageCount: Int get() = items.size
     val images: List<GalleryImageModel> get() = items.map { it.image }
     val coverImage: GalleryImageModel? get() = items.firstOrNull()?.image
+
+    fun viewerRequestForImage(imageId: String): GalleryImageFolderViewerRequest? {
+        val index = items.indexOfFirst { item -> item.image.id == imageId }
+        if (index < 0) return null
+        return GalleryImageFolderViewerRequest(
+            initialIndex = index,
+            images = images,
+        )
+    }
 }
 
 data class GalleryLinkedSceneModel(

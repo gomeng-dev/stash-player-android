@@ -2307,7 +2307,11 @@ private fun GalleryContent(
                                 serverProfile = serverProfile,
                                 thumbnailHeight = imageThumbnailHeight,
                                 onOpenLinkedGallery = onOpenLinkedGallery,
-                                onClick = { onOpenImage(item.originalIndex, images) },
+                                onClick = {
+                                    selectedGroup.viewerRequestForImage(item.image.id)?.let { request ->
+                                        onOpenImage(request.initialIndex, request.images)
+                                    }
+                                },
                             )
                         }
                     }
