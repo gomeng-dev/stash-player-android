@@ -6,6 +6,20 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-05-14
+
+### English
+
+- Changed Gallery > Images Folders mode from inline section headers to gallery-like folder cards that open one level deeper into the selected folder.
+- Sorted folder cards and in-folder images by normalized filesystem path, including descending path order when the Image sort direction is toggled.
+- Kept full-screen photo viewer navigation anchored to the original loaded image list so folder drill-down cards still open at the correct photo.
+
+### 한국어
+
+- Gallery > Images의 폴더별 보기 방식을 인라인 섹션 헤더 대신 갤러리처럼 보이는 폴더 카드로 바꾸고, 선택한 폴더 안으로 한 뎁스 들어가 사진을 보도록 개선했습니다.
+- 폴더 카드와 폴더 내부 사진을 정규화된 파일 경로 기준으로 정렬하며, Image 정렬 방향을 내림차순으로 바꾸면 경로별 결과도 내림차순으로 표시합니다.
+- 폴더 안 사진을 열어도 전체 화면 사진 뷰어가 기존에 불러온 이미지 목록의 정확한 위치에서 시작하도록 유지했습니다.
+
 ## [1.6.1] - 2026-05-14
 
 ### English

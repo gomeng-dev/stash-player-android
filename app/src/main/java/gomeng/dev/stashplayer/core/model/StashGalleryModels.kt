@@ -72,7 +72,12 @@ data class GalleryImageFolderGroup(
     val title: String,
     val path: String,
     val items: List<GalleryImageFolderItem>,
-)
+) {
+    val id: String get() = path.ifBlank { "__unfiled__" }
+    val imageCount: Int get() = items.size
+    val images: List<GalleryImageModel> get() = items.map { it.image }
+    val coverImage: GalleryImageModel? get() = items.firstOrNull()?.image
+}
 
 data class GalleryLinkedSceneModel(
     val id: String,
@@ -1367,6 +1372,7 @@ fun GalleryImageModel.galleryImagePerformerLabels(limit: Int = 2): List<String> 
 fun groupGalleryImagesByParentFolder(
     images: List<GalleryImageModel>,
     unfiledLabel: String,
+    sortDirection: StashSortDirection = StashSortDirection.Asc,
 ): List<GalleryImageFolderGroup> {
     val groups = linkedMapOf<String, MutableList<GalleryImageFolderItem>>()
     images.forEachIndexed { index, image ->
@@ -1374,11 +1380,29 @@ fun groupGalleryImagesByParentFolder(
         groups.getOrPut(folderPath) { mutableListOf() }
             .add(GalleryImageFolderItem(image = image, originalIndex = index))
     }
-    return groups.map { (path, items) ->
+    val folderComparator = compareBy<Map.Entry<String, MutableList<GalleryImageFolderItem>>> { entry ->
+        if (entry.key.isBlank()) 1 else 0
+    }.thenBy { entry -> entry.key.lowercase(Locale.US) }
+    val sortedFolders = when (sortDirection) {
+        StashSortDirection.Asc -> groups.entries.sortedWith(folderComparator)
+        StashSortDirection.Desc -> groups.entries.sortedWith(folderComparator).let { sorted ->
+            val filed = sorted.filter { it.key.isNotBlank() }.reversed()
+            val unfiled = sorted.filter { it.key.isBlank() }
+            filed + unfiled
+        }
+    }
+    val itemComparator = compareBy<GalleryImageFolderItem> { item ->
+        item.image.filePath.toStashSortablePathOrEmpty().lowercase(Locale.US)
+    }.thenBy { item -> item.originalIndex }
+    val sortedItemComparator = when (sortDirection) {
+        StashSortDirection.Asc -> itemComparator
+        StashSortDirection.Desc -> itemComparator.reversed()
+    }
+    return sortedFolders.map { (path, items) ->
         GalleryImageFolderGroup(
             title = path.toStashFolderTitleOrDefault(unfiledLabel),
             path = path,
-            items = items,
+            items = items.sortedWith(sortedItemComparator),
         )
     }
 }
@@ -1643,17 +1667,21 @@ fun stashGalleryImageGridThumbnailHeightDp(isFoldLikeLayout: Boolean): Int =
 private fun String?.nonBlankOrNull(): String? = this?.trim()?.takeIf { it.isNotBlank() }
 
 private fun String?.toStashParentFolderPathOrEmpty(): String {
-    val normalized = this?.substringBefore('#')
-        ?.substringBefore('?')
-        ?.trim()
-        ?.replace('\\', '/')
-        ?.trimEnd('/')
-        ?.takeIf { it.isNotBlank() }
+    val normalized = toStashSortablePathOrEmpty()
+        .takeIf { it.isNotBlank() }
         ?: return ""
     val parent = normalized.substringBeforeLast('/', missingDelimiterValue = "")
         .trimEnd('/')
     return parent.takeIf { it.isNotBlank() } ?: ""
 }
+
+private fun String?.toStashSortablePathOrEmpty(): String = this?.substringBefore('#')
+    ?.substringBefore('?')
+    ?.trim()
+    ?.replace('\\', '/')
+    ?.trimEnd('/')
+    ?.takeIf { it.isNotBlank() }
+    ?: ""
 
 private fun String.toStashFolderTitleOrDefault(defaultLabel: String): String =
     substringAfterLast('/', missingDelimiterValue = this)

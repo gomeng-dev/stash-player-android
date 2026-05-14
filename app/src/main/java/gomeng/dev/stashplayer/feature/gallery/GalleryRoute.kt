@@ -75,6 +75,7 @@ import gomeng.dev.stashplayer.core.model.ContentScalePolicy
 import gomeng.dev.stashplayer.core.model.GalleryAppreciationModeState
 import gomeng.dev.stashplayer.core.model.GalleryCardModel
 import gomeng.dev.stashplayer.core.model.GalleryFileInfoModel
+import gomeng.dev.stashplayer.core.model.GalleryImageFolderGroup
 import gomeng.dev.stashplayer.core.model.GalleryImageModel
 import gomeng.dev.stashplayer.core.model.GalleryImageOCounterAction
 import gomeng.dev.stashplayer.core.model.GalleryPhotoDetailLabels
@@ -356,6 +357,7 @@ fun GalleryRoute(
     var showSavedImageFilterSheet by remember { mutableStateOf(false) }
     var savedGalleryFilterName by remember { mutableStateOf("") }
     var savedImageFilterName by remember { mutableStateOf("") }
+    var selectedImageFolderPath by rememberSaveable { mutableStateOf<String?>(null) }
     var gallerySelectionState by remember { mutableStateOf(GallerySelectionState()) }
     var previousVisibleGalleryIds by remember { mutableStateOf(emptyList<String>()) }
     val visibleGalleryIds = pageState.galleries.map { it.id }
@@ -374,12 +376,19 @@ fun GalleryRoute(
             gallerySelectionState = gallerySelectionState,
         )
         browseMode = result.mode
+        if (result.mode != StashGalleryBrowseMode.Images) {
+            selectedImageFolderPath = null
+        }
         pageState = result.galleryState
         imagePageState = result.imageState
         gallerySelectionState = result.gallerySelectionState
         if (persistSelection) {
             scope.launch { settingsRepository.setGalleryBrowseMode(result.mode) }
         }
+    }
+
+    BackHandler(enabled = selectedImageFolderPath != null && browseMode == StashGalleryBrowseMode.Images) {
+        selectedImageFolderPath = null
     }
 
     BackHandler(enabled = gallerySelectionState.isActive) {
@@ -406,6 +415,7 @@ fun GalleryRoute(
         if (shouldPromoteRecentImageFilterAfterChange(previousFilter, updatedFilter)) {
             scope.launch { localLibraryRepository.saveRecentImageFilter(updatedFilter) }
         }
+        selectedImageFolderPath = null
         imageRequestSerial += 1L
         imagePageState = imagePageState.withImageFilter(updatedFilter)
     }
@@ -438,6 +448,9 @@ fun GalleryRoute(
     }
 
     fun applyImageToolbarPageState(updatedPageState: StashGalleryGlobalImageGridPageState) {
+        if (updatedPageState.displayMode != StashGalleryDisplayMode.Folders || updatedPageState.sortOption != imagePageState.sortOption) {
+            selectedImageFolderPath = null
+        }
         imagePageState = updatedPageState
         scope.launch { settingsRepository.setImageToolbarPreferences(updatedPageState.toolbarPreferences) }
     }
@@ -625,6 +638,7 @@ fun GalleryRoute(
         delay(GALLERY_SEARCH_DEBOUNCE_MS)
         val normalizedQuery = normalizeStashSearchQuery(imageInputText)
         if (normalizedQuery != imagePageState.query) {
+            selectedImageFolderPath = null
             imageRequestSerial += 1L
             imagePageState = imagePageState.withQuery(normalizedQuery)
         }
@@ -816,6 +830,7 @@ fun GalleryRoute(
         onClearInput = {
             if (browseMode == StashGalleryBrowseMode.Images) {
                 imageInputText = ""
+                selectedImageFolderPath = null
                 imageRequestSerial += 1L
                 imagePageState = imagePageState.withQuery("")
             } else {
@@ -827,6 +842,7 @@ fun GalleryRoute(
         },
         pageState = pageState,
         imagePageState = imagePageState,
+        selectedImageFolderPath = selectedImageFolderPath,
         gallerySelectionState = gallerySelectionState,
         serverProfile = profile,
         modifier = modifier,
@@ -862,6 +878,8 @@ fun GalleryRoute(
             }
         },
         onOpenImage = { index, images -> onOpenPhoto(index, images) },
+        onSelectImageFolder = { folder -> selectedImageFolderPath = folder.path },
+        onBackToImageFolders = { selectedImageFolderPath = null },
         onLongPressGallery = { gallery ->
             gallerySelectionState = gallerySelectionState.selectFromLongPress(gallery.id)
         },
@@ -1973,6 +1991,7 @@ private fun GalleryContent(
     onClearInput: () -> Unit,
     pageState: StashGalleryGridPageState,
     imagePageState: StashGalleryGlobalImageGridPageState,
+    selectedImageFolderPath: String?,
     gallerySelectionState: GallerySelectionState,
     serverProfile: StashServerProfile?,
     onRetry: () -> Unit,
@@ -1981,6 +2000,8 @@ private fun GalleryContent(
     onLoadMoreImages: () -> Unit,
     onOpenGallery: (GalleryCardModel) -> Unit,
     onOpenImage: (Int, List<GalleryImageModel>) -> Unit,
+    onSelectImageFolder: (GalleryImageFolderGroup) -> Unit,
+    onBackToImageFolders: () -> Unit,
     onLongPressGallery: (GalleryCardModel) -> Unit,
     onOpenSettings: () -> Unit,
     onSelectSort: (StashGallerySortOption) -> Unit,
@@ -2251,28 +2272,32 @@ private fun GalleryContent(
                     val folderGroups = groupGalleryImagesByParentFolder(
                         images = images,
                         unfiledLabel = stashString(R.string.gallery_image_unfiled_folder_label),
+                        sortDirection = if (imagePageState.sortOption.serverValue == "path") {
+                            imagePageState.sortDirection
+                        } else {
+                            StashSortDirection.Asc
+                        },
                     )
-                    folderGroups.forEach { group ->
-                        item(key = "folder-${group.path}", span = { GridItemSpan(maxLineSpan) }) {
-                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(
-                                    text = group.title,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                                if (group.path.isNotBlank()) {
-                                    Text(
-                                        text = group.path,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            }
+                    val selectedGroup = selectedImageFolderPath?.let { path ->
+                        folderGroups.firstOrNull { group -> group.path == path }
+                    }
+                    if (selectedGroup == null) {
+                        items(folderGroups, key = { group -> "folder-card-${group.id}" }) { group ->
+                            GalleryImageFolderCard(
+                                folder = group,
+                                serverProfile = serverProfile,
+                                thumbnailHeight = imageThumbnailHeight,
+                                onClick = { onSelectImageFolder(group) },
+                            )
                         }
-                        items(group.items, key = { item -> item.image.id }) { item ->
+                    } else {
+                        item(key = "folder-detail-${selectedGroup.id}", span = { GridItemSpan(maxLineSpan) }) {
+                            GalleryImageFolderHeader(
+                                folder = selectedGroup,
+                                onNavigateBack = onBackToImageFolders,
+                            )
+                        }
+                        items(selectedGroup.items, key = { item -> item.image.id }) { item ->
                             GalleryPhotoCard(
                                 image = item.image,
                                 serverProfile = serverProfile,
@@ -2641,6 +2666,110 @@ private fun GalleryReadOnlySectionCard(
             )
             content()
         }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun GalleryImageFolderCard(
+    folder: GalleryImageFolderGroup,
+    serverProfile: StashServerProfile,
+    thumbnailHeight: androidx.compose.ui.unit.Dp,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val countLabel = stringResource(R.string.gallery_image_count_label, folder.imageCount)
+    StashMediaCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(thumbnailHeight)
+                    .stashThumbnailClip()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+            ) {
+                val thumbnailModel = rememberStashThumbnailModel(folder.coverImage?.bestDisplayUrl, serverProfile)
+                if (thumbnailModel != null) {
+                    AsyncImage(
+                        model = thumbnailModel,
+                        contentDescription = stringResource(R.string.gallery_image_folder_open_content_description, folder.title),
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+                StashMetadataBadge(
+                    badge = StashMetadataBadgeModel(
+                        label = countLabel,
+                        contentDescription = countLabel,
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp),
+                )
+            }
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = folder.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (folder.path.isNotBlank()) {
+                    Text(
+                        text = folder.path,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GalleryImageFolderHeader(
+    folder: GalleryImageFolderGroup,
+    onNavigateBack: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        StashSecondaryButton(
+            text = stringResource(R.string.gallery_image_folder_back_action),
+            onClick = onNavigateBack,
+        )
+        Text(
+            text = folder.title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (folder.path.isNotBlank()) {
+            Text(
+                text = folder.path,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Text(
+            text = stringResource(R.string.gallery_image_count_label, folder.imageCount),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
