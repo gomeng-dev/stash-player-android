@@ -86,6 +86,7 @@ enum class StashGalleryDisplayMode {
     Grid,
     List,
     Wall,
+    Folders,
 }
 
 enum class StashScenesViewMode(@StringRes val labelRes: Int) {
@@ -162,7 +163,11 @@ fun stashGalleryMediaToolbarFoundationState(
     },
 )
 
-fun stashGalleryDisplayModes(): List<StashGalleryDisplayMode> = StashGalleryDisplayMode.entries.toList()
+fun stashGalleryDisplayModes(): List<StashGalleryDisplayMode> = listOf(
+    StashGalleryDisplayMode.Grid,
+    StashGalleryDisplayMode.List,
+    StashGalleryDisplayMode.Wall,
+)
 
 fun StashGalleryDisplayMode.next(): StashGalleryDisplayMode {
     val modes = stashGalleryDisplayModes()

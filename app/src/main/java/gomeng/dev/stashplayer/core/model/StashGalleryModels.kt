@@ -63,6 +63,17 @@ data class GalleryImageModel(
         get() = imageUrl.nonBlankOrNull() ?: previewUrl.nonBlankOrNull() ?: thumbnailUrl.nonBlankOrNull()
 }
 
+data class GalleryImageFolderItem(
+    val image: GalleryImageModel,
+    val originalIndex: Int,
+)
+
+data class GalleryImageFolderGroup(
+    val title: String,
+    val path: String,
+    val items: List<GalleryImageFolderItem>,
+)
+
 data class GalleryLinkedSceneModel(
     val id: String,
     val title: String,
@@ -1353,6 +1364,25 @@ fun GalleryImageModel.galleryImagePerformerLabels(limit: Int = 2): List<String> 
     .mapNotNull { it.label.trim().takeIf { label -> label.isNotBlank() } }
     .take(limit.coerceAtLeast(0))
 
+fun groupGalleryImagesByParentFolder(
+    images: List<GalleryImageModel>,
+    unfiledLabel: String,
+): List<GalleryImageFolderGroup> {
+    val groups = linkedMapOf<String, MutableList<GalleryImageFolderItem>>()
+    images.forEachIndexed { index, image ->
+        val folderPath = image.filePath.toStashParentFolderPathOrEmpty()
+        groups.getOrPut(folderPath) { mutableListOf() }
+            .add(GalleryImageFolderItem(image = image, originalIndex = index))
+    }
+    return groups.map { (path, items) ->
+        GalleryImageFolderGroup(
+            title = path.toStashFolderTitleOrDefault(unfiledLabel),
+            path = path,
+            items = items,
+        )
+    }
+}
+
 data class GalleryPhotoDetailRow(
     val label: String,
     val value: String,
@@ -1561,7 +1591,8 @@ fun stashGalleryGridLayoutPolicy(
     displayMode: StashGalleryDisplayMode,
     isFoldLikeLayout: Boolean,
 ): StashGalleryGridLayoutPolicy = when (displayMode) {
-    StashGalleryDisplayMode.Grid -> StashGalleryGridLayoutPolicy(
+    StashGalleryDisplayMode.Grid,
+    StashGalleryDisplayMode.Folders -> StashGalleryGridLayoutPolicy(
         columns = if (isFoldLikeLayout) 3 else 2,
         thumbnailHeightDp = if (isFoldLikeLayout) 180 else 156,
     )
@@ -1584,6 +1615,7 @@ fun stashGalleryGridThumbnailHeightDp(isFoldLikeLayout: Boolean): Int =
 fun stashGalleryImageDisplayModes(): List<StashGalleryDisplayMode> = listOf(
     StashGalleryDisplayMode.Grid,
     StashGalleryDisplayMode.Wall,
+    StashGalleryDisplayMode.Folders,
 )
 
 fun stashGalleryImageGridLayoutPolicy(
@@ -1595,6 +1627,7 @@ fun stashGalleryImageGridLayoutPolicy(
         thumbnailHeightDp = if (isFoldLikeLayout) 148 else 112,
     )
     StashGalleryDisplayMode.Grid,
+    StashGalleryDisplayMode.Folders,
     StashGalleryDisplayMode.List -> StashGalleryGridLayoutPolicy(
         columns = if (isFoldLikeLayout) 4 else 3,
         thumbnailHeightDp = if (isFoldLikeLayout) 176 else 132,
@@ -1608,3 +1641,22 @@ fun stashGalleryImageGridThumbnailHeightDp(isFoldLikeLayout: Boolean): Int =
     stashGalleryImageGridLayoutPolicy(StashGalleryDisplayMode.Grid, isFoldLikeLayout).thumbnailHeightDp
 
 private fun String?.nonBlankOrNull(): String? = this?.trim()?.takeIf { it.isNotBlank() }
+
+private fun String?.toStashParentFolderPathOrEmpty(): String {
+    val normalized = this?.substringBefore('#')
+        ?.substringBefore('?')
+        ?.trim()
+        ?.replace('\\', '/')
+        ?.trimEnd('/')
+        ?.takeIf { it.isNotBlank() }
+        ?: return ""
+    val parent = normalized.substringBeforeLast('/', missingDelimiterValue = "")
+        .trimEnd('/')
+    return parent.takeIf { it.isNotBlank() } ?: ""
+}
+
+private fun String.toStashFolderTitleOrDefault(defaultLabel: String): String =
+    substringAfterLast('/', missingDelimiterValue = this)
+        .trim()
+        .takeIf { it.isNotBlank() }
+        ?: defaultLabel

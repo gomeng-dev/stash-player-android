@@ -1026,6 +1026,8 @@
     <string name="gallery_sort_created_at_label" formatted="false">생성일</string>
     <string name="gallery_sort_updated_at_label" formatted="false">수정일</string>
     <string name="gallery_display_mode_wall_label" formatted="false">벽면</string>
+    <string name="gallery_display_mode_folders_label" formatted="false">폴더별</string>
+    <string name="gallery_image_unfiled_folder_label" formatted="false">폴더 없음</string>
     <string name="gallery_toolbar_content_description" formatted="false">갤러리 발견 도구막대</string>
     <string name="gallery_toolbar_operations_content_description">갤러리 작업 메뉴, 현재 %1$d개 표시</string>
     <string name="gallery_operations_open_first_action" formatted="false">첫 갤러리 열기</string>

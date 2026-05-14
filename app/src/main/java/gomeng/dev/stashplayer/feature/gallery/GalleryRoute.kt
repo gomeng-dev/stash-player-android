@@ -106,6 +106,7 @@ import gomeng.dev.stashplayer.core.model.galleryImagePerformerLabels
 import gomeng.dev.stashplayer.core.model.galleryPhotoDetailRows
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerChromePolicy
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerOCounterToolbarActions
+import gomeng.dev.stashplayer.core.model.groupGalleryImagesByParentFolder
 import gomeng.dev.stashplayer.core.model.galleryMetadataLabels
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerPagePolicy
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerPagerSwipeEnabled
@@ -1161,6 +1162,8 @@ fun GalleryPhotoViewerOverlay(
     onOpenLinkedGallery: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val settingsRepository = remember(context) { StashSettingsRepository(context) }
+    val persistedGalleryPhotoDisplayMode by settingsRepository.galleryPhotoDisplayMode.collectAsState(initial = null)
     var viewerImages by remember(images) { mutableStateOf(images) }
     val safeInitialIndex = remember(viewerImages, initialIndex) {
         galleryPhotoViewerPagePolicy(
@@ -1179,6 +1182,7 @@ fun GalleryPhotoViewerOverlay(
     var bottomToolsExpanded by rememberSaveable { mutableStateOf(false) }
     var slideshowPlaying by remember { mutableStateOf(false) }
     var photoDisplayMode by remember { mutableStateOf(GalleryPhotoDisplayMode.FitToScreen) }
+    var photoDisplayModeRestored by remember { mutableStateOf(false) }
     var boundaryFeedbackMessage by remember { mutableStateOf<String?>(null) }
     var transientHudVisible by remember { mutableStateOf(false) }
     var suppressNextPageChangeHud by remember { mutableStateOf(false) }
@@ -1212,6 +1216,14 @@ fun GalleryPhotoViewerOverlay(
     val viewerChromePolicy = galleryPhotoViewerChromePolicy(appreciationState)
     val firstImageFeedback = stringResource(R.string.gallery_photo_viewer_first_image_feedback)
     val lastImageFeedback = stringResource(R.string.gallery_photo_viewer_last_image_feedback)
+
+    LaunchedEffect(persistedGalleryPhotoDisplayMode) {
+        val restoredMode = persistedGalleryPhotoDisplayMode ?: return@LaunchedEffect
+        if (!photoDisplayModeRestored) {
+            photoDisplayMode = restoredMode
+            photoDisplayModeRestored = true
+        }
+    }
 
     fun refreshChrome(show: Boolean = true) {
         chromeVisible = show
@@ -1856,6 +1868,7 @@ fun GalleryPhotoViewerOverlay(
                         onClick = {
                             val update = toggleGalleryPhotoDisplayMode(photoDisplayMode, activeZoomState)
                             photoDisplayMode = update.displayMode
+                            scope.launch { settingsRepository.setGalleryPhotoDisplayMode(update.displayMode) }
                             activeImageId?.let { zoomStates[it] = update.zoomState }
                             refreshChrome(show = true)
                         },
@@ -2234,14 +2247,51 @@ private fun GalleryContent(
                 verticalArrangement = Arrangement.spacedBy(StashSpacing.CardGap),
                 horizontalArrangement = Arrangement.spacedBy(gridGap),
             ) {
-                itemsIndexed(images, key = { _, image -> image.id }) { index, image ->
-                    GalleryPhotoCard(
-                        image = image,
-                        serverProfile = serverProfile,
-                        thumbnailHeight = imageThumbnailHeight,
-                        onOpenLinkedGallery = onOpenLinkedGallery,
-                        onClick = { onOpenImage(index, images) },
+                if (imagePageState.displayMode == StashGalleryDisplayMode.Folders) {
+                    val folderGroups = groupGalleryImagesByParentFolder(
+                        images = images,
+                        unfiledLabel = stashString(R.string.gallery_image_unfiled_folder_label),
                     )
+                    folderGroups.forEach { group ->
+                        item(key = "folder-${group.path}", span = { GridItemSpan(maxLineSpan) }) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(
+                                    text = group.title,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                if (group.path.isNotBlank()) {
+                                    Text(
+                                        text = group.path,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                        }
+                        items(group.items, key = { item -> item.image.id }) { item ->
+                            GalleryPhotoCard(
+                                image = item.image,
+                                serverProfile = serverProfile,
+                                thumbnailHeight = imageThumbnailHeight,
+                                onOpenLinkedGallery = onOpenLinkedGallery,
+                                onClick = { onOpenImage(item.originalIndex, images) },
+                            )
+                        }
+                    }
+                } else {
+                    itemsIndexed(images, key = { _, image -> image.id }) { index, image ->
+                        GalleryPhotoCard(
+                            image = image,
+                            serverProfile = serverProfile,
+                            thumbnailHeight = imageThumbnailHeight,
+                            onOpenLinkedGallery = onOpenLinkedGallery,
+                            onClick = { onOpenImage(index, images) },
+                        )
+                    }
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     GalleryGlobalImageFooter(
@@ -2851,7 +2901,8 @@ private fun GalleryCard(
                 }
             }
 
-            StashGalleryDisplayMode.Grid -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            StashGalleryDisplayMode.Grid,
+            StashGalleryDisplayMode.Folders -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 GalleryThumbnailBox(
                     gallery = gallery,
                     serverProfile = serverProfile,

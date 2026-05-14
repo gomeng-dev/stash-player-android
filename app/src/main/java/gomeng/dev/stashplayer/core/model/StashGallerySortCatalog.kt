@@ -67,6 +67,7 @@ fun StashGalleryDisplayMode.label(): String = when (this) {
     StashGalleryDisplayMode.Grid -> stashString(R.string.auto_kr_0083)
     StashGalleryDisplayMode.List -> stashString(R.string.auto_kr_0084)
     StashGalleryDisplayMode.Wall -> stashString(R.string.gallery_display_mode_wall_label)
+    StashGalleryDisplayMode.Folders -> stashString(R.string.gallery_display_mode_folders_label)
 }
 
 fun StashGalleryDisplayMode.stashGalleryDisplayModeContentDescription(): String =

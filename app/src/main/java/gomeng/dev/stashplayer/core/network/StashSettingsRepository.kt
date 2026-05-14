@@ -19,6 +19,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import gomeng.dev.stashplayer.core.model.DEFAULT_STASH_GALLERY_GRID_PAGE_SIZE
+import gomeng.dev.stashplayer.core.model.GalleryPhotoDisplayMode
 import gomeng.dev.stashplayer.core.model.StashGalleryBrowseMode
 import gomeng.dev.stashplayer.core.model.StashGalleryDisplayMode
 import gomeng.dev.stashplayer.core.model.StashGallerySortOption
@@ -27,6 +28,7 @@ import gomeng.dev.stashplayer.core.model.StashImageToolbarPreferences
 import gomeng.dev.stashplayer.core.model.StashSortDirection
 import gomeng.dev.stashplayer.core.model.defaultStashGallerySortOption
 import gomeng.dev.stashplayer.core.model.defaultStashImageSortOption
+import gomeng.dev.stashplayer.core.model.stashGalleryDisplayModes
 import gomeng.dev.stashplayer.core.model.stashGalleryImageDisplayModes
 import gomeng.dev.stashplayer.core.model.stashGallerySortOptions
 import gomeng.dev.stashplayer.core.model.stashImageSortOptions
@@ -152,6 +154,10 @@ class StashSettingsRepository(private val context: Context) {
 
     val galleryBrowseMode: Flow<StashGalleryBrowseMode> = context.stashSettingsDataStore.data.map { prefs ->
         galleryBrowseModeFromPersistedValue(prefs[Keys.GalleryBrowseMode])
+    }
+
+    val galleryPhotoDisplayMode: Flow<GalleryPhotoDisplayMode> = context.stashSettingsDataStore.data.map { prefs ->
+        galleryPhotoDisplayModeFromPersistedValue(prefs[Keys.GalleryPhotoDisplayMode])
     }
 
     suspend fun saveServerProfile(profile: StashServerProfile) {
@@ -301,6 +307,12 @@ class StashSettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setGalleryPhotoDisplayMode(mode: GalleryPhotoDisplayMode) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.GalleryPhotoDisplayMode] = persistGalleryPhotoDisplayModeValue(mode)
+        }
+    }
+
     suspend fun clearServerProfile() {
         context.stashSettingsDataStore.edit { prefs ->
             prefs.remove(Keys.Name)
@@ -349,6 +361,7 @@ class StashSettingsRepository(private val context: Context) {
         val ImageToolbarPageSize = intPreferencesKey("image_toolbar_page_size")
         val ImageDisplayMode = stringPreferencesKey("image_display_mode")
         val GalleryBrowseMode = stringPreferencesKey("gallery_browse_mode")
+        val GalleryPhotoDisplayMode = stringPreferencesKey("gallery_photo_display_mode")
     }
 
     companion object {
@@ -376,6 +389,7 @@ class StashSettingsRepository(private val context: Context) {
             pageSize = DEFAULT_STASH_GALLERY_GRID_PAGE_SIZE,
         )
         val DEFAULT_GALLERY_BROWSE_MODE: StashGalleryBrowseMode = StashGalleryBrowseMode.Galleries
+        val DEFAULT_GALLERY_PHOTO_DISPLAY_MODE: GalleryPhotoDisplayMode = GalleryPhotoDisplayMode.FitToScreen
 
         fun persistThemeModeValue(mode: StashThemeMode): String = mode.persistedValue
 
@@ -457,7 +471,7 @@ class StashSettingsRepository(private val context: Context) {
         fun persistGalleryDisplayModeValue(mode: StashGalleryDisplayMode): String = mode.name.lowercase()
 
         fun galleryDisplayModeFromPersistedValue(value: String?): StashGalleryDisplayMode =
-            StashGalleryDisplayMode.entries.firstOrNull { it.name.equals(value, ignoreCase = true) }
+            stashGalleryDisplayModes().firstOrNull { it.name.equals(value, ignoreCase = true) }
                 ?: StashGalleryDisplayMode.Grid
 
         fun galleryToolbarPageSizeFromPersistedValue(value: Int?): Int =
@@ -495,6 +509,17 @@ class StashSettingsRepository(private val context: Context) {
             "images" -> StashGalleryBrowseMode.Images
             "galleries" -> StashGalleryBrowseMode.Galleries
             else -> DEFAULT_GALLERY_BROWSE_MODE
+        }
+
+        fun persistGalleryPhotoDisplayModeValue(mode: GalleryPhotoDisplayMode): String = when (mode) {
+            GalleryPhotoDisplayMode.FitToScreen -> "fit"
+            GalleryPhotoDisplayMode.OriginalSize -> "original"
+        }
+
+        fun galleryPhotoDisplayModeFromPersistedValue(value: String?): GalleryPhotoDisplayMode = when (value?.lowercase()) {
+            "original", "original_size" -> GalleryPhotoDisplayMode.OriginalSize
+            "fit", "fit_to_screen" -> GalleryPhotoDisplayMode.FitToScreen
+            else -> DEFAULT_GALLERY_PHOTO_DISPLAY_MODE
         }
     }
 }

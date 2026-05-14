@@ -6,6 +6,20 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-05-14
+
+### English
+
+- Added an image-only Folders display mode in Gallery > Images, grouping loaded photos by parent folder while preserving the original viewer order.
+- Persisted the photo viewer Fit/Original display mode across viewer sessions with safe defaults and regression coverage.
+- Added focused model/settings tests and an independent OpenClaw follow-up review for the folder view and viewer display-mode persistence.
+
+### 한국어
+
+- Gallery > Images에 이미지 전용 Folders 보기 모드를 추가해, 불러온 사진을 상위 폴더별로 묶으면서 기존 뷰어 순서를 유지합니다.
+- 사진 뷰어의 맞춤/Fit 및 원본/Original 표시 모드를 세션 간 저장하도록 개선하고 안전한 기본값과 회귀 테스트를 추가했습니다.
+- 폴더 보기와 뷰어 표시 모드 저장 동작에 대한 모델/설정 테스트와 OpenClaw 후속 독립 리뷰를 추가했습니다.
+
 ## [1.6.0] - 2026-05-14
 
 ### English
