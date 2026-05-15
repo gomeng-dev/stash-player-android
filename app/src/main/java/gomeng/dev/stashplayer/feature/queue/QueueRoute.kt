@@ -54,7 +54,7 @@ fun QueueRoute(
     currentSceneId: String?,
     onOpenScene: (String, List<SceneCardModel>, Boolean) -> Unit,
     onOpenBrowse: () -> Unit,
-    onOpenSearch: () -> Unit,
+    onOpenExplore: () -> Unit,
 ) {
     val context = LocalContext.current
     val repository = remember(context) { StashLocalLibraryRepository(context) }
@@ -312,7 +312,7 @@ fun QueueRoute(
                         message = stashString(R.string.auto_kr_0512),
                         primaryActionLabel = stringResource(R.string.queue_explore_entry_label),
                     ),
-                    onPrimaryAction = onOpenSearch,
+                    onPrimaryAction = onOpenExplore,
                 )
             }
         } else {

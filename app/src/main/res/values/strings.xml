@@ -4,7 +4,6 @@
     <string name="navigation_home_label">홈</string>
     <string name="navigation_browse_label">둘러보기</string>
     <string name="navigation_explore_label">탐색</string>
-    <string name="navigation_search_label">검색</string>
     <string name="navigation_shorts_label">숏츠</string>
     <string name="navigation_gallery_label">갤러리</string>
     <string name="home_recommended_section_title">추천 영상</string>
@@ -867,30 +866,30 @@
     <string name="auto_kr_0427" formatted="false">좋아하는 영상</string>
     <string name="auto_kr_0428" formatted="false">대기열 재생</string>
     <string name="auto_kr_0429" formatted="false">셔플 재생</string>
-    <string name="auto_kr_0430" formatted="false">둘러보기와 검색</string>
+    <string name="auto_kr_0430" formatted="false">둘러보기와 탐색</string>
     <string name="auto_kr_0431" formatted="false">서버 상태</string>
     <string name="auto_kr_0432" formatted="false">최근 추가/업데이트 영상과 필터 탐색</string>
     <string name="auto_kr_0433" formatted="false">검색어와 저장 필터로 원하는 영상 찾기</string>
     <string name="auto_kr_0434" formatted="false">설정 필요</string>
-    <string name="auto_kr_0435" formatted="false">Stash 서버를 연결하면 홈에서 바로 둘러보기와 검색을 시작할 수 있습니다.</string>
+    <string name="auto_kr_0435" formatted="false">Stash 서버를 연결하면 홈에서 바로 둘러보기와 탐색을 시작할 수 있습니다.</string>
     <string name="auto_kr_0436" formatted="false">확인 필요</string>
     <string name="auto_kr_0437" formatted="false">서버 섹션을 불러오지 못했습니다. 네트워크와 설정을 확인해 주세요.</string>
     <string name="auto_kr_0438" formatted="false">연결됨</string>
     <string name="auto_kr_0439" formatted="false">저장된 Stash 서버</string>
     <string name="auto_kr_0440">바로 이어 볼 영상 %1$s개</string>
-    <string name="auto_kr_0441" formatted="false">둘러보기나 검색에서 영상을 담아두세요.</string>
+    <string name="auto_kr_0441" formatted="false">둘러보기나 탐색에서 영상을 담아두세요.</string>
     <string name="auto_kr_0442">나중에 볼 영상 %1$s개</string>
     <string name="auto_kr_0443" formatted="false">나중에 볼 영상을 저장해 두세요.</string>
     <string name="auto_kr_0444">즐겨찾기 영상 %1$s개</string>
     <string name="auto_kr_0445" formatted="false">자주 보는 영상을 즐겨찾기로 모아두세요.</string>
-    <string name="auto_kr_0446" formatted="false">최근 추가 영상은 둘러보기에서, 조건이 분명하면 검색에서 시작하세요.</string>
+    <string name="auto_kr_0446" formatted="false">최근 추가 영상은 둘러보기에서, 조건이 분명하면 탐색에서 시작하세요.</string>
     <string name="auto_kr_0447" formatted="false">알 수 없는 오류</string>
     <string name="auto_kr_0448" formatted="false">갱신 중</string>
     <string name="auto_kr_0449" formatted="false">새로고침</string>
     <string name="auto_kr_0450" formatted="false">Stash 섹션</string>
     <string name="auto_kr_0451" formatted="false">서버에서 가져온 최근/이어보기 묶음입니다.</string>
     <string name="auto_kr_0452" formatted="false">서버 영상 섹션이 아직 없습니다</string>
-    <string name="auto_kr_0453" formatted="false">둘러보기나 검색에서 바로 영상을 찾아볼 수 있습니다.</string>
+    <string name="auto_kr_0453" formatted="false">둘러보기나 탐색에서 바로 영상을 찾아볼 수 있습니다.</string>
     <string name="auto_kr_0454">%1$s %2$s개</string>
     <string name="auto_kr_0455" formatted="false">새 영상을 훑거나 조건을 정해서 바로 찾아보세요.</string>
     <string name="auto_kr_0456" formatted="false">-10초</string>
@@ -946,11 +945,11 @@
     <string name="auto_kr_0505" formatted="false">탐색 카드에서 대기열 추가 또는 나중에 보기로 보낸 로컬 재생 목록입니다.</string>
     <string name="auto_kr_0506" formatted="false">다음 재생 대기열</string>
     <string name="auto_kr_0507" formatted="false">재생 대기열이 비어 있습니다</string>
-    <string name="auto_kr_0508" formatted="false">둘러보기에서 영상을 골라 바로 이어 볼 대기열을 만들어 보세요.</string>
+    <string name="auto_kr_0508" formatted="false">탐색에서 영상을 골라 바로 이어 볼 대기열을 만들어 보세요.</string>
     <string name="auto_kr_0509" formatted="false">탐색으로 이동</string>
     <string name="auto_kr_0510" formatted="false">언젠가 볼 후보를 모아 두고, 준비되면 재생 대기열로 보냅니다.</string>
     <string name="auto_kr_0511" formatted="false">나중에 볼 영상이 없습니다</string>
-    <string name="auto_kr_0512" formatted="false">검색에서 마음에 드는 영상을 나중에 보기로 저장해 두세요.</string>
+    <string name="auto_kr_0512" formatted="false">탐색에서 마음에 드는 영상을 나중에 보기로 저장해 두세요.</string>
     <string name="auto_kr_0513" formatted="false">탐색으로 이동</string>
     <string name="auto_kr_0514" formatted="false">즐겨찾기 영상이 없습니다</string>
     <string name="auto_kr_0515" formatted="false">둘러보기에서 자주 보는 영상을 즐겨찾기로 저장해 두세요.</string>

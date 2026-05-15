@@ -67,6 +67,7 @@ import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueueContinuation
 import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.player.appendLoadedResultPlaybackQueue
+import gomeng.dev.stashplayer.core.player.afterLoadedPage
 import gomeng.dev.stashplayer.core.player.handOffLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.shouldLoadMorePlayerPlaylistItems
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
@@ -271,7 +272,7 @@ fun StashNavHost(
                         direction = activeContinuation.direction,
                         videoFilter = activeContinuation.videoFilter,
                     )
-                    is PlayerPlaybackQueueContinuation.Search -> client.findSceneCardsPage(
+                    is PlayerPlaybackQueueContinuation.Explore -> client.findSceneCardsPage(
                         perPage = activeContinuation.pageSize,
                         page = pageToLoad,
                         query = activeContinuation.query,
@@ -476,14 +477,6 @@ fun StashNavHost(
                             onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
                         )
                     }
-                    composable("search") {
-                        LaunchedEffect(Unit) {
-                            navController.navigate(TopLevelDestination.Explore.route) {
-                                popUpTo("search") { inclusive = true }
-                                launchSingleTop = true
-                            }
-                        }
-                    }
                     composable(TopLevelDestination.Shorts.route) {
                         ShortsRoute(
                             isFoldLikeLayout = isFoldLikeLayout,
@@ -538,7 +531,7 @@ fun StashNavHost(
                                 )
                             },
                             onOpenBrowse = { navigateTopLevel(TopLevelDestination.Explore) },
-                            onOpenSearch = { navigateTopLevel(TopLevelDestination.Explore) },
+                            onOpenExplore = { navigateTopLevel(TopLevelDestination.Explore) },
                         )
                     }
                     composable(TopLevelDestination.Settings.route) {
@@ -691,19 +684,7 @@ private fun isTopLevelDestinationSelected(
 
 private fun PlayerPlaybackQueueContinuation.videoFilterState() = when (this) {
     is PlayerPlaybackQueueContinuation.Browse -> videoFilter
-    is PlayerPlaybackQueueContinuation.Search -> videoFilter
-}
-
-private fun PlayerPlaybackQueueContinuation.afterLoadedPage(
-    loadedPage: Int,
-    totalCount: Int,
-): PlayerPlaybackQueueContinuation {
-    val nextPage = loadedPage + 1
-    val hasMore = loadedPage * pageSize < totalCount
-    return when (this) {
-        is PlayerPlaybackQueueContinuation.Browse -> copy(nextPage = nextPage, hasMore = hasMore)
-        is PlayerPlaybackQueueContinuation.Search -> copy(nextPage = nextPage, hasMore = hasMore)
-    }
+    is PlayerPlaybackQueueContinuation.Explore -> videoFilter
 }
 
 @Composable

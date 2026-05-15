@@ -6,6 +6,18 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.5] - 2026-05-15
+
+### English
+
+- Refined the Browse/Explore discovery toolbar by moving video filter shortcuts into a Gallery-style filter group row below the primary sort/random/view controls, while preserving active filter chips and selection-mode behavior.
+- Retired the legacy Search tab surface and migrated remaining reusable query/page-size/playback-continuation concepts to Discovery/Explore naming without removing normal text search inputs in Gallery or filter sheets.
+
+### 한국어
+
+- Browse/Explore 탐색 툴바에서 영상 필터 바로가기를 기본 정렬/랜덤/보기 컨트롤과 분리하고, Gallery 스타일의 필터 그룹 row로 배치했습니다. active filter chip과 선택 모드 동작은 유지했습니다.
+- 더 이상 사용하지 않는 legacy Search 탭 표면을 제거하고, 계속 필요한 query/page-size/playback continuation 개념은 Discovery/Explore 명칭으로 정리했습니다. Gallery와 필터 시트의 일반 텍스트 검색 입력은 유지했습니다.
+
 ## [1.6.4] - 2026-05-15
 
 ### English

@@ -67,7 +67,7 @@ import gomeng.dev.stashplayer.core.model.StashSortDirection
 import gomeng.dev.stashplayer.core.model.defaultStashExplorePageSizeOptions
 import gomeng.dev.stashplayer.core.model.defaultStashExploreSortOptions
 import gomeng.dev.stashplayer.core.model.initialFromPersisted
-import gomeng.dev.stashplayer.core.model.normalizeStashSearchQuery
+import gomeng.dev.stashplayer.core.model.normalizeStashDiscoveryQuery
 import gomeng.dev.stashplayer.core.model.shouldLoadExploreResultsFromServer
 import gomeng.dev.stashplayer.core.model.shouldShowSceneCardQuickActionsInMediaGrid
 import gomeng.dev.stashplayer.core.model.shouldUseLocalFavoriteExploreResults
@@ -96,6 +96,7 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashSpacing
 import gomeng.dev.stashplayer.core.ui.designsystem.stashDiscoveryVisualPolicy
 import gomeng.dev.stashplayer.core.ui.discovery.StashDiscoveryFilterSheets
 import gomeng.dev.stashplayer.core.ui.discovery.StashScenesToolbar
+import gomeng.dev.stashplayer.core.ui.discovery.StashVideoFilterGroupRow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
@@ -253,7 +254,7 @@ fun ExploreRoute(
 
     LaunchedEffect(inputText) {
         delay(SEARCH_DEBOUNCE_MS)
-        val normalizedQuery = normalizeStashSearchQuery(inputText)
+        val normalizedQuery = normalizeStashDiscoveryQuery(inputText)
         if (normalizedQuery != pageState.query) {
             requestSerial += 1L
             pageState = pageState.withQuery(normalizedQuery)
@@ -535,7 +536,7 @@ fun ExploreRoute(
                         hasMore = pageState.hasMore,
                     )
                 } else {
-                    PlayerPlaybackQueueContinuation.Search(
+                    PlayerPlaybackQueueContinuation.Explore(
                         query = pageState.query,
                         sort = pageState.sortOption.sort,
                         direction = pageState.sortDirection,
@@ -694,6 +695,7 @@ private fun ExploreContent(
             onOpenRatingMediaFormatFilter = onOpenRatingMediaFormatFilter,
             onOpenLocalLibraryFilter = onOpenLocalLibraryFilter,
             onToggleRandomShuffle = onToggleRandomShuffle,
+            showFilterShortcuts = false,
             viewMode = viewMode,
             onToggleViewMode = {
                 viewMode = if (viewMode == StashScenesViewMode.Grid) StashScenesViewMode.List else StashScenesViewMode.Grid
@@ -711,6 +713,21 @@ private fun ExploreContent(
             },
             onDeleteSelection = { deleteConfirmation = SceneBulkDeleteConfirmationState.open(selectionState.selectedCount) },
         )
+
+        if (selectionState.selectedCount == 0) {
+            StashVideoFilterGroupRow(
+                horizontalPadding = horizontalPadding,
+                isConfigured = isConfigured,
+                videoFilter = pageState.videoFilter,
+                savedFilterCount = savedFilterCount,
+                onOpenSavedFilters = onOpenSavedFilters,
+                onOpenFilter = onOpenUnifiedFilter,
+                onOpenTagFilter = onOpenTagFilter,
+                onOpenDateDurationPlaybackFilter = onOpenDateDurationPlaybackFilter,
+                onOpenRatingMediaFormatFilter = onOpenRatingMediaFormatFilter,
+                onOpenLocalLibraryFilter = onOpenLocalLibraryFilter,
+            )
+        }
 
         StashActiveVideoFilterChipsRow(
             videoFilter = pageState.videoFilter,

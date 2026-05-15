@@ -98,6 +98,7 @@ fun <T> StashScenesToolbar(
     onOpenSavedFilters: () -> Unit,
     onOpenFilter: () -> Unit,
     onToggleRandomShuffle: () -> Unit,
+    showFilterShortcuts: Boolean = true,
     onOpenTagFilter: (() -> Unit)? = null,
     onOpenDateDurationPlaybackFilter: (() -> Unit)? = null,
     onOpenRatingMediaFormatFilter: (() -> Unit)? = null,
@@ -158,62 +159,19 @@ fun <T> StashScenesToolbar(
                         onDeleteSelection = onDeleteSelection,
                     )
                 } else {
-                    ToolbarPillButton(
-                        icon = Icons.Outlined.Bookmarks,
-                        label = stashScenesToolbarSavedFiltersLabel(savedFilterCount),
-                        contentDescription = stashScenesToolbarSavedFiltersContentDescription(savedFilterCount),
-                        enabled = isConfigured,
-                        selected = savedFilterCount > 0,
-                        onClick = onOpenSavedFilters,
-                    )
-                    if (onOpenTagFilter != null) {
-                        ToolbarPillButton(
-                            icon = Icons.Outlined.LocalOffer,
-                            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0066), videoFilter.stashToolbarTagFilterBadgeCount()),
-                            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0066), videoFilter.stashToolbarTagFilterBadgeCount()),
-                            enabled = isConfigured,
-                            selected = videoFilter.stashToolbarTagFilterBadgeCount() > 0,
-                            onClick = onOpenTagFilter,
+                    if (showFilterShortcuts) {
+                        VideoFilterShortcutButtons(
+                            isConfigured = isConfigured,
+                            videoFilter = videoFilter,
+                            savedFilterCount = savedFilterCount,
+                            onOpenSavedFilters = onOpenSavedFilters,
+                            onOpenTagFilter = onOpenTagFilter,
+                            onOpenDateDurationPlaybackFilter = onOpenDateDurationPlaybackFilter,
+                            onOpenRatingMediaFormatFilter = onOpenRatingMediaFormatFilter,
+                            onOpenLocalLibraryFilter = onOpenLocalLibraryFilter,
+                            onOpenUnifiedFilter = onOpenFilter,
                         )
                     }
-                    if (onOpenDateDurationPlaybackFilter != null) {
-                        ToolbarPillButton(
-                            icon = Icons.Outlined.Event,
-                            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0067), videoFilter.stashToolbarDateDurationPlaybackBadgeCount()),
-                            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0399), videoFilter.stashToolbarDateDurationPlaybackBadgeCount()),
-                            enabled = isConfigured,
-                            selected = videoFilter.stashToolbarDateDurationPlaybackBadgeCount() > 0,
-                            onClick = onOpenDateDurationPlaybackFilter,
-                        )
-                    }
-                    if (onOpenRatingMediaFormatFilter != null) {
-                        ToolbarPillButton(
-                            icon = Icons.Outlined.Star,
-                            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0068), videoFilter.stashToolbarRatingMediaBadgeCount()),
-                            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0068), videoFilter.stashToolbarRatingMediaBadgeCount()),
-                            enabled = isConfigured,
-                            selected = videoFilter.stashToolbarRatingMediaBadgeCount() > 0,
-                            onClick = onOpenRatingMediaFormatFilter,
-                        )
-                    }
-                    if (onOpenLocalLibraryFilter != null) {
-                        ToolbarPillButton(
-                            icon = Icons.Outlined.Favorite,
-                            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0069), videoFilter.stashToolbarLocalLibraryBadgeCount()),
-                            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0400), videoFilter.stashToolbarLocalLibraryBadgeCount()),
-                            enabled = isConfigured,
-                            selected = videoFilter.stashToolbarLocalLibraryBadgeCount() > 0,
-                            onClick = onOpenLocalLibraryFilter,
-                        )
-                    }
-                    ToolbarPillButton(
-                        icon = Icons.Outlined.Tune,
-                        label = stashScenesToolbarFilterLabel(videoFilter.activeFilterCount),
-                        contentDescription = stashScenesToolbarFilterContentDescription(videoFilter.activeFilterCount),
-                        enabled = isConfigured,
-                        selected = videoFilter.stashToolbarAllFiltersBadgeCount() > 0,
-                        onClick = onOpenFilter,
-                    )
                     ToolbarDropdown(
                         icon = Icons.AutoMirrored.Outlined.Sort,
                         label = stashString(R.string.auto_kr_0071),
@@ -273,6 +231,118 @@ fun <T> StashScenesToolbar(
             }
         }
     }
+}
+
+@Composable
+fun StashVideoFilterGroupRow(
+    horizontalPadding: Dp,
+    isConfigured: Boolean,
+    videoFilter: StashVideoFilterState,
+    savedFilterCount: Int,
+    onOpenSavedFilters: () -> Unit,
+    onOpenFilter: () -> Unit,
+    onOpenTagFilter: (() -> Unit)? = null,
+    onOpenDateDurationPlaybackFilter: (() -> Unit)? = null,
+    onOpenRatingMediaFormatFilter: (() -> Unit)? = null,
+    onOpenLocalLibraryFilter: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    StashGlassSurface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = horizontalPadding),
+        cornerRadius = StashRadii.Card,
+        contentPadding = PaddingValues(StashSpacing.ChipGap),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(StashSpacing.ChipGap),
+        ) {
+            VideoFilterShortcutButtons(
+                isConfigured = isConfigured,
+                videoFilter = videoFilter,
+                savedFilterCount = savedFilterCount,
+                onOpenSavedFilters = onOpenSavedFilters,
+                onOpenTagFilter = onOpenTagFilter,
+                onOpenDateDurationPlaybackFilter = onOpenDateDurationPlaybackFilter,
+                onOpenRatingMediaFormatFilter = onOpenRatingMediaFormatFilter,
+                onOpenLocalLibraryFilter = onOpenLocalLibraryFilter,
+                onOpenUnifiedFilter = onOpenFilter,
+            )
+        }
+    }
+}
+
+@Composable
+private fun VideoFilterShortcutButtons(
+    isConfigured: Boolean,
+    videoFilter: StashVideoFilterState,
+    savedFilterCount: Int,
+    onOpenSavedFilters: () -> Unit,
+    onOpenTagFilter: (() -> Unit)?,
+    onOpenDateDurationPlaybackFilter: (() -> Unit)?,
+    onOpenRatingMediaFormatFilter: (() -> Unit)?,
+    onOpenLocalLibraryFilter: (() -> Unit)?,
+    onOpenUnifiedFilter: () -> Unit,
+) {
+    ToolbarPillButton(
+        icon = Icons.Outlined.Bookmarks,
+        label = stashScenesToolbarSavedFiltersLabel(savedFilterCount),
+        contentDescription = stashScenesToolbarSavedFiltersContentDescription(savedFilterCount),
+        enabled = isConfigured,
+        selected = savedFilterCount > 0,
+        onClick = onOpenSavedFilters,
+    )
+    if (onOpenTagFilter != null) {
+        ToolbarPillButton(
+            icon = Icons.Outlined.LocalOffer,
+            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0066), videoFilter.stashToolbarTagFilterBadgeCount()),
+            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0066), videoFilter.stashToolbarTagFilterBadgeCount()),
+            enabled = isConfigured,
+            selected = videoFilter.stashToolbarTagFilterBadgeCount() > 0,
+            onClick = onOpenTagFilter,
+        )
+    }
+    if (onOpenDateDurationPlaybackFilter != null) {
+        ToolbarPillButton(
+            icon = Icons.Outlined.Event,
+            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0067), videoFilter.stashToolbarDateDurationPlaybackBadgeCount()),
+            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0399), videoFilter.stashToolbarDateDurationPlaybackBadgeCount()),
+            enabled = isConfigured,
+            selected = videoFilter.stashToolbarDateDurationPlaybackBadgeCount() > 0,
+            onClick = onOpenDateDurationPlaybackFilter,
+        )
+    }
+    if (onOpenRatingMediaFormatFilter != null) {
+        ToolbarPillButton(
+            icon = Icons.Outlined.Star,
+            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0068), videoFilter.stashToolbarRatingMediaBadgeCount()),
+            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0068), videoFilter.stashToolbarRatingMediaBadgeCount()),
+            enabled = isConfigured,
+            selected = videoFilter.stashToolbarRatingMediaBadgeCount() > 0,
+            onClick = onOpenRatingMediaFormatFilter,
+        )
+    }
+    if (onOpenLocalLibraryFilter != null) {
+        ToolbarPillButton(
+            icon = Icons.Outlined.Favorite,
+            label = stashScenesToolbarSectionFilterLabel(stashString(R.string.auto_kr_0069), videoFilter.stashToolbarLocalLibraryBadgeCount()),
+            contentDescription = stashScenesToolbarSectionFilterContentDescription(stashString(R.string.auto_kr_0400), videoFilter.stashToolbarLocalLibraryBadgeCount()),
+            enabled = isConfigured,
+            selected = videoFilter.stashToolbarLocalLibraryBadgeCount() > 0,
+            onClick = onOpenLocalLibraryFilter,
+        )
+    }
+    ToolbarPillButton(
+        icon = Icons.Outlined.Tune,
+        label = stashScenesToolbarFilterLabel(videoFilter.activeFilterCount),
+        contentDescription = stashScenesToolbarFilterContentDescription(videoFilter.activeFilterCount),
+        enabled = isConfigured,
+        selected = videoFilter.stashToolbarAllFiltersBadgeCount() > 0,
+        onClick = onOpenUnifiedFilter,
+    )
 }
 
 @Composable

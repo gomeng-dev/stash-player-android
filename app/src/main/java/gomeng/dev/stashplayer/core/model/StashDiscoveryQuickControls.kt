@@ -124,6 +124,50 @@ fun stashScenesToolbarNormalControlLabels(
     supportsSortDirection = supportsSortDirection,
 ).map { it.label }
 
+fun stashBrowsePrimaryToolbarControls(
+    supportsPageSize: Boolean,
+    supportsSortDirection: Boolean = true,
+): List<StashScenesToolbarControl> = buildList {
+    add(StashScenesToolbarControl.SortField)
+    if (supportsSortDirection) add(StashScenesToolbarControl.SortDirection)
+    add(StashScenesToolbarControl.RandomShuffle)
+    if (supportsPageSize) add(StashScenesToolbarControl.PageSize)
+    add(StashScenesToolbarControl.OperationsOverflow)
+    add(StashScenesToolbarControl.ViewMode)
+}
+
+fun stashBrowsePrimaryToolbarControlLabels(
+    supportsPageSize: Boolean,
+    supportsSortDirection: Boolean = true,
+): List<String> = stashBrowsePrimaryToolbarControls(
+    supportsPageSize = supportsPageSize,
+    supportsSortDirection = supportsSortDirection,
+).map { it.label }
+
+fun stashBrowseFilterGroupControls(): List<StashScenesToolbarControl> = listOf(
+    StashScenesToolbarControl.SavedFilters,
+    StashScenesToolbarControl.TagFilters,
+    StashScenesToolbarControl.DateDurationPlaybackFilters,
+    StashScenesToolbarControl.RatingMediaFilters,
+    StashScenesToolbarControl.LocalLibraryFilters,
+    StashScenesToolbarControl.Filters,
+)
+
+fun stashBrowseFilterGroupControlLabels(): List<String> = stashBrowseFilterGroupControls().map { it.label }
+
+fun stashBrowseFilterGroupState(
+    videoFilter: StashVideoFilterState,
+    savedFilterCount: Int,
+): StashMediaToolbarState = StashMediaToolbarState(
+    surface = StashMediaToolbarSurface.Scenes,
+    items = stashBrowseFilterGroupControls().map { control ->
+        control.toMediaToolbarItem(
+            videoFilter = videoFilter,
+            savedFilterCount = savedFilterCount,
+        )
+    },
+)
+
 fun stashSceneMediaToolbarState(
     hasSearchInput: Boolean,
     supportsPageSize: Boolean,

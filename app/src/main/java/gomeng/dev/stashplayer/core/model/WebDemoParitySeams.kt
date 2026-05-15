@@ -71,11 +71,11 @@ fun currentWebDemoParitySeamReadiness(): List<WebDemoParitySeamReadiness> = list
         sourceFiles = listOf(
             "app/src/main/java/gomeng/dev/stashplayer/core/discovery/StashDiscoveryOpenSheet.kt",
             "app/src/main/java/gomeng/dev/stashplayer/feature/browse/BrowseRoute.kt",
-            "app/src/main/java/gomeng/dev/stashplayer/feature/search/SearchRoute.kt",
+            "app/src/main/java/gomeng/dev/stashplayer/feature/explore/ExploreRoute.kt",
         ),
         testFiles = listOf(
             "app/src/test/java/gomeng/dev/stashplayer/core/discovery/StashDiscoveryOpenSheetTest.kt",
         ),
-        notes = listOf("Browse and Search share one sealed sheet state instead of parallel booleans."),
+        notes = listOf("Browse and Explore share one sealed sheet state instead of parallel booleans."),
     ),
 )

@@ -34,7 +34,7 @@ sealed interface PlayerPlaybackQueueContinuation {
         override val hasMore: Boolean,
     ) : PlayerPlaybackQueueContinuation
 
-    data class Search(
+    data class Explore(
         val query: String,
         val sort: String,
         val direction: StashSortDirection,
@@ -43,6 +43,18 @@ sealed interface PlayerPlaybackQueueContinuation {
         override val pageSize: Int,
         override val hasMore: Boolean,
     ) : PlayerPlaybackQueueContinuation
+}
+
+fun PlayerPlaybackQueueContinuation.afterLoadedPage(
+    loadedPage: Int,
+    totalCount: Int,
+): PlayerPlaybackQueueContinuation {
+    val nextPage = loadedPage + 1
+    val hasMore = loadedPage * pageSize < totalCount
+    return when (this) {
+        is PlayerPlaybackQueueContinuation.Browse -> copy(nextPage = nextPage, hasMore = hasMore)
+        is PlayerPlaybackQueueContinuation.Explore -> copy(nextPage = nextPage, hasMore = hasMore)
+    }
 }
 
 data class PlayerPlaylistUiItem(

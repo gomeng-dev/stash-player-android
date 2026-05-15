@@ -35,7 +35,7 @@ data class StashExplorePageState(
     val hasExploreIntent: Boolean get() = true
     val activeFilterCount: Int get() = (if (hasQuery) 1 else 0) + videoFilter.activeFilterCount
 
-    fun withQuery(query: String): StashExplorePageState = reset().copy(query = normalizeStashSearchQuery(query))
+    fun withQuery(query: String): StashExplorePageState = reset().copy(query = normalizeStashDiscoveryQuery(query))
 
     fun forSort(sortOption: StashExploreSortOption): StashExplorePageState = reset().copy(
         query = query,
@@ -106,7 +106,7 @@ data class StashExplorePageState(
 fun shouldUseLocalFavoriteExploreResults(
     query: String,
     videoFilter: StashVideoFilterState,
-): Boolean = shouldUseLocalFavoriteSearchResults(query, videoFilter)
+): Boolean = shouldUseLocalFavoriteDiscoveryResults(query, videoFilter)
 
 fun shouldLoadExploreResultsFromServer(
     query: String,

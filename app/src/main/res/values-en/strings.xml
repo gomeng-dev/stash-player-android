@@ -4,7 +4,6 @@
     <string name="navigation_home_label">Home</string>
     <string name="navigation_browse_label">Browse</string>
     <string name="navigation_explore_label">Explore</string>
-    <string name="navigation_search_label">Search</string>
     <string name="navigation_shorts_label">Shorts</string>
     <string name="navigation_gallery_label">Gallery</string>
     <string name="home_recommended_section_title">Recommended videos</string>
@@ -866,32 +865,32 @@
     <string name="auto_kr_0427" formatted="false">Favorite videos</string>
     <string name="auto_kr_0428" formatted="false">Play queue</string>
     <string name="auto_kr_0429" formatted="false">Shuffle play</string>
-    <string name="auto_kr_0430" formatted="false">Browse and search</string>
+    <string name="auto_kr_0430" formatted="false">Browse and Explore</string>
     <string name="auto_kr_0431" formatted="false">Server status</string>
     <string name="auto_kr_0432" formatted="false">Recently added/updated videos and filter browsing</string>
     <string name="auto_kr_0433" formatted="false">Find videos with search terms and saved filters</string>
     <string name="auto_kr_0434" formatted="false">Setup required</string>
-    <string name="auto_kr_0435" formatted="false">Connect your Stash server to start browsing and searching from Home.</string>
+    <string name="auto_kr_0435" formatted="false">Connect your Stash server to start browsing and exploring from Home.</string>
     <string name="auto_kr_0436" formatted="false">Needs attention</string>
     <string name="auto_kr_0437" formatted="false">Could not load server sections. Check your network and settings.</string>
     <string name="auto_kr_0438" formatted="false">Connected</string>
     <string name="auto_kr_0439" formatted="false">Saved Stash server</string>
     <string name="auto_kr_0440">%1$s videos ready to continue</string>
-    <string name="auto_kr_0441" formatted="false">Add videos from Browse or Search.</string>
+    <string name="auto_kr_0441" formatted="false">Add videos from Browse or Explore.</string>
     <string name="auto_kr_0442">%1$s videos to watch later</string>
     <string name="auto_kr_0443" formatted="false">Save videos to watch later.</string>
     <string name="auto_kr_0444">%1$s favorite videos</string>
     <string name="auto_kr_0445" formatted="false">Collect frequently watched videos as favorites.</string>
-    <string name="auto_kr_0446" formatted="false">Start with Browse for recently added videos, or Search when you know what you want.</string>
+    <string name="auto_kr_0446" formatted="false">Start with Browse for recently added videos, or Explore when you know what you want.</string>
     <string name="auto_kr_0447" formatted="false">Unknown error</string>
     <string name="auto_kr_0448" formatted="false">Refreshing</string>
     <string name="auto_kr_0449" formatted="false">Refresh</string>
     <string name="auto_kr_0450" formatted="false">Stash sections</string>
     <string name="auto_kr_0451" formatted="false">Recent/resume groups loaded from the server.</string>
     <string name="auto_kr_0452" formatted="false">No server video sections yet</string>
-    <string name="auto_kr_0453" formatted="false">You can find videos directly from Browse or Search.</string>
+    <string name="auto_kr_0453" formatted="false">You can find videos directly from Browse or Explore.</string>
     <string name="auto_kr_0454">%1$s %2$s items</string>
-    <string name="auto_kr_0455" formatted="false">Browse new videos or search directly with filters.</string>
+    <string name="auto_kr_0455" formatted="false">Browse new videos or explore directly with filters.</string>
     <string name="auto_kr_0456" formatted="false">-10 sec</string>
     <string name="auto_kr_0457" formatted="false">Play/pause</string>
     <string name="auto_kr_0458" formatted="false">+10 sec</string>
@@ -945,11 +944,11 @@
     <string name="auto_kr_0505" formatted="false">A local playlist built from items added to the queue or Watch Later from Explore cards.</string>
     <string name="auto_kr_0506" formatted="false">Up next queue</string>
     <string name="auto_kr_0507" formatted="false">Playback queue is empty</string>
-    <string name="auto_kr_0508" formatted="false">Choose videos in Browse to build a queue for continuous playback.</string>
+    <string name="auto_kr_0508" formatted="false">Choose videos in Explore to build a queue for continuous playback.</string>
     <string name="auto_kr_0509" formatted="false">Go to Explore</string>
     <string name="auto_kr_0510" formatted="false">Collect candidates to watch someday, then send them to the playback queue when ready.</string>
     <string name="auto_kr_0511" formatted="false">No videos to watch later</string>
-    <string name="auto_kr_0512" formatted="false">Save videos you like from Search to Watch Later.</string>
+    <string name="auto_kr_0512" formatted="false">Save videos you like from Explore to Watch Later.</string>
     <string name="auto_kr_0513" formatted="false">Go to Explore</string>
     <string name="auto_kr_0514" formatted="false">No favorite videos</string>
     <string name="auto_kr_0515" formatted="false">Save frequently watched videos as favorites from Browse.</string>

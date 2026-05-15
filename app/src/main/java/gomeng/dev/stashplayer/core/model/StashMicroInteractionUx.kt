@@ -25,7 +25,7 @@ fun queueThumbnailHeightDp(isFoldLikeLayout: Boolean): Int = if (isFoldLikeLayou
 fun favoriteToggleFeedbackText(willFavorite: Boolean): String =
     if (willFavorite) stashString(R.string.auto_kr_0120) else stashString(R.string.auto_kr_0121)
 
-fun shouldUseLocalFavoriteSearchResults(
+fun shouldUseLocalFavoriteDiscoveryResults(
     query: String,
     videoFilter: StashVideoFilterState,
 ): Boolean = query.isBlank() &&
@@ -37,7 +37,7 @@ fun shouldUseLocalFavoriteSearchResults(
         savedFilter = null,
     ).isEmpty
 
-fun shouldLoadSearchResultsFromServer(
+fun shouldLoadDiscoveryResultsFromServer(
     query: String,
     videoFilter: StashVideoFilterState,
-): Boolean = !shouldUseLocalFavoriteSearchResults(query, videoFilter)
+): Boolean = !shouldUseLocalFavoriteDiscoveryResults(query, videoFilter)

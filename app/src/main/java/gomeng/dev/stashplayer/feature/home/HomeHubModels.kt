@@ -25,7 +25,6 @@ enum class HomeHubAction {
     OpenExplore,
     OpenShorts,
     OpenBrowse,
-    OpenSearch,
     PlayQueue,
     ShuffleQueue,
 }

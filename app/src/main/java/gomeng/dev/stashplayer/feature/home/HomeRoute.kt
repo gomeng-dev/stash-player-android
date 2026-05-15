@@ -510,7 +510,6 @@ private fun HomeQuickActionRow(
                         HomeHubAction.OpenExplore -> onOpenExplore()
                         HomeHubAction.OpenShorts -> onOpenShorts()
                         HomeHubAction.OpenBrowse -> onOpenExplore()
-                        HomeHubAction.OpenSearch -> onOpenShorts()
                         HomeHubAction.OpenSettings -> onOpenSettings()
                         HomeHubAction.RetryServerSections -> Unit
                     }

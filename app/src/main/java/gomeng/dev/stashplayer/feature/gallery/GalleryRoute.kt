@@ -134,7 +134,7 @@ import gomeng.dev.stashplayer.core.model.shouldPromoteRecentGalleryFilterAfterCh
 import gomeng.dev.stashplayer.core.model.shouldPromoteRecentImageFilterAfterChange
 import gomeng.dev.stashplayer.core.model.clearStashGalleryFilterCategory
 import gomeng.dev.stashplayer.core.model.clearStashImageFilterCategory
-import gomeng.dev.stashplayer.core.model.normalizeStashSearchQuery
+import gomeng.dev.stashplayer.core.model.normalizeStashDiscoveryQuery
 import gomeng.dev.stashplayer.core.model.normalizedGalleryEntities
 import gomeng.dev.stashplayer.core.model.stashGalleryGridLayoutPolicy
 import gomeng.dev.stashplayer.core.model.stashGalleryMediaToolbarPolicy
@@ -628,7 +628,7 @@ fun GalleryRoute(
 
     LaunchedEffect(galleryInputText) {
         delay(GALLERY_SEARCH_DEBOUNCE_MS)
-        val normalizedQuery = normalizeStashSearchQuery(galleryInputText)
+        val normalizedQuery = normalizeStashDiscoveryQuery(galleryInputText)
         if (normalizedQuery != pageState.query) {
             requestSerial += 1L
             gallerySelectionState = gallerySelectionState.clear()
@@ -638,7 +638,7 @@ fun GalleryRoute(
 
     LaunchedEffect(imageInputText) {
         delay(GALLERY_SEARCH_DEBOUNCE_MS)
-        val normalizedQuery = normalizeStashSearchQuery(imageInputText)
+        val normalizedQuery = normalizeStashDiscoveryQuery(imageInputText)
         if (normalizedQuery != imagePageState.query) {
             selectedImageFolderPath = null
             imageRequestSerial += 1L

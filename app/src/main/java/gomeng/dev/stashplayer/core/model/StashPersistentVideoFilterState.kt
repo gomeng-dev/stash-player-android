@@ -24,11 +24,11 @@ data class StashPersistedSearchFilterState(
     val query: String = "",
     val sortOptionId: String = "",
     val sortDirection: StashSortDirection? = null,
-    val pageSize: Int = DEFAULT_STASH_SEARCH_PAGE_SIZE,
+    val pageSize: Int = DEFAULT_STASH_DISCOVERY_PAGE_SIZE,
     val videoFilter: StashVideoFilterState = StashVideoFilterState(),
 ) {
     fun serializeForStorage(): String = buildList {
-        val normalizedQuery = normalizeStashSearchQuery(query)
+        val normalizedQuery = normalizeStashDiscoveryQuery(query)
         if (normalizedQuery.isNotBlank()) add("query=${encodePersistedValue(normalizedQuery)}")
         val normalizedSort = normalizeStashVideoFilterText(sortOptionId)
         if (normalizedSort.isNotBlank()) add("sort=${encodePersistedValue(normalizedSort)}")
@@ -47,7 +47,7 @@ data class StashPersistedExploreFilterState(
     val videoFilter: StashVideoFilterState = StashVideoFilterState(),
 ) {
     fun serializeForStorage(): String = buildList {
-        val normalizedQuery = normalizeStashSearchQuery(query)
+        val normalizedQuery = normalizeStashDiscoveryQuery(query)
         if (normalizedQuery.isNotBlank()) add("query=${encodePersistedValue(normalizedQuery)}")
         val normalizedSort = normalizeStashVideoFilterText(sortOptionId)
         if (normalizedSort.isNotBlank()) add("sort=${encodePersistedValue(normalizedSort)}")
@@ -73,12 +73,12 @@ fun deserializeStashPersistedBrowseFilterState(serialized: String): StashPersist
 fun deserializeStashPersistedSearchFilterState(serialized: String): StashPersistedSearchFilterState {
     val fields = parsePersistedFields(serialized)
     return StashPersistedSearchFilterState(
-        query = fields["query"]?.let(::normalizeStashSearchQuery).orEmpty(),
+        query = fields["query"]?.let(::normalizeStashDiscoveryQuery).orEmpty(),
         sortOptionId = fields["sort"].orEmpty(),
         sortDirection = fields["direction"]?.let { direction ->
             StashSortDirection.entries.firstOrNull { it.name == direction }
         },
-        pageSize = fields["pageSize"]?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_STASH_SEARCH_PAGE_SIZE,
+        pageSize = fields["pageSize"]?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_STASH_DISCOVERY_PAGE_SIZE,
         videoFilter = fields["filter"]?.let(::deserializeStashVideoFilterState) ?: StashVideoFilterState(),
     )
 }
@@ -86,7 +86,7 @@ fun deserializeStashPersistedSearchFilterState(serialized: String): StashPersist
 fun deserializeStashPersistedExploreFilterState(serialized: String): StashPersistedExploreFilterState {
     val fields = parsePersistedFields(serialized)
     return StashPersistedExploreFilterState(
-        query = fields["query"]?.let(::normalizeStashSearchQuery).orEmpty(),
+        query = fields["query"]?.let(::normalizeStashDiscoveryQuery).orEmpty(),
         sortOptionId = fields["sort"].orEmpty(),
         sortDirection = fields["direction"]?.let { direction ->
             StashSortDirection.entries.firstOrNull { it.name == direction }
@@ -114,24 +114,6 @@ fun StashBrowseScenePageState.Companion.initialFromPersisted(
     )
 }
 
-fun StashSearchPageState.Companion.initialFromPersisted(
-    sortOptions: List<StashSearchSortOption>,
-    pageSizeOptions: List<Int>,
-    persisted: StashPersistedSearchFilterState,
-): StashSearchPageState {
-    val defaultSort = sortOptions.first()
-    val sortOption = sortOptions.firstOrNull { it.id == persisted.sortOptionId } ?: defaultSort
-    val pageSize = persisted.pageSize.takeIf { it in pageSizeOptions }
-        ?: pageSizeOptions.firstOrNull { it == DEFAULT_STASH_SEARCH_PAGE_SIZE }
-        ?: pageSizeOptions.first()
-    return initial(sortOption).copy(
-        query = normalizeStashSearchQuery(persisted.query),
-        sortDirection = persisted.sortDirection ?: sortOption.defaultDirection,
-        pageSize = pageSize,
-        videoFilter = persisted.videoFilter.withGeneratedStashRandomShuffleSeedIfNeeded(),
-    )
-}
-
 fun StashExplorePageState.Companion.initialFromPersisted(
     sortOptions: List<StashExploreSortOption>,
     pageSizeOptions: List<Int>,
@@ -143,7 +125,7 @@ fun StashExplorePageState.Companion.initialFromPersisted(
         ?: pageSizeOptions.firstOrNull { it == DEFAULT_STASH_DISCOVERY_PAGE_SIZE }
         ?: pageSizeOptions.first()
     return initial(sortOption).copy(
-        query = normalizeStashSearchQuery(persisted.query),
+        query = normalizeStashDiscoveryQuery(persisted.query),
         sortDirection = persisted.sortDirection ?: sortOption.defaultDirection,
         pageSize = pageSize,
         videoFilter = persisted.videoFilter.withGeneratedStashRandomShuffleSeedIfNeeded(),
@@ -184,14 +166,6 @@ fun StashExplorePageState.Companion.initialFromLegacyPersisted(
 }
 
 fun StashBrowseScenePageState.toPersistedFilterState(): StashPersistedBrowseFilterState = StashPersistedBrowseFilterState(
-    sortOptionId = sortOption.id,
-    sortDirection = sortDirection,
-    pageSize = pageSize,
-    videoFilter = videoFilter,
-)
-
-fun StashSearchPageState.toPersistedFilterState(): StashPersistedSearchFilterState = StashPersistedSearchFilterState(
-    query = query,
     sortOptionId = sortOption.id,
     sortDirection = sortDirection,
     pageSize = pageSize,

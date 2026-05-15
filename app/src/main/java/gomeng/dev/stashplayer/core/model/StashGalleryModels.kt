@@ -943,7 +943,7 @@ data class StashGalleryGridPageState(
         )
 
     fun withQuery(query: String): StashGalleryGridPageState = reset().copy(
-        query = normalizeStashSearchQuery(query),
+        query = normalizeStashDiscoveryQuery(query),
     )
 
     fun forSort(
@@ -1152,7 +1152,7 @@ data class StashGalleryGlobalImageGridPageState(
         )
 
     fun withQuery(query: String): StashGalleryGlobalImageGridPageState = reset().copy(
-        query = normalizeStashSearchQuery(query),
+        query = normalizeStashDiscoveryQuery(query),
     )
 
     fun forSort(
