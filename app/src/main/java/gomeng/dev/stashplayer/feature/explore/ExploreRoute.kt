@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import gomeng.dev.stashplayer.core.discovery.StashDiscoveryFilterAction
 import gomeng.dev.stashplayer.core.discovery.StashDiscoveryFilterSection
 import gomeng.dev.stashplayer.core.discovery.StashDiscoveryOpenSheet
@@ -108,6 +111,34 @@ import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
 private val SEARCH_DEBOUNCE_MS = 500L
 
+internal data class ExploreRouteResetLoadKey(
+    val profileRevision: Int,
+    val query: String,
+    val sortOption: StashExploreSortOption,
+    val sortDirection: StashSortDirection,
+    val pageSize: Int,
+    val videoFilter: Any,
+    val reloadToken: Int,
+    val sourceRevision: Int = 0,
+)
+
+internal class ExploreRouteStateViewModel : ViewModel() {
+    var inputText by mutableStateOf("")
+    var pageState by mutableStateOf(StashExplorePageState.initial(defaultStashExploreSortOptions().first()))
+    var didApplyPersistedExploreState by mutableStateOf(false)
+    var reloadToken by mutableIntStateOf(0)
+    var requestSerial by mutableLongStateOf(0L)
+    var openSheet by mutableStateOf<StashDiscoveryOpenSheet>(StashDiscoveryOpenSheet.None)
+    var savedFilterName by mutableStateOf("")
+    var tagOptionsState by mutableStateOf(StashDiscoveryTagOptionsState())
+    var lastServerResetLoadKey by mutableStateOf<ExploreRouteResetLoadKey?>(null)
+    var lastLocalFavoriteResetLoadKey by mutableStateOf<ExploreRouteResetLoadKey?>(null)
+
+    fun clearTransientLoading() {
+        if (pageState.isLoading) pageState = pageState.copy(isLoading = false)
+    }
+}
+
 @Composable
 fun ExploreRoute(
     isFoldLikeLayout: Boolean,
@@ -116,6 +147,10 @@ fun ExploreRoute(
 ) {
     val sortOptions = remember { defaultStashExploreSortOptions() }
     val pageSizeOptions = remember { defaultStashExplorePageSizeOptions() }
+    val routeState: ExploreRouteStateViewModel = viewModel()
+    DisposableEffect(Unit) {
+        onDispose { routeState.clearTransientLoading() }
+    }
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
@@ -128,16 +163,16 @@ fun ExploreRoute(
     val persistedExploreFilterState by localRepository.persistedExploreFilterState.collectAsState(initial = null)
     val recentExploreFilters by localRepository.recentExploreVideoFilters.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
-    var inputText by remember { mutableStateOf("") }
-    var pageState by remember { mutableStateOf(StashExplorePageState.initial(sortOptions.first())) }
-    var didApplyPersistedExploreState by remember { mutableStateOf(false) }
-    var reloadToken by remember { mutableIntStateOf(0) }
-    var requestSerial by remember { mutableLongStateOf(0L) }
-    var openSheet by remember { mutableStateOf<StashDiscoveryOpenSheet>(StashDiscoveryOpenSheet.None) }
+    var inputText by routeState::inputText
+    var pageState by routeState::pageState
+    var didApplyPersistedExploreState by routeState::didApplyPersistedExploreState
+    var reloadToken by routeState::reloadToken
+    var requestSerial by routeState::requestSerial
+    var openSheet by routeState::openSheet
     val filterSheetVisibility = openSheet.toFilterSheetVisibility()
     val isTagFilterOpen = filterSheetVisibility.isTagFilterOpen
-    var savedFilterName by remember { mutableStateOf("") }
-    var tagOptionsState by remember { mutableStateOf(StashDiscoveryTagOptionsState()) }
+    var savedFilterName by routeState::savedFilterName
+    var tagOptionsState by routeState::tagOptionsState
     val snackbarHostState = remember { SnackbarHostState() }
     val exploreGridState = rememberLazyGridState()
     val exploreListState = rememberLazyListState()
@@ -306,7 +341,19 @@ fun ExploreRoute(
             pageState.hasExploreIntent &&
             shouldLoadExploreResultsFromServer(pageState.query, pageState.videoFilter)
         ) {
-            loadPage(page = 1, reset = true)
+            val resetLoadKey = ExploreRouteResetLoadKey(
+                profileRevision = profile.hashCode(),
+                query = pageState.query,
+                sortOption = pageState.sortOption,
+                sortDirection = pageState.sortDirection,
+                pageSize = pageState.pageSize,
+                videoFilter = pageState.videoFilter,
+                reloadToken = reloadToken,
+            )
+            if (routeState.lastServerResetLoadKey != resetLoadKey || pageState.totalCount == null) {
+                routeState.lastServerResetLoadKey = resetLoadKey
+                loadPage(page = 1, reset = true)
+            }
         }
     }
 
@@ -320,15 +367,28 @@ fun ExploreRoute(
         pageState.videoFilter,
     ) {
         if (didApplyPersistedExploreState && shouldUseLocalFavoriteExploreResults(pageState.query, pageState.videoFilter)) {
-            requestSerial += 1L
-            pageState = StashExplorePageState.initial(pageState.sortOption)
-                .copy(
-                    query = pageState.query,
-                    sortDirection = pageState.sortDirection,
-                    pageSize = pageState.pageSize,
-                    videoFilter = pageState.videoFilter,
-                )
-                .withFirstPage(favoriteScenes, favoriteScenes.size, favoriteScenes.size.coerceAtLeast(1))
+            val resetLoadKey = ExploreRouteResetLoadKey(
+                profileRevision = 0,
+                query = pageState.query,
+                sortOption = pageState.sortOption,
+                sortDirection = pageState.sortDirection,
+                pageSize = pageState.pageSize,
+                videoFilter = pageState.videoFilter,
+                reloadToken = 0,
+                sourceRevision = favoriteScenes.hashCode(),
+            )
+            if (routeState.lastLocalFavoriteResetLoadKey != resetLoadKey || pageState.totalCount == null) {
+                routeState.lastLocalFavoriteResetLoadKey = resetLoadKey
+                requestSerial += 1L
+                pageState = StashExplorePageState.initial(pageState.sortOption)
+                    .copy(
+                        query = pageState.query,
+                        sortDirection = pageState.sortDirection,
+                        pageSize = pageState.pageSize,
+                        videoFilter = pageState.videoFilter,
+                    )
+                    .withFirstPage(favoriteScenes, favoriteScenes.size, favoriteScenes.size.coerceAtLeast(1))
+            }
         }
     }
 

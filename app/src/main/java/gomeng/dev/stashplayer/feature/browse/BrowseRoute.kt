@@ -25,6 +25,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import gomeng.dev.stashplayer.core.discovery.StashDiscoveryFilterAction
 import gomeng.dev.stashplayer.core.discovery.StashDiscoveryFilterSection
 import gomeng.dev.stashplayer.core.discovery.StashDiscoveryOpenSheet
@@ -103,6 +106,30 @@ import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
+internal data class BrowseRouteResetLoadKey(
+    val profileRevision: Int,
+    val sortOption: StashBrowseSortOption,
+    val sortDirection: StashSortDirection,
+    val pageSize: Int,
+    val videoFilter: Any,
+    val reloadToken: Int,
+)
+
+internal class BrowseRouteStateViewModel : ViewModel() {
+    var pageState by mutableStateOf(StashBrowseScenePageState.initial(defaultStashBrowseSortOptions().first()))
+    var didApplyPersistedBrowseState by mutableStateOf(false)
+    var reloadToken by mutableIntStateOf(0)
+    var requestSerial by mutableLongStateOf(0L)
+    var openSheet by mutableStateOf<StashDiscoveryOpenSheet>(StashDiscoveryOpenSheet.None)
+    var savedFilterName by mutableStateOf("")
+    var tagOptionsState by mutableStateOf(StashDiscoveryTagOptionsState())
+    var lastResetLoadKey by mutableStateOf<BrowseRouteResetLoadKey?>(null)
+
+    fun clearTransientLoading() {
+        if (pageState.isLoading) pageState = pageState.copy(isLoading = false)
+    }
+}
+
 @Composable
 fun BrowseRoute(
     isFoldLikeLayout: Boolean,
@@ -111,6 +138,10 @@ fun BrowseRoute(
 ) {
     val sortOptions = remember { defaultStashBrowseSortOptions() }
     val pageSizeOptions = remember { defaultStashDiscoveryPageSizeOptions() }
+    val routeState: BrowseRouteStateViewModel = viewModel()
+    DisposableEffect(Unit) {
+        onDispose { routeState.clearTransientLoading() }
+    }
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
@@ -122,15 +153,15 @@ fun BrowseRoute(
     val persistedBrowseFilterState by localRepository.persistedBrowseFilterState.collectAsState(initial = null)
     val recentBrowseFilters by localRepository.recentBrowseVideoFilters.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
-    var pageState by remember { mutableStateOf(StashBrowseScenePageState.initial(sortOptions.first())) }
-    var didApplyPersistedBrowseState by remember { mutableStateOf(false) }
-    var reloadToken by remember { mutableIntStateOf(0) }
-    var requestSerial by remember { mutableLongStateOf(0L) }
-    var openSheet by remember { mutableStateOf<StashDiscoveryOpenSheet>(StashDiscoveryOpenSheet.None) }
+    var pageState by routeState::pageState
+    var didApplyPersistedBrowseState by routeState::didApplyPersistedBrowseState
+    var reloadToken by routeState::reloadToken
+    var requestSerial by routeState::requestSerial
+    var openSheet by routeState::openSheet
     val filterSheetVisibility = openSheet.toFilterSheetVisibility()
     val isTagFilterOpen = filterSheetVisibility.isTagFilterOpen
-    var savedFilterName by remember { mutableStateOf("") }
-    var tagOptionsState by remember { mutableStateOf(StashDiscoveryTagOptionsState()) }
+    var savedFilterName by routeState::savedFilterName
+    var tagOptionsState by routeState::tagOptionsState
     val snackbarHostState = remember { SnackbarHostState() }
     val browseGridState = rememberLazyGridState()
     val browseListState = rememberLazyListState()
@@ -283,7 +314,18 @@ fun BrowseRoute(
         reloadToken,
     ) {
         if (profile != null && didApplyPersistedBrowseState) {
-            loadPage(page = 1, reset = true)
+            val resetLoadKey = BrowseRouteResetLoadKey(
+                profileRevision = profile.hashCode(),
+                sortOption = pageState.sortOption,
+                sortDirection = pageState.sortDirection,
+                pageSize = pageState.pageSize,
+                videoFilter = pageState.videoFilter,
+                reloadToken = reloadToken,
+            )
+            if (routeState.lastResetLoadKey != resetLoadKey || pageState.totalCount == null) {
+                routeState.lastResetLoadKey = resetLoadKey
+                loadPage(page = 1, reset = true)
+            }
         }
     }
 

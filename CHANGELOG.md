@@ -6,6 +6,20 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.7] - 2026-05-17
+
+### English
+
+- Fixed media route back-navigation restoration so Browse, Explore, Gallery, and Image results/page state are preserved after opening the player or photo viewer and pressing back.
+- Prevented preserved media routes from unconditionally reloading page 1 on re-entry while still reloading when filters, sort, source, or query actually change.
+- Cleared cancelled transient loading flags on route disposal so interrupted loads do not leave preserved lists stuck in a loading state.
+
+### 한국어
+
+- Browse, Explore, Gallery, Image에서 플레이어 또는 사진 뷰어를 열었다가 뒤로 돌아올 때 결과/page 상태가 유지되도록 뒤로가기 복원 문제를 수정했습니다.
+- 보존된 미디어 Route가 재진입 시 1페이지를 무조건 다시 불러오지 않도록 막고, 필터/정렬/소스/검색어가 실제로 바뀐 경우에는 정상 재로드되도록 했습니다.
+- 화면 전환으로 진행 중이던 로드가 취소될 때 임시 `isLoading` 상태를 정리해, 보존된 목록이 로딩 상태에 갇히지 않도록 했습니다.
+
 ## [1.6.6] - 2026-05-16
 
 ### English

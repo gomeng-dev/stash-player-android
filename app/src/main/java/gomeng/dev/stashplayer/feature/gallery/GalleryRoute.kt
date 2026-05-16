@@ -64,6 +64,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -189,7 +191,7 @@ private const val GALLERY_PHOTO_BOUNDARY_FEEDBACK_MS = 1_500L
 private const val GALLERY_PHOTO_TRANSIENT_HUD_MS = 1_300L
 private const val GALLERY_ENTITY_SELECTOR_PAGE_SIZE = 40
 
-private enum class GalleryEntityFilterKind {
+internal enum class GalleryEntityFilterKind {
     Tags,
     Studios,
     Performers,
@@ -197,7 +199,7 @@ private enum class GalleryEntityFilterKind {
     ParentFolders,
 }
 
-private enum class ImageEntityFilterKind {
+internal enum class ImageEntityFilterKind {
     Tags,
     PerformerTags,
     Studios,
@@ -312,6 +314,85 @@ private fun GalleryEntityFilterKind.buttonLabel(count: Int): String = when (this
     GalleryEntityFilterKind.ParentFolders -> stringResource(R.string.gallery_filter_button_parent_folders, count)
 }
 
+internal data class GalleryRouteResetLoadKey(
+    val profileRevision: Int,
+    val browseMode: StashGalleryBrowseMode,
+    val query: String,
+    val sortOption: Any,
+    val sortDirection: Any,
+    val displayMode: StashGalleryDisplayMode?,
+    val filterIdentity: Any,
+    val randomSeed: Int?,
+    val pageSize: Int,
+    val reloadToken: Long,
+)
+
+internal data class GalleryDetailRouteResetLoadKey(
+    val profileRevision: Int,
+    val galleryId: String,
+    val pageSize: Int,
+    val reloadToken: Long,
+)
+
+internal class GalleryRouteStateViewModel : ViewModel() {
+    var galleryInputText by mutableStateOf("")
+    var imageInputText by mutableStateOf("")
+    var browseMode by mutableStateOf(StashGalleryBrowseMode.Galleries)
+    var reloadToken by mutableLongStateOf(0L)
+    var imageReloadToken by mutableLongStateOf(0L)
+    var requestSerial by mutableLongStateOf(0L)
+    var imageRequestSerial by mutableLongStateOf(0L)
+    var pageState by mutableStateOf(StashGalleryGridPageState.initial().copy(pageSize = GALLERY_GRID_DEFAULT_PAGE_SIZE))
+    var imagePageState by mutableStateOf(StashGalleryGlobalImageGridPageState.initial().copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE))
+    var galleryToolbarPreferencesRestored by mutableStateOf(false)
+    var imageToolbarPreferencesRestored by mutableStateOf(false)
+    var galleryBrowseModeRestored by mutableStateOf(false)
+    var activeEntityFilter by mutableStateOf<GalleryEntityFilterKind?>(null)
+    var activeImageEntityFilter by mutableStateOf<ImageEntityFilterKind?>(null)
+    var entitySearchQuery by mutableStateOf("")
+    var entityOptions by mutableStateOf(emptyList<StashSelectedEntity>())
+    var entityDraft by mutableStateOf(emptyList<StashSelectedEntity>())
+    var entityOptionsLoading by mutableStateOf(false)
+    var showSavedFilterSheet by mutableStateOf(false)
+    var showSavedImageFilterSheet by mutableStateOf(false)
+    var savedGalleryFilterName by mutableStateOf("")
+    var savedImageFilterName by mutableStateOf("")
+    var selectedImageFolderPath by mutableStateOf<String?>(null)
+    var gallerySelectionState by mutableStateOf(GallerySelectionState())
+    var previousVisibleGalleryIds by mutableStateOf(emptyList<String>())
+    var lastGalleryResetLoadKey by mutableStateOf<GalleryRouteResetLoadKey?>(null)
+    var lastImageResetLoadKey by mutableStateOf<GalleryRouteResetLoadKey?>(null)
+
+    fun clearTransientLoading() {
+        if (pageState.isLoading) pageState = pageState.copy(isLoading = false)
+        if (imagePageState.isLoading) imagePageState = imagePageState.copy(isLoading = false)
+    }
+}
+
+internal class GalleryDetailRouteStateViewModel : ViewModel() {
+    private var activeGalleryId: String? = null
+    var reloadToken by mutableLongStateOf(0L)
+    var requestSerial by mutableLongStateOf(0L)
+    var pageState by mutableStateOf(
+        StashGalleryImageGridPageState.initial("").copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE),
+    )
+    var lastDetailResetLoadKey by mutableStateOf<GalleryDetailRouteResetLoadKey?>(null)
+
+    fun clearTransientLoading() {
+        if (pageState.isLoading) pageState = pageState.copy(isLoading = false)
+    }
+
+    fun ensureGallery(galleryId: String) {
+        if (activeGalleryId == galleryId) return
+        activeGalleryId = galleryId
+        reloadToken = 0L
+        requestSerial += 1L
+        lastDetailResetLoadKey = null
+        pageState = StashGalleryImageGridPageState.initial(galleryId)
+            .copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE)
+    }
+}
+
 @Composable
 fun GalleryRoute(
     isFoldLikeLayout: Boolean,
@@ -320,6 +401,10 @@ fun GalleryRoute(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val routeState: GalleryRouteStateViewModel = viewModel()
+    DisposableEffect(Unit) {
+        onDispose { routeState.clearTransientLoading() }
+    }
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localLibraryRepository = remember(context) { StashLocalLibraryRepository(context) }
@@ -332,35 +417,31 @@ fun GalleryRoute(
     val savedImageFilters by localLibraryRepository.savedImageFilters.collectAsState(initial = emptyList())
     val recentImageFilters by localLibraryRepository.recentImageFilters.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
-    var galleryInputText by remember { mutableStateOf("") }
-    var imageInputText by remember { mutableStateOf("") }
-    var browseMode by remember { mutableStateOf(StashGalleryBrowseMode.Galleries) }
-    var reloadToken by remember { mutableLongStateOf(0L) }
-    var imageReloadToken by remember { mutableLongStateOf(0L) }
-    var requestSerial by remember { mutableLongStateOf(0L) }
-    var imageRequestSerial by remember { mutableLongStateOf(0L) }
-    var pageState by remember {
-        mutableStateOf(StashGalleryGridPageState.initial().copy(pageSize = GALLERY_GRID_DEFAULT_PAGE_SIZE))
-    }
-    var imagePageState by remember {
-        mutableStateOf(StashGalleryGlobalImageGridPageState.initial().copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE))
-    }
-    var galleryToolbarPreferencesRestored by remember { mutableStateOf(false) }
-    var imageToolbarPreferencesRestored by remember { mutableStateOf(false) }
-    var galleryBrowseModeRestored by remember { mutableStateOf(false) }
-    var activeEntityFilter by remember { mutableStateOf<GalleryEntityFilterKind?>(null) }
-    var activeImageEntityFilter by rememberSaveable { mutableStateOf<ImageEntityFilterKind?>(null) }
-    var entitySearchQuery by remember { mutableStateOf("") }
-    var entityOptions by remember { mutableStateOf(emptyList<StashSelectedEntity>()) }
-    var entityDraft by remember { mutableStateOf(emptyList<StashSelectedEntity>()) }
-    var entityOptionsLoading by remember { mutableStateOf(false) }
-    var showSavedFilterSheet by remember { mutableStateOf(false) }
-    var showSavedImageFilterSheet by remember { mutableStateOf(false) }
-    var savedGalleryFilterName by remember { mutableStateOf("") }
-    var savedImageFilterName by remember { mutableStateOf("") }
-    var selectedImageFolderPath by rememberSaveable { mutableStateOf<String?>(null) }
-    var gallerySelectionState by remember { mutableStateOf(GallerySelectionState()) }
-    var previousVisibleGalleryIds by remember { mutableStateOf(emptyList<String>()) }
+    var galleryInputText by routeState::galleryInputText
+    var imageInputText by routeState::imageInputText
+    var browseMode by routeState::browseMode
+    var reloadToken by routeState::reloadToken
+    var imageReloadToken by routeState::imageReloadToken
+    var requestSerial by routeState::requestSerial
+    var imageRequestSerial by routeState::imageRequestSerial
+    var pageState by routeState::pageState
+    var imagePageState by routeState::imagePageState
+    var galleryToolbarPreferencesRestored by routeState::galleryToolbarPreferencesRestored
+    var imageToolbarPreferencesRestored by routeState::imageToolbarPreferencesRestored
+    var galleryBrowseModeRestored by routeState::galleryBrowseModeRestored
+    var activeEntityFilter by routeState::activeEntityFilter
+    var activeImageEntityFilter by routeState::activeImageEntityFilter
+    var entitySearchQuery by routeState::entitySearchQuery
+    var entityOptions by routeState::entityOptions
+    var entityDraft by routeState::entityDraft
+    var entityOptionsLoading by routeState::entityOptionsLoading
+    var showSavedFilterSheet by routeState::showSavedFilterSheet
+    var showSavedImageFilterSheet by routeState::showSavedImageFilterSheet
+    var savedGalleryFilterName by routeState::savedGalleryFilterName
+    var savedImageFilterName by routeState::savedImageFilterName
+    var selectedImageFolderPath by routeState::selectedImageFolderPath
+    var gallerySelectionState by routeState::gallerySelectionState
+    var previousVisibleGalleryIds by routeState::previousVisibleGalleryIds
     val visibleGalleryIds = pageState.galleries.map { it.id }
 
     fun openGallerySelectionRequest(galleryId: String, nextSelectionState: GallerySelectionState) {
@@ -694,7 +775,22 @@ fun GalleryRoute(
         } else if (browseMode != StashGalleryBrowseMode.Galleries) {
             return@LaunchedEffect
         } else {
-            loadPage(page = 1, reset = true)
+            val resetLoadKey = GalleryRouteResetLoadKey(
+                profileRevision = profile.hashCode(),
+                browseMode = browseMode,
+                query = pageState.query,
+                sortOption = pageState.sortOption,
+                sortDirection = pageState.sortDirection,
+                displayMode = null,
+                filterIdentity = pageState.galleryFilter,
+                randomSeed = pageState.randomSeed,
+                pageSize = pageState.pageSize,
+                reloadToken = reloadToken,
+            )
+            if (routeState.lastGalleryResetLoadKey != resetLoadKey || pageState.totalCount == null) {
+                routeState.lastGalleryResetLoadKey = resetLoadKey
+                loadPage(page = 1, reset = true)
+            }
         }
     }
 
@@ -711,7 +807,22 @@ fun GalleryRoute(
         } else if (!galleryBrowseModeRestored || !imageToolbarPreferencesRestored) {
             return@LaunchedEffect
         } else if (browseMode == StashGalleryBrowseMode.Images) {
-            loadGlobalImagesPage(page = 1, reset = true)
+            val resetLoadKey = GalleryRouteResetLoadKey(
+                profileRevision = profile.hashCode(),
+                browseMode = browseMode,
+                query = imagePageState.query,
+                sortOption = imagePageState.sortOption,
+                sortDirection = imagePageState.sortDirection,
+                displayMode = imagePageState.displayMode,
+                filterIdentity = imagePageState.imageFilter.identityKey,
+                randomSeed = imagePageState.randomSeed,
+                pageSize = imagePageState.pageSize,
+                reloadToken = imageReloadToken,
+            )
+            if (routeState.lastImageResetLoadKey != resetLoadKey || imagePageState.totalCount == null) {
+                routeState.lastImageResetLoadKey = resetLoadKey
+                loadGlobalImagesPage(page = 1, reset = true)
+            }
         }
     }
 
@@ -1072,15 +1183,17 @@ fun GalleryDetailRoute(
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val profile by settingsRepository.serverProfile.collectAsState(initial = null)
-    val scope = rememberCoroutineScope()
-    var reloadToken by remember(galleryId) { mutableLongStateOf(0L) }
-    var requestSerial by remember(galleryId) { mutableLongStateOf(0L) }
-    var pageState by remember(galleryId) {
-        mutableStateOf(
-            StashGalleryImageGridPageState.initial(galleryId)
-                .copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE),
-        )
+    val routeState: GalleryDetailRouteStateViewModel = viewModel()
+    DisposableEffect(Unit) {
+        onDispose { routeState.clearTransientLoading() }
     }
+    LaunchedEffect(galleryId) {
+        routeState.ensureGallery(galleryId)
+    }
+    val scope = rememberCoroutineScope()
+    var reloadToken by routeState::reloadToken
+    var requestSerial by routeState::requestSerial
+    var pageState by routeState::pageState
 
     fun loadPage(page: Int, reset: Boolean = false) {
         val activeProfile = profile ?: return
@@ -1139,10 +1252,20 @@ fun GalleryDetailRoute(
 
     LaunchedEffect(galleryId, profile, reloadToken) {
         if (profile == null) {
+            routeState.lastDetailResetLoadKey = null
             pageState = StashGalleryImageGridPageState.initial(galleryId)
                 .copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE)
         } else {
-            loadPage(page = 1, reset = true)
+            val resetLoadKey = GalleryDetailRouteResetLoadKey(
+                profileRevision = profile.hashCode(),
+                galleryId = galleryId,
+                pageSize = pageState.pageSize,
+                reloadToken = reloadToken,
+            )
+            if (routeState.lastDetailResetLoadKey != resetLoadKey || pageState.totalCount == null) {
+                routeState.lastDetailResetLoadKey = resetLoadKey
+                loadPage(page = 1, reset = true)
+            }
         }
     }
 
