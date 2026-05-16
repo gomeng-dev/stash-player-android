@@ -6,6 +6,18 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.6] - 2026-05-16
+
+### English
+
+- Preserved Browse, Explore, Gallery, Gallery detail, and Queue scroll positions when opening a player or photo viewer and pressing back.
+- Added regression coverage that verifies media routes own and wire explicit lazy scroll state for their list/grid containers.
+
+### 한국어
+
+- Browse, Explore, Gallery, Gallery 상세, Queue에서 플레이어 또는 사진 뷰어를 열었다가 뒤로 돌아와도 목록/그리드 스크롤 위치가 유지되도록 수정했습니다.
+- 미디어 Route가 명시적인 lazy scroll state를 소유하고 실제 목록/그리드 컨테이너에 연결하는지 검증하는 회귀 테스트를 추가했습니다.
+
 ## [1.6.5] - 2026-05-15
 
 ### English

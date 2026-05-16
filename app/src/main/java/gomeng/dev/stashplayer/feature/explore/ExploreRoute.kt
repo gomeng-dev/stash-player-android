@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items as lazyItems
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -135,6 +139,8 @@ fun ExploreRoute(
     var savedFilterName by remember { mutableStateOf("") }
     var tagOptionsState by remember { mutableStateOf(StashDiscoveryTagOptionsState()) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val exploreGridState = rememberLazyGridState()
+    val exploreListState = rememberLazyListState()
 
     fun loadTags(query: String) {
         val activeProfile = profile ?: return
@@ -401,6 +407,8 @@ fun ExploreRoute(
         sortOptions = sortOptions,
         pageSizeOptions = pageSizeOptions,
         pageState = pageState,
+        exploreGridState = exploreGridState,
+        exploreListState = exploreListState,
         onSelectSort = { option ->
             if (option != pageState.sortOption) {
                 requestSerial += 1L
@@ -560,6 +568,8 @@ private fun ExploreContent(
     sortOptions: List<StashExploreSortOption>,
     pageSizeOptions: List<Int>,
     pageState: StashExplorePageState,
+    exploreGridState: LazyGridState,
+    exploreListState: LazyListState,
     onSelectSort: (StashExploreSortOption) -> Unit,
     onToggleSortDirection: () -> Unit,
     onSelectPageSize: (Int) -> Unit,
@@ -811,6 +821,7 @@ private fun ExploreContent(
                 if (viewMode == StashScenesViewMode.Grid) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(columns),
+                        state = exploreGridState,
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(start = horizontalPadding, end = horizontalPadding, bottom = bottomContentPadding),
                         verticalArrangement = Arrangement.spacedBy(StashSpacing.CardGap),
@@ -849,6 +860,7 @@ private fun ExploreContent(
                     }
                 } else {
                     LazyColumn(
+                        state = exploreListState,
                         modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(start = horizontalPadding, end = horizontalPadding, bottom = bottomContentPadding),
                         verticalArrangement = Arrangement.spacedBy(StashSpacing.CardGap),

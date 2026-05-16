@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -2039,6 +2040,8 @@ private fun GalleryContent(
     val imageThumbnailHeight = imageLayoutPolicy.thumbnailHeightDp.dp
     val headerPolicy = stashGalleryTopLevelHeaderPolicy()
     val toolbarPolicy = stashGalleryMediaToolbarPolicy(browseMode)
+    val galleryGridState = rememberLazyGridState()
+    val imageGridState = rememberLazyGridState()
 
     Column(
         modifier = modifier
@@ -2261,6 +2264,7 @@ private fun GalleryContent(
 
             browseMode == StashGalleryBrowseMode.Images -> LazyVerticalGrid(
                 columns = GridCells.Fixed(imageColumns),
+                state = imageGridState,
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(
                     start = horizontalPadding,
@@ -2363,6 +2367,7 @@ private fun GalleryContent(
 
             else -> LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
+                state = galleryGridState,
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(
                     start = horizontalPadding,
@@ -2417,6 +2422,7 @@ private fun GalleryDetailContent(
     val thumbnailHeight = stashGalleryImageGridThumbnailHeightDp(isFoldLikeLayout).dp
     val images = pageState.images
     val title = pageState.gallery?.title ?: stringResource(R.string.gallery_detail_title_fallback, galleryId)
+    val galleryDetailGridState = rememberLazyGridState()
 
     Column(
         modifier = modifier
@@ -2480,6 +2486,7 @@ private fun GalleryDetailContent(
 
             else -> LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
+                state = galleryDetailGridState,
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(
                     start = horizontalPadding,

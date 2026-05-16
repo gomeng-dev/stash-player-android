@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -66,6 +67,7 @@ fun QueueRoute(
     val serverProfile by settingsRepository.serverProfile.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    val queueListState = rememberLazyListState()
     var playbackHistoryExpanded by remember { mutableStateOf(false) }
     val playbackHistoryOverview = buildPlaybackHistoryOverviewModel(
         historyCount = playbackHistoryScenes.size,
@@ -170,6 +172,7 @@ fun QueueRoute(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { contentPadding ->
         LazyColumn(
+            state = queueListState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
