@@ -77,11 +77,15 @@ data class GalleryImageFolderGroup(
     val title: String,
     val path: String,
     val items: List<GalleryImageFolderItem>,
+    val folderId: String? = null,
+    val imageCountOverride: Int? = null,
+    val coverImageOverride: GalleryImageModel? = null,
 ) {
-    val id: String get() = path.ifBlank { "__unfiled__" }
-    val imageCount: Int get() = items.size
+    val id: String get() = folderId?.trim()?.takeIf { it.isNotBlank() } ?: path.ifBlank { "__unfiled__" }
+    val knownImageCount: Int? get() = imageCountOverride ?: items.size.takeIf { it > 0 }
+    val imageCount: Int get() = knownImageCount ?: 0
     val images: List<GalleryImageModel> get() = items.map { it.image }
-    val coverImage: GalleryImageModel? get() = items.firstOrNull()?.image
+    val coverImage: GalleryImageModel? get() = coverImageOverride ?: items.firstOrNull()?.image
 
     fun viewerRequestForImage(imageId: String): GalleryImageFolderViewerRequest? {
         val index = items.indexOfFirst { item -> item.image.id == imageId }
@@ -1033,6 +1037,11 @@ data class StashImagePage(
     val totalCount: Int,
 )
 
+data class StashImageFolderPage(
+    val folders: List<GalleryImageFolderGroup>,
+    val totalCount: Int,
+)
+
 enum class StashGalleryBrowseMode {
     Galleries,
     Images,
@@ -1123,6 +1132,7 @@ data class StashGalleryGlobalImageGridPageState(
     val randomSeed: Int? = null,
     val displayMode: StashGalleryDisplayMode = StashGalleryDisplayMode.Grid,
     val images: List<GalleryImageModel> = emptyList(),
+    val folderGroups: List<GalleryImageFolderGroup> = emptyList(),
     val nextPage: Int = 1,
     val hasMore: Boolean = true,
     val isLoading: Boolean = false,
@@ -1213,6 +1223,7 @@ data class StashGalleryGlobalImageGridPageState(
         perPage: Int,
     ): StashGalleryGlobalImageGridPageState = copy(
         images = images,
+        folderGroups = emptyList(),
         nextPage = 2,
         hasMore = perPage < totalCount,
         isLoading = false,
@@ -1226,6 +1237,43 @@ data class StashGalleryGlobalImageGridPageState(
         perPage: Int,
     ): StashGalleryGlobalImageGridPageState = copy(
         images = this.images + images,
+        folderGroups = emptyList(),
+        nextPage = nextPage + 1,
+        hasMore = nextPage * perPage < totalCount,
+        isLoading = false,
+        error = null,
+        totalCount = totalCount,
+    )
+
+    fun withFirstFolderPage(
+        folders: List<GalleryImageFolderGroup>,
+        totalCount: Int,
+        perPage: Int,
+    ): StashGalleryGlobalImageGridPageState = copy(
+        images = emptyList(),
+        folderGroups = folders.asServerBackedImageFolderIndex(
+            sortDirection = sortDirection,
+            sortOption = sortOption,
+            randomSeed = randomSeed,
+        ),
+        nextPage = 2,
+        hasMore = perPage < totalCount,
+        isLoading = false,
+        error = null,
+        totalCount = totalCount,
+    )
+
+    fun withNextFolderPage(
+        folders: List<GalleryImageFolderGroup>,
+        totalCount: Int,
+        perPage: Int,
+    ): StashGalleryGlobalImageGridPageState = copy(
+        images = emptyList(),
+        folderGroups = (this.folderGroups + folders).asServerBackedImageFolderIndex(
+            sortDirection = sortDirection,
+            sortOption = sortOption,
+            randomSeed = randomSeed,
+        ),
         nextPage = nextPage + 1,
         hasMore = nextPage * perPage < totalCount,
         isLoading = false,
@@ -1394,6 +1442,37 @@ fun GalleryImageModel.galleryImageLinkedGalleryLabels(limit: Int = 2): List<Stri
 fun GalleryImageModel.galleryImagePerformerLabels(limit: Int = 2): List<String> = performerChips
     .mapNotNull { it.label.trim().takeIf { label -> label.isNotBlank() } }
     .take(limit.coerceAtLeast(0))
+
+fun List<GalleryImageFolderGroup>.asServerBackedImageFolderIndex(
+    sortDirection: StashSortDirection = StashSortDirection.Asc,
+    sortOption: StashGallerySortOption = defaultStashImageSortOption(),
+    randomSeed: Int? = null,
+): List<GalleryImageFolderGroup> {
+    val distinctFolders = distinctBy { group -> group.id.ifBlank { group.path } }
+    val pathComparator = compareBy<GalleryImageFolderGroup> { group ->
+        if (group.path.isBlank()) 1 else 0
+    }.thenBy { group -> group.path.lowercase(Locale.US) }
+    val pathSorted = distinctFolders.sortedWith(pathComparator)
+    return if (sortOption.isRandomSort()) {
+        val seed = normalizeStashRandomSortSeed(randomSeed ?: 0)
+        val randomComparator = compareBy<GalleryImageFolderGroup> { group ->
+            group.path.toStableFolderRandomSortKey(seed)
+        }.thenBy { group -> group.path.lowercase(Locale.US) }
+        when (sortDirection) {
+            StashSortDirection.Asc -> pathSorted.sortedWith(randomComparator)
+            StashSortDirection.Desc -> pathSorted.sortedWith(randomComparator.reversed())
+        }
+    } else {
+        when (sortDirection) {
+            StashSortDirection.Asc -> pathSorted
+            StashSortDirection.Desc -> pathSorted.let { sorted ->
+                val filed = sorted.filter { it.path.isNotBlank() }.reversed()
+                val unfiled = sorted.filter { it.path.isBlank() }
+                filed + unfiled
+            }
+        }
+    }
+}
 
 fun groupGalleryImagesByParentFolder(
     images: List<GalleryImageModel>,

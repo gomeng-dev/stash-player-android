@@ -6,6 +6,22 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.9] - 2026-05-17
+
+### English
+
+- Fixed Gallery > Images folder mode so selecting a folder loads that folder's images from Stash with a server-side directory filter instead of showing only the images already loaded on the current page.
+- Replaced the folder-card index with a server-backed folder query, so folder browsing is no longer limited to the partially loaded global image grid.
+- Preserved folder-relative photo viewer order, folder paging, path/random sort behavior, and separate folder index/detail loading states.
+- Updated the release workflow action runtime so patch releases publish with the current GitHub Actions platform.
+
+### 한국어
+
+- Gallery > Images의 폴더별 보기에서 폴더를 선택하면 현재 페이지에 이미 로딩된 일부 이미지만 보여주는 대신, Stash 서버의 디렉터리 필터로 해당 폴더 이미지를 다시 조회하도록 수정했습니다.
+- 폴더 카드 목록을 서버 기반 폴더 조회로 전환해, 폴더 브라우징이 일부 로딩된 전체 이미지 그리드에 제한되지 않도록 했습니다.
+- 폴더 내부 사진 뷰어 순서, 폴더별 페이지네이션, 경로/랜덤 정렬 동작, 폴더 목록/상세 로딩 상태 분리를 유지했습니다.
+- 패치 릴리스가 최신 GitHub Actions 환경에서 배포되도록 릴리스 워크플로 런타임을 갱신했습니다.
+
 ## [1.6.8] - 2026-05-17
 
 ### English

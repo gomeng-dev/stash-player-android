@@ -3,6 +3,8 @@ package gomeng.dev.stashplayer.core.network
 import android.net.Uri
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteResult
 import gomeng.dev.stashplayer.core.model.StashGalleryPage
+import gomeng.dev.stashplayer.core.model.StashGallerySortOption
+import gomeng.dev.stashplayer.core.model.StashImageFolderPage
 import gomeng.dev.stashplayer.core.model.StashImagePage
 import gomeng.dev.stashplayer.core.model.StashSceneDeleteOptions
 import gomeng.dev.stashplayer.core.model.SceneCardModel
@@ -238,6 +240,7 @@ class StashGraphQlClient(
         sort: String = "title",
         direction: StashSortDirection = StashSortDirection.Asc,
         imageFilter: StashImageFilterState = StashImageFilterState(),
+        folderDir: String? = null,
     ): StashImagePage {
         val parsedPage = parseFindImagesPageResponse(
             execute(
@@ -249,6 +252,7 @@ class StashGraphQlClient(
                     sort = sort,
                     direction = direction,
                     imageFilter = imageFilter,
+                    folderDir = folderDir,
                 ),
             ),
         )
@@ -262,6 +266,27 @@ class StashGraphQlClient(
             },
         )
     }
+
+    suspend fun findImageFoldersPage(
+        perPage: Int = 50,
+        page: Int = 1,
+        query: String? = null,
+        sort: String = "path",
+        direction: StashSortDirection = StashSortDirection.Asc,
+        imageFilter: StashImageFilterState = StashImageFilterState(),
+    ): StashImageFolderPage = parseFindImageFoldersPageResponse(
+        execute(
+            FIND_IMAGE_FOLDERS_QUERY,
+            buildFindImageFoldersVariables(
+                perPage = perPage,
+                page = page,
+                query = query,
+                sort = sort,
+                direction = direction,
+                imageFilter = imageFilter,
+            ),
+        ),
+    )
 
     suspend fun findGalleryDetail(galleryId: String): StashGalleryDetailModel? {
         val detail = parseFindGalleryDetailResponse(
@@ -618,6 +643,19 @@ class StashGraphQlClient(
             }
         """
 
+        val FIND_IMAGE_FOLDERS_QUERY = """
+            query FindImageFolders(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!, ${'$'}folderFilter: FolderFilterType) {
+              findFolders(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }, folder_filter: ${'$'}folderFilter) {
+                count
+                folders {
+                  id
+                  path
+                  basename
+                }
+              }
+            }
+        """
+
         val FIND_GALLERY_DETAIL_QUERY = """
             query FindGalleryDetail(${'$'}id: ID!) {
               findGallery(id: ${'$'}id) {
@@ -872,14 +910,49 @@ internal fun buildFindImagesVariables(
     sort: String,
     direction: StashSortDirection,
     imageFilter: StashImageFilterState = StashImageFilterState(),
+    folderDir: String? = null,
 ): Map<String, Any?> = mapOf(
     "perPage" to perPage,
     "page" to page.coerceAtLeast(1),
     "q" to query?.trim()?.takeIf { it.isNotBlank() },
     "sort" to sort,
     "direction" to direction.graphQlValue,
-    "imageFilter" to imageFilter.toGraphQlImageFilterOrNull(),
+    "imageFilter" to imageFilter.toGraphQlImageFilterOrNull(folderDir = folderDir),
 )
+
+internal fun buildFindImageFoldersVariables(
+    perPage: Int,
+    page: Int,
+    query: String?,
+    sort: String,
+    direction: StashSortDirection,
+    imageFilter: StashImageFilterState = StashImageFilterState(),
+): Map<String, Any?> = mapOf(
+    "perPage" to perPage,
+    "page" to page.coerceAtLeast(1),
+    "q" to query?.trim()?.takeIf { it.isNotBlank() },
+    "sort" to sort,
+    "direction" to direction.graphQlValue,
+    "folderFilter" to buildImageFolderFilter(imageFilter),
+)
+
+private fun buildImageFolderFilter(imageFilter: StashImageFilterState): Map<String, Any?> {
+    val filesFilter = mutableMapOf<String, Any?>(
+        "image_count" to mapOf("value" to 0, "modifier" to "GREATER_THAN"),
+    )
+    imageFilter.toGraphQlImageFilterOrNull()?.let { filesFilter["images_filter"] = it }
+    return mapOf("files_filter" to filesFilter)
+}
+
+internal fun imageFolderServerSortValue(sortOption: StashGallerySortOption): String = when (sortOption.serverValue) {
+    "random" -> "path"
+    else -> "path"
+}
+
+internal fun imageFolderServerDirection(
+    sortOption: StashGallerySortOption,
+    direction: StashSortDirection,
+): StashSortDirection = if (sortOption.serverValue == "path") direction else StashSortDirection.Asc
 
 internal fun buildFindGalleryDetailVariables(galleryId: String): Map<String, Any?> = mapOf(
     "id" to galleryId.trim(),
@@ -1071,7 +1144,7 @@ private fun StashGalleryFilterState.toGraphQlGalleryFilterOrNull(): Map<String, 
     parentFolders.toGalleryEntityCriterionOrNull()?.let { put("parent_folder", it) }
 }.takeIf { it.isNotEmpty() }
 
-private fun StashImageFilterState.toGraphQlImageFilterOrNull(): Map<String, Any?>? = buildMap {
+private fun StashImageFilterState.toGraphQlImageFilterOrNull(folderDir: String? = null): Map<String, Any?>? = buildMap {
     text.title.toTextCriterionOrNull()?.let { put("title", it) }
     text.details.toTextCriterionOrNull()?.let { put("details", it) }
     text.code.toTextCriterionOrNull()?.let { put("code", it) }
@@ -1109,6 +1182,17 @@ private fun StashImageFilterState.toGraphQlImageFilterOrNull(): Map<String, Any?
     studios.toGalleryEntityCriterionOrNull()?.let { put("studios", it) }
     performers.toGalleryEntityCriterionOrNull()?.let { put("performers", it) }
     galleries.toGalleryEntityCriterionOrNull()?.let { put("galleries", it) }
+    folderDir?.trim()?.takeIf { it.isNotBlank() }?.let { path ->
+        put(
+            "files_filter",
+            mapOf(
+                "dir" to mapOf(
+                    "value" to path,
+                    "modifier" to "EQUALS",
+                ),
+            ),
+        )
+    }
 }.takeIf { it.isNotEmpty() }
 
 private fun List<StashSelectedEntity>.toGalleryEntityCriterionOrNull(): Map<String, Any?>? {

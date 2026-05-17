@@ -4,6 +4,7 @@ import android.net.Uri
 import gomeng.dev.stashplayer.core.model.GalleryCardModel
 import gomeng.dev.stashplayer.core.model.GalleryChapterModel
 import gomeng.dev.stashplayer.core.model.GalleryFileInfoModel
+import gomeng.dev.stashplayer.core.model.GalleryImageFolderGroup
 import gomeng.dev.stashplayer.core.model.GalleryImageModel
 import gomeng.dev.stashplayer.core.model.GalleryLinkedGalleryModel
 import gomeng.dev.stashplayer.core.model.GalleryLinkedSceneModel
@@ -12,6 +13,7 @@ import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.SceneCardTagChip
 import gomeng.dev.stashplayer.core.model.StashGalleryDetailModel
 import gomeng.dev.stashplayer.core.model.StashGalleryPage
+import gomeng.dev.stashplayer.core.model.StashImageFolderPage
 import gomeng.dev.stashplayer.core.model.StashImagePage
 import gomeng.dev.stashplayer.core.model.StashSelectedEntity
 import gomeng.dev.stashplayer.core.model.StashSelectedTag
@@ -123,6 +125,16 @@ fun parseFindImagesPageResponse(json: String): StashImagePage {
     return StashImagePage(
         images = result?.images.orEmpty().map { it.toImage() },
         totalCount = result?.count ?: result?.images.orEmpty().size,
+    )
+}
+
+fun parseFindImageFoldersPageResponse(json: String): StashImageFolderPage {
+    val envelope = parseJson<FindFoldersEnvelope>(json)
+    envelope.throwIfErrors()
+    val result = envelope.data?.findFolders
+    return StashImageFolderPage(
+        folders = result?.folders.orEmpty().mapNotNull { it.toFolderGroupOrNull() },
+        totalCount = result?.count ?: result?.folders.orEmpty().size,
     )
 }
 
@@ -309,6 +321,17 @@ private data class FindImagesData(val findImages: ApiFindImages? = null)
 private data class ApiFindImages(
     val count: Int? = null,
     val images: List<ApiImage> = emptyList(),
+)
+
+private data class FindFoldersEnvelope(
+    val data: FindFoldersData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindFoldersData(val findFolders: ApiFindFolders? = null)
+private data class ApiFindFolders(
+    val count: Int? = null,
+    val folders: List<ApiFolder> = emptyList(),
 )
 
 private data class FindTagsEnvelope(
@@ -523,6 +546,25 @@ private data class ApiImagePaths(
     val preview: String? = null,
     val image: String? = null,
 )
+
+private data class ApiFolder(
+    val id: String? = null,
+    val path: String? = null,
+    val basename: String? = null,
+) {
+    fun toFolderGroupOrNull(): GalleryImageFolderGroup? {
+        val normalizedPath = path?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val title = basename?.trim()?.takeIf { it.isNotBlank() }
+            ?: normalizedPath.substringAfterLast('/').substringAfterLast('\\').takeIf { it.isNotBlank() }
+            ?: normalizedPath
+        return GalleryImageFolderGroup(
+            title = title,
+            path = normalizedPath,
+            items = emptyList(),
+            folderId = id?.trim()?.takeIf { it.isNotBlank() },
+        )
+    }
+}
 
 private data class ApiImageGallery(
     val id: String? = null,
