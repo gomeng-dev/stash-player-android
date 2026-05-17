@@ -128,6 +128,17 @@ fun parseFindImagesPageResponse(json: String): StashImagePage {
     )
 }
 
+fun parseFindImagesBatchResponse(json: String): Map<String, StashImagePage> {
+    val envelope = parseJson<FindImagesBatchEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data.orEmpty().mapValues { (_, result) ->
+        StashImagePage(
+            images = result?.images.orEmpty().map { it.toImage() },
+            totalCount = result?.count ?: result?.images.orEmpty().size,
+        )
+    }
+}
+
 fun parseFindImageFoldersPageResponse(json: String): StashImageFolderPage {
     val envelope = parseJson<FindFoldersEnvelope>(json)
     envelope.throwIfErrors()
@@ -318,6 +329,11 @@ private data class FindImagesEnvelope(
 ) : GraphQlEnvelope
 
 private data class FindImagesData(val findImages: ApiFindImages? = null)
+private data class FindImagesBatchEnvelope(
+    val data: Map<String, ApiFindImages?>? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
 private data class ApiFindImages(
     val count: Int? = null,
     val images: List<ApiImage> = emptyList(),
@@ -533,6 +549,9 @@ private data class ApiImage(
             oCounter = oCounter,
             fileName = visualFile?.displayFileNameOrNull(),
             filePath = visualFile?.displayPathOrNull(),
+            parentFolderId = visualFile?.parentFolder?.id?.trim()?.takeIf { it.isNotBlank() },
+            parentFolderPath = visualFile?.parentFolder?.path?.trim()?.takeIf { it.isNotBlank() },
+            parentFolderName = visualFile?.parentFolder?.basename?.trim()?.takeIf { it.isNotBlank() },
         )
     }
 
@@ -551,6 +570,7 @@ private data class ApiFolder(
     val id: String? = null,
     val path: String? = null,
     val basename: String? = null,
+    @Json(name = "sub_folders") val subFolders: List<ApiFolderRef> = emptyList(),
 ) {
     fun toFolderGroupOrNull(): GalleryImageFolderGroup? {
         val normalizedPath = path?.trim()?.takeIf { it.isNotBlank() } ?: return null
@@ -562,9 +582,14 @@ private data class ApiFolder(
             path = normalizedPath,
             items = emptyList(),
             folderId = id?.trim()?.takeIf { it.isNotBlank() },
+            hasSubFolders = subFolders.isNotEmpty(),
         )
     }
 }
+
+private data class ApiFolderRef(
+    val id: String? = null,
+)
 
 private data class ApiImageGallery(
     val id: String? = null,
@@ -583,6 +608,7 @@ private data class ApiImageVisualFile(
     val width: Int? = null,
     val height: Int? = null,
     val size: Long? = null,
+    @Json(name = "parent_folder") val parentFolder: ApiFolder? = null,
 ) {
     fun displayFileNameOrNull(): String? = basename?.toStashDisplayFileNameOrNull()
         ?: path?.toStashFileNameOrNull()

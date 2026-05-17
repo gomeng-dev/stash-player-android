@@ -99,7 +99,6 @@ import gomeng.dev.stashplayer.core.model.StashGalleryFilterState
 import gomeng.dev.stashplayer.core.model.StashGalleryGridPageState
 import gomeng.dev.stashplayer.core.model.StashImageFilterCategory
 import gomeng.dev.stashplayer.core.model.StashImageFilterState
-import gomeng.dev.stashplayer.core.model.StashImageFolderPage
 import gomeng.dev.stashplayer.core.model.StashImagePage
 import gomeng.dev.stashplayer.core.model.StashGalleryMediaControl
 import gomeng.dev.stashplayer.core.model.StashGallerySortOption
@@ -115,6 +114,7 @@ import gomeng.dev.stashplayer.core.model.galleryPhotoViewerChromePolicy
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerOCounterToolbarActions
 import gomeng.dev.stashplayer.core.model.groupGalleryImagesByParentFolder
 import gomeng.dev.stashplayer.core.model.imageServerSortValue
+import gomeng.dev.stashplayer.core.model.exactCountOverridesByFolderId
 import gomeng.dev.stashplayer.core.model.galleryMetadataLabels
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerPagePolicy
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerPagerSwipeEnabled
@@ -128,6 +128,7 @@ import gomeng.dev.stashplayer.core.model.optimisticGalleryImageOCounter
 import gomeng.dev.stashplayer.core.model.resolveGalleryPhotoLinkedGalleryNavigation
 import gomeng.dev.stashplayer.core.model.resolveGalleryPhotoSlideshowAction
 import gomeng.dev.stashplayer.core.model.resolveGalleryPhotoTapAction
+import gomeng.dev.stashplayer.core.model.resolveStashGalleryImageModeContentState
 import gomeng.dev.stashplayer.core.model.shouldAutoHideGalleryPhotoChrome
 import gomeng.dev.stashplayer.core.model.shouldRevealGalleryPhotoChromeAfterTap
 import gomeng.dev.stashplayer.core.model.shouldStartGalleryImageMutation
@@ -154,12 +155,11 @@ import gomeng.dev.stashplayer.core.model.stashGalleryImageGridLayoutPolicy
 import gomeng.dev.stashplayer.core.model.stashGalleryImageGridThumbnailHeightDp
 import gomeng.dev.stashplayer.core.model.stashImageSortOptions
 import gomeng.dev.stashplayer.core.model.switchStashGalleryBrowseMode
+import gomeng.dev.stashplayer.core.model.withExactFolderCounts
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.buildStashThumbnailRequestSpec
-import gomeng.dev.stashplayer.core.network.imageFolderServerDirection
-import gomeng.dev.stashplayer.core.network.imageFolderServerSortValue
 import gomeng.dev.stashplayer.core.network.redactStashCredentialText
 import gomeng.dev.stashplayer.core.player.ImageViewerTransportVisualPolicy
 import gomeng.dev.stashplayer.core.player.PlayerOverlayTransportUiState
@@ -364,10 +364,13 @@ internal class GalleryRouteStateViewModel : ViewModel() {
     var savedGalleryFilterName by mutableStateOf("")
     var savedImageFilterName by mutableStateOf("")
     var selectedImageFolderPath by mutableStateOf<String?>(null)
+    var selectedImageFolderId by mutableStateOf<String?>(null)
     var selectedImageFolderPageState by mutableStateOf(StashGalleryGlobalImageGridPageState.initial())
     var selectedImageFolderRequestSerial by mutableLongStateOf(0L)
     var selectedImageFolderReloadToken by mutableLongStateOf(0L)
     var selectedImageFolderProfileRevision by mutableStateOf<Int?>(null)
+    var imageFolderCountRequestSerial by mutableLongStateOf(0L)
+    var attemptedImageFolderCountIds by mutableStateOf(emptySet<String>())
     var gallerySelectionState by mutableStateOf(GallerySelectionState())
     var previousVisibleGalleryIds by mutableStateOf(emptyList<String>())
     var lastGalleryResetLoadKey by mutableStateOf<GalleryRouteResetLoadKey?>(null)
@@ -454,16 +457,20 @@ fun GalleryRoute(
     var savedGalleryFilterName by routeState::savedGalleryFilterName
     var savedImageFilterName by routeState::savedImageFilterName
     var selectedImageFolderPath by routeState::selectedImageFolderPath
+    var selectedImageFolderId by routeState::selectedImageFolderId
     var selectedImageFolderPageState by routeState::selectedImageFolderPageState
     var selectedImageFolderRequestSerial by routeState::selectedImageFolderRequestSerial
     var selectedImageFolderReloadToken by routeState::selectedImageFolderReloadToken
     var selectedImageFolderProfileRevision by routeState::selectedImageFolderProfileRevision
+    var imageFolderCountRequestSerial by routeState::imageFolderCountRequestSerial
+    var attemptedImageFolderCountIds by routeState::attemptedImageFolderCountIds
     var gallerySelectionState by routeState::gallerySelectionState
     var previousVisibleGalleryIds by routeState::previousVisibleGalleryIds
     val visibleGalleryIds = pageState.galleries.map { it.id }
 
     fun clearSelectedImageFolderDetail() {
         selectedImageFolderPath = null
+        selectedImageFolderId = null
         selectedImageFolderRequestSerial += 1L
         selectedImageFolderProfileRevision = null
         routeState.lastSelectedImageFolderResetLoadKey = null
@@ -482,6 +489,40 @@ fun GalleryRoute(
             displayMode = StashGalleryDisplayMode.Grid,
             pageSize = imagePageState.pageSize,
         )
+
+    fun imageFolderGroupsForState(
+        state: StashGalleryGlobalImageGridPageState,
+        countOverridesByFolderId: Map<String, Int> = state.folderGroups.exactCountOverridesByFolderId(),
+    ): List<GalleryImageFolderGroup> {
+        if (state.displayMode != StashGalleryDisplayMode.Folders) return emptyList()
+        return groupGalleryImagesByParentFolder(
+            images = state.images,
+            unfiledLabel = stashString(R.string.gallery_image_unfiled_folder_label),
+            sortDirection = if (state.sortOption.serverValue == "path" || state.sortOption.serverValue == "random") {
+                state.sortDirection
+            } else {
+                StashSortDirection.Asc
+            },
+            sortOption = state.sortOption,
+            randomSeed = state.randomSeed,
+            countOverridesByFolderId = countOverridesByFolderId,
+        )
+    }
+
+    fun StashGalleryGlobalImageGridPageState.withImageBasedFolderGroups(
+        countOverridesByFolderId: Map<String, Int> = folderGroups.exactCountOverridesByFolderId(),
+    ): StashGalleryGlobalImageGridPageState =
+        if (displayMode == StashGalleryDisplayMode.Folders) {
+            copy(folderGroups = imageFolderGroupsForState(this, countOverridesByFolderId))
+        } else {
+            copy(folderGroups = emptyList())
+        }
+
+    fun StashGalleryGlobalImageGridPageState.withExactImageFolderCounts(
+        countsByFolderId: Map<String, Int>,
+    ): StashGalleryGlobalImageGridPageState = copy(
+        folderGroups = folderGroups.withExactFolderCounts(countsByFolderId),
+    )
 
     fun openGallerySelectionRequest(galleryId: String, nextSelectionState: GallerySelectionState) {
         gallerySelectionState = nextSelectionState
@@ -694,6 +735,10 @@ fun GalleryRoute(
         val activeImageFilter = imagePageState.imageFilter
         val activeImageFilterIdentity = activeImageFilter.identityKey
         val activeRandomSeed = imagePageState.randomSeed
+        if (reset) {
+            attemptedImageFolderCountIds = emptySet()
+            imageFolderCountRequestSerial += 1L
+        }
         imagePageState = if (reset) {
             imagePageState.copy(
                 images = emptyList(),
@@ -709,26 +754,14 @@ fun GalleryRoute(
         }
         scope.launch {
             runCatching {
-                val client = StashGraphQlClient(activeProfile)
-                if (activeDisplayMode == StashGalleryDisplayMode.Folders) {
-                    client.findImageFoldersPage(
-                        perPage = activePageSize,
-                        page = page,
-                        query = activeQuery.ifBlank { null },
-                        sort = imageFolderServerSortValue(activeSortOption),
-                        direction = imageFolderServerDirection(activeSortOption, activeSortDirection),
-                        imageFilter = activeImageFilter,
-                    )
-                } else {
-                    client.findImagesPage(
-                        perPage = activePageSize,
-                        page = page,
-                        query = activeQuery.ifBlank { null },
-                        sort = activeSort,
-                        direction = activeDirection,
-                        imageFilter = activeImageFilter,
-                    )
-                }
+                StashGraphQlClient(activeProfile).findImagesPage(
+                    perPage = activePageSize,
+                    page = page,
+                    query = activeQuery.ifBlank { null },
+                    sort = activeSort,
+                    direction = activeDirection,
+                    imageFilter = activeImageFilter,
+                )
             }.onSuccess { result ->
                 if (
                     imageRequestSerial != requestId ||
@@ -745,19 +778,12 @@ fun GalleryRoute(
                 ) {
                     return@onSuccess
                 }
+                val countOverrides = imagePageState.folderGroups.exactCountOverridesByFolderId()
                 imagePageState = if (page == 1) {
-                    when (result) {
-                        is StashImageFolderPage -> imagePageState.withFirstFolderPage(result.folders, result.totalCount, activePageSize)
-                        is StashImagePage -> imagePageState.withFirstPage(result.images, result.totalCount, activePageSize)
-                        else -> imagePageState.failed(stashString(R.string.gallery_global_images_load_failed_message))
-                    }
+                    imagePageState.withFirstPage(result.images, result.totalCount, activePageSize)
                 } else {
-                    when (result) {
-                        is StashImageFolderPage -> imagePageState.withNextFolderPage(result.folders, result.totalCount, activePageSize)
-                        is StashImagePage -> imagePageState.withNextPage(result.images, result.totalCount, activePageSize)
-                        else -> imagePageState.failed(stashString(R.string.gallery_global_images_load_failed_message))
-                    }
-                }
+                    imagePageState.withNextPage(result.images, result.totalCount, activePageSize)
+                }.withImageBasedFolderGroups(countOverrides)
             }.onFailure { throwable ->
                 if (
                     imageRequestSerial != requestId ||
@@ -781,9 +807,59 @@ fun GalleryRoute(
         }
     }
 
+    fun loadVisibleImageFolderCounts(folders: List<GalleryImageFolderGroup>) {
+        val activeProfile = profile ?: return
+        if (browseMode != StashGalleryBrowseMode.Images || imagePageState.displayMode != StashGalleryDisplayMode.Folders) return
+        if (selectedImageFolderPath != null) return
+        val foldersNeedingCounts = folders.filter { folder ->
+            val folderId = folder.folderId?.trim()?.takeIf { it.isNotBlank() }
+            folderId != null && folder.imageCountOverride == null && folderId !in attemptedImageFolderCountIds
+        }
+        if (foldersNeedingCounts.isEmpty()) return
+        val requestedIds = foldersNeedingCounts.mapNotNull { it.folderId?.trim()?.takeIf(String::isNotBlank) }.toSet()
+        attemptedImageFolderCountIds = attemptedImageFolderCountIds + requestedIds
+        val requestId = imageFolderCountRequestSerial + 1L
+        imageFolderCountRequestSerial = requestId
+        val activeQuery = imagePageState.query
+        val activePageSize = imagePageState.pageSize
+        val activeSortOption = imagePageState.sortOption
+        val activeDisplayMode = imagePageState.displayMode
+        val activeSortDirection = imagePageState.sortDirection
+        val activeImageFilter = imagePageState.imageFilter
+        val activeImageFilterIdentity = activeImageFilter.identityKey
+        val activeRandomSeed = imagePageState.randomSeed
+        scope.launch {
+            runCatching {
+                StashGraphQlClient(activeProfile).findImageFolderCounts(
+                    folders = foldersNeedingCounts,
+                    query = activeQuery.ifBlank { null },
+                    imageFilter = activeImageFilter,
+                )
+            }.onSuccess { counts ->
+                if (
+                    imageFolderCountRequestSerial != requestId ||
+                    profile != activeProfile ||
+                    browseMode != StashGalleryBrowseMode.Images ||
+                    selectedImageFolderPath != null ||
+                    imagePageState.query != activeQuery ||
+                    imagePageState.pageSize != activePageSize ||
+                    imagePageState.sortOption != activeSortOption ||
+                    imagePageState.displayMode != activeDisplayMode ||
+                    imagePageState.sortDirection != activeSortDirection ||
+                    imagePageState.imageFilter.identityKey != activeImageFilterIdentity ||
+                    imagePageState.randomSeed != activeRandomSeed
+                ) {
+                    return@onSuccess
+                }
+                imagePageState = imagePageState.withExactImageFolderCounts(counts)
+            }
+        }
+    }
+
     fun loadSelectedImageFolderPage(page: Int, reset: Boolean = false) {
         val activeProfile = profile ?: return
         val activeFolderPath = selectedImageFolderPath?.trim()?.takeIf { it.isNotBlank() } ?: return
+        val activeFolderId = selectedImageFolderId?.trim()?.takeIf { it.isNotBlank() }
         if (!reset && selectedImageFolderPageState.isLoading) return
         val requestId = selectedImageFolderRequestSerial + 1L
         selectedImageFolderRequestSerial = requestId
@@ -818,6 +894,7 @@ fun GalleryRoute(
                     direction = activeDirection,
                     imageFilter = activeImageFilter,
                     folderDir = activeFolderPath,
+                    folderId = activeFolderId,
                 )
             }.onSuccess { result ->
                 if (
@@ -984,9 +1061,25 @@ fun GalleryRoute(
     LaunchedEffect(
         profile,
         browseMode,
+        imagePageState.displayMode,
+        imagePageState.query,
+        imagePageState.imageFilter.identityKey,
+        selectedImageFolderPath,
+        imagePageState.folderGroups.map { group -> group.id to group.imageCountOverride },
+        attemptedImageFolderCountIds,
+    ) {
+        if (profile == null || browseMode != StashGalleryBrowseMode.Images) return@LaunchedEffect
+        if (imagePageState.displayMode != StashGalleryDisplayMode.Folders || selectedImageFolderPath != null) return@LaunchedEffect
+        loadVisibleImageFolderCounts(imagePageState.folderGroups)
+    }
+
+    LaunchedEffect(
+        profile,
+        browseMode,
         galleryBrowseModeRestored,
         imageToolbarPreferencesRestored,
         selectedImageFolderPath,
+        selectedImageFolderId,
         selectedImageFolderPageState.query,
         selectedImageFolderPageState.sortOption,
         selectedImageFolderPageState.sortDirection,
@@ -1015,7 +1108,11 @@ fun GalleryRoute(
             sortOption = selectedImageFolderPageState.sortOption,
             sortDirection = selectedImageFolderPageState.sortDirection,
             displayMode = StashGalleryDisplayMode.Folders,
-            filterIdentity = selectedImageFolderPageState.imageFilter.identityKey to selectedImageFolderPath?.trim(),
+            filterIdentity = Triple(
+                selectedImageFolderPageState.imageFilter.identityKey,
+                selectedImageFolderPath?.trim(),
+                selectedImageFolderId?.trim(),
+            ),
             randomSeed = selectedImageFolderPageState.randomSeed,
             pageSize = selectedImageFolderPageState.pageSize,
             reloadToken = selectedImageFolderReloadToken,
@@ -1207,6 +1304,7 @@ fun GalleryRoute(
         onOpenImage = { index, images -> onOpenPhoto(index, images) },
         onSelectImageFolder = { folder ->
             selectedImageFolderPath = folder.path
+            selectedImageFolderId = folder.folderId
             selectedImageFolderPageState = selectedFolderInitialPageState()
             selectedImageFolderRequestSerial += 1L
             selectedImageFolderReloadToken = 0L
@@ -2552,16 +2650,17 @@ private fun GalleryContent(
             }
         }
 
+        val imageContentState = resolveStashGalleryImageModeContentState(
+            imagePageState = imagePageState,
+            selectedImageFolderPath = selectedImageFolderPath,
+            selectedImageFolderPageState = selectedImageFolderPageState,
+        )
         val visibleCount = if (browseMode == StashGalleryBrowseMode.Images) {
-            if (imagePageState.displayMode == StashGalleryDisplayMode.Folders && selectedImageFolderPath == null) {
-                imagePageState.folderGroups.size
-            } else {
-                images.size
-            }
+            imageContentState.visibleCount
         } else {
             galleries.size
         }
-        val totalCount = if (browseMode == StashGalleryBrowseMode.Images) imagePageState.totalCount else pageState.totalCount
+        val totalCount = if (browseMode == StashGalleryBrowseMode.Images) imageContentState.totalCount else pageState.totalCount
         if (visibleCount > 0 || totalCount != null) {
             Text(
                 text = stringResource(
@@ -2590,7 +2689,7 @@ private fun GalleryContent(
                 onPrimaryAction = onOpenSettings,
             )
 
-            browseMode == StashGalleryBrowseMode.Images && imagePageState.isLoading && visibleCount == 0 -> Box(
+            browseMode == StashGalleryBrowseMode.Images && imageContentState.statusPageState.isLoading && visibleCount == 0 -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
@@ -2607,10 +2706,10 @@ private fun GalleryContent(
                 }
             }
 
-            browseMode == StashGalleryBrowseMode.Images && imagePageState.error != null && visibleCount == 0 -> StashErrorState(
+            browseMode == StashGalleryBrowseMode.Images && imageContentState.statusPageState.error != null && visibleCount == 0 -> StashErrorState(
                 state = StashErrorStateModel(
                     title = stringResource(R.string.gallery_global_images_load_failed_title),
-                    message = imagePageState.error,
+                    message = imageContentState.statusPageState.error,
                     secondaryActionLabel = stringResource(R.string.auto_kr_0270),
                 ),
                 modifier = Modifier.padding(horizontal = horizontalPadding),

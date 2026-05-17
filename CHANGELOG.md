@@ -6,6 +6,22 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.11] - 2026-05-17
+
+### English
+
+- Reworked Gallery > Images > Folders to build folder cards from the currently loaded image results for faster first paint instead of blocking on a full server folder index.
+- Kept folder drill-in server-backed and exact, so opening a folder loads all direct images in that folder with a parent-folder filter.
+- Added lazy exact folder counts for visible folder cards using batched GraphQL image-count lookups, while keeping folder cards visible if count hydration fails.
+- Added parent-folder metadata parsing for images and regression coverage for image-backed folder grouping, exact folder detail, and batched count queries.
+
+### 한국어
+
+- Gallery > Images > Folders에서 전체 서버 폴더 인덱스를 기다리지 않고 현재 로드된 이미지 결과를 폴더별로 묶어 폴더 카드를 더 빠르게 표시하도록 개선했습니다.
+- 폴더 진입은 서버 기반 정확 조회를 유지해, 선택한 폴더의 직접 이미지를 parent-folder 필터로 전체 페이지네이션합니다.
+- 표시된 폴더 카드의 정확한 이미지 개수는 batched GraphQL 조회로 나중에 채우고, 개수 조회가 실패해도 폴더 카드는 그대로 유지합니다.
+- 이미지 parent-folder 메타데이터 파싱과 이미지 기반 폴더 그룹핑, 정확한 폴더 상세, batched count 조회 회귀 테스트를 추가했습니다.
+
 ## [1.6.9] - 2026-05-17
 
 ### English
