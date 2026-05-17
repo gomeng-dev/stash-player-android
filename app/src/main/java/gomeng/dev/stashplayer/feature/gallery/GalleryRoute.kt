@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -2165,6 +2166,18 @@ private fun GalleryContent(
     val toolbarPolicy = stashGalleryMediaToolbarPolicy(browseMode)
     val galleryGridState = rememberLazyGridState()
     val imageGridState = rememberLazyGridState()
+    val imageFolderGridState = rememberLazyGridState()
+    val imageFolderDetailGridStates = remember { mutableStateMapOf<String, LazyGridState>() }
+    val imageFolderDetailGridState = remember(selectedImageFolderPath) {
+        selectedImageFolderPath
+            ?.let { folderPath -> imageFolderDetailGridStates.getOrPut(folderPath) { LazyGridState() } }
+            ?: LazyGridState()
+    }
+    val activeImageGridState = when {
+        imagePageState.displayMode == StashGalleryDisplayMode.Folders && selectedImageFolderPath != null -> imageFolderDetailGridState
+        imagePageState.displayMode == StashGalleryDisplayMode.Folders -> imageFolderGridState
+        else -> imageGridState
+    }
 
     Column(
         modifier = modifier
@@ -2387,7 +2400,7 @@ private fun GalleryContent(
 
             browseMode == StashGalleryBrowseMode.Images -> LazyVerticalGrid(
                 columns = GridCells.Fixed(imageColumns),
-                state = imageGridState,
+                state = activeImageGridState,
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(
                     start = horizontalPadding,

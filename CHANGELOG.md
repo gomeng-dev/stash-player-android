@@ -6,6 +6,18 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.8] - 2026-05-17
+
+### English
+
+- Fixed Gallery > Images folder mode so the normal image grid, folder list, and selected folder detail each keep separate scroll positions when opening and dismissing the photo viewer.
+- Added regression coverage for the distinct folder-mode scroll states so folder cards and folder images cannot overwrite each other's viewport anchors.
+
+### 한국어
+
+- Gallery > Images의 폴더별 보기에서 일반 이미지 그리드, 폴더 목록, 선택한 폴더 내부가 각각 별도 스크롤 위치를 유지하도록 수정해 사진 뷰어를 열었다가 닫아도 스크롤이 초기화되지 않게 했습니다.
+- 폴더 카드와 폴더 내부 이미지가 서로 다른 viewport anchor를 덮어쓰지 않도록 별도 스크롤 상태 회귀 테스트를 추가했습니다.
+
 ## [1.6.7] - 2026-05-17
 
 ### English
