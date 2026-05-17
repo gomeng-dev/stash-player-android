@@ -552,6 +552,16 @@ object LanguageSettingCopy {
         LanguageOption(StashAppLanguage.SYSTEM, labelFor(StashAppLanguage.SYSTEM), descriptionFor(StashAppLanguage.SYSTEM)),
         LanguageOption(StashAppLanguage.KOREAN, labelFor(StashAppLanguage.KOREAN), descriptionFor(StashAppLanguage.KOREAN)),
         LanguageOption(StashAppLanguage.ENGLISH, labelFor(StashAppLanguage.ENGLISH), descriptionFor(StashAppLanguage.ENGLISH)),
+        LanguageOption(
+            StashAppLanguage.CHINESE_SIMPLIFIED,
+            labelFor(StashAppLanguage.CHINESE_SIMPLIFIED),
+            descriptionFor(StashAppLanguage.CHINESE_SIMPLIFIED),
+        ),
+        LanguageOption(
+            StashAppLanguage.CHINESE_TRADITIONAL,
+            labelFor(StashAppLanguage.CHINESE_TRADITIONAL),
+            descriptionFor(StashAppLanguage.CHINESE_TRADITIONAL),
+        ),
     )
 
     @StringRes
@@ -559,6 +569,8 @@ object LanguageSettingCopy {
         StashAppLanguage.SYSTEM -> R.string.settings_language_system_label
         StashAppLanguage.KOREAN -> R.string.settings_language_korean_label
         StashAppLanguage.ENGLISH -> R.string.settings_language_english_label
+        StashAppLanguage.CHINESE_SIMPLIFIED -> R.string.settings_language_chinese_simplified_label
+        StashAppLanguage.CHINESE_TRADITIONAL -> R.string.settings_language_chinese_traditional_label
     }
 
     @StringRes
@@ -566,6 +578,8 @@ object LanguageSettingCopy {
         StashAppLanguage.SYSTEM -> R.string.settings_language_system_description
         StashAppLanguage.KOREAN -> R.string.settings_language_korean_description
         StashAppLanguage.ENGLISH -> R.string.settings_language_english_description
+        StashAppLanguage.CHINESE_SIMPLIFIED -> R.string.settings_language_chinese_simplified_description
+        StashAppLanguage.CHINESE_TRADITIONAL -> R.string.settings_language_chinese_traditional_description
     }
 }
 
@@ -580,6 +594,16 @@ object HybridRecommendationSettingCopy {
     @StringRes val statusDescription = R.string.settings_recommendation_status_description
     @StringRes val fallbackDescription = R.string.settings_recommendation_fallback_description
     @StringRes val testButton = R.string.settings_recommendation_test_button
+}
+
+object ServerLibrarySettingsCopy {
+    @StringRes val sectionTitle = R.string.settings_server_library_section_title
+    @StringRes val createGalleriesTitle = R.string.settings_server_create_galleries_from_folders_title
+    @StringRes val createGalleriesDescription = R.string.settings_server_create_galleries_from_folders_description
+    @StringRes val scanButton = R.string.settings_server_metadata_scan_button
+    @StringRes val scanConfirmTitle = R.string.settings_server_metadata_scan_confirm_title
+    @StringRes val scanConfirm = R.string.settings_server_metadata_scan_confirm_button
+    @StringRes val scanCancel = R.string.settings_server_metadata_scan_cancel_button
 }
 
 @Composable
@@ -703,6 +727,13 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var recommendationStatusIsSuccess by remember { mutableStateOf(true) }
     var statusText by remember { mutableStateOf<String?>(null) }
     var errorText by remember { mutableStateOf<String?>(null) }
+    var createGalleriesFromFolders by remember { mutableStateOf<Boolean?>(null) }
+    var isServerLibraryLoading by remember { mutableStateOf(false) }
+    var isServerLibrarySaving by remember { mutableStateOf(false) }
+    var isMetadataScanRunning by remember { mutableStateOf(false) }
+    var serverLibraryStatusText by remember { mutableStateOf<String?>(null) }
+    var serverLibraryErrorText by remember { mutableStateOf<String?>(null) }
+    var showMetadataScanConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(savedProfile) {
         savedProfile?.let {
@@ -718,6 +749,67 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 StashServerAuthMode.SessionCookie -> SettingsServerAuthModeOption.Password
             }
         }
+        createGalleriesFromFolders = null
+        serverLibraryStatusText = null
+        serverLibraryErrorText = null
+        val activeProfile = savedProfile
+        if (activeProfile?.isConfigured() != true) {
+            isServerLibraryLoading = false
+            return@LaunchedEffect
+        }
+        isServerLibraryLoading = true
+        runCatching { StashGraphQlClient(activeProfile).findServerLibrarySettings() }
+            .onSuccess { settings ->
+                createGalleriesFromFolders = settings.createGalleriesFromFolders
+            }
+            .onFailure {
+                StashDebugLogBuffer.record("Settings", "Stash server library settings load failed", it)
+                serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_library_load_failed)
+            }
+        isServerLibraryLoading = false
+    }
+
+    if (showMetadataScanConfirm) {
+        AlertDialog(
+            onDismissRequest = { showMetadataScanConfirm = false },
+            title = { Text(stringResource(ServerLibrarySettingsCopy.scanConfirmTitle)) },
+            text = { Text(stringResource(R.string.settings_server_metadata_scan_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showMetadataScanConfirm = false
+                        coroutineScope.launch {
+                            val activeProfile = savedProfile
+                            if (activeProfile == null) {
+                                serverLibraryStatusText = null
+                                serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
+                                return@launch
+                            }
+                            isMetadataScanRunning = true
+                            serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_starting)
+                            serverLibraryErrorText = null
+                            runCatching { StashGraphQlClient(activeProfile).scanMetadata() }
+                                .onSuccess { jobId ->
+                                    serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_started, jobId)
+                                }
+                                .onFailure {
+                                    StashDebugLogBuffer.record("Settings", "Stash metadata scan start failed", it)
+                                    serverLibraryStatusText = null
+                                    serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_metadata_scan_failed)
+                                }
+                            isMetadataScanRunning = false
+                        }
+                    },
+                ) {
+                    Text(stringResource(ServerLibrarySettingsCopy.scanConfirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showMetadataScanConfirm = false }) {
+                    Text(stringResource(ServerLibrarySettingsCopy.scanCancel))
+                }
+            },
+        )
     }
 
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -928,6 +1020,41 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         }
     }
 
+    ServerLibrarySettingsCard(
+        serverConfigured = savedProfile?.isConfigured() == true,
+        createGalleriesFromFolders = createGalleriesFromFolders,
+        loading = isServerLibraryLoading,
+        saving = isServerLibrarySaving,
+        scanning = isMetadataScanRunning,
+        statusText = serverLibraryStatusText,
+        errorText = serverLibraryErrorText,
+        onToggleCreateGalleries = { enabled ->
+            coroutineScope.launch {
+                val activeProfile = savedProfile
+                if (activeProfile == null) {
+                    serverLibraryStatusText = null
+                    serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
+                    return@launch
+                }
+                isServerLibrarySaving = true
+                serverLibraryStatusText = context.getString(R.string.settings_server_library_update_saving)
+                serverLibraryErrorText = null
+                runCatching { StashGraphQlClient(activeProfile).setCreateGalleriesFromFolders(enabled) }
+                    .onSuccess { settings ->
+                        createGalleriesFromFolders = settings.createGalleriesFromFolders
+                        serverLibraryStatusText = context.getString(R.string.settings_server_library_update_saved)
+                    }
+                    .onFailure {
+                        StashDebugLogBuffer.record("Settings", "Stash server library settings update failed", it)
+                        serverLibraryStatusText = null
+                        serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_library_update_failed)
+                    }
+                isServerLibrarySaving = false
+            }
+        },
+        onRequestScan = { showMetadataScanConfirm = true },
+    )
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -967,6 +1094,74 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(HybridRecommendationSettingCopy.testButton)) }
+        }
+    }
+}
+
+@Composable
+private fun ServerLibrarySettingsCard(
+    serverConfigured: Boolean,
+    createGalleriesFromFolders: Boolean?,
+    loading: Boolean,
+    saving: Boolean,
+    scanning: Boolean,
+    statusText: String?,
+    errorText: String?,
+    onToggleCreateGalleries: (Boolean) -> Unit,
+    onRequestScan: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(stringResource(ServerLibrarySettingsCopy.sectionTitle), style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(stringResource(ServerLibrarySettingsCopy.createGalleriesTitle), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(ServerLibrarySettingsCopy.createGalleriesDescription),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = createGalleriesFromFolders == true,
+                    enabled = serverConfigured && createGalleriesFromFolders != null && !loading && !saving,
+                    onCheckedChange = onToggleCreateGalleries,
+                )
+            }
+            Button(
+                onClick = onRequestScan,
+                enabled = serverConfigured && !loading && !saving && !scanning,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(ServerLibrarySettingsCopy.scanButton))
+            }
+            Text(
+                text = when {
+                    loading -> stringResource(R.string.settings_server_library_loading)
+                    scanning -> stringResource(R.string.settings_server_metadata_scan_starting)
+                    !serverConfigured -> stringResource(R.string.settings_recommendation_no_stash_server)
+                    else -> statusText ?: stringResource(R.string.settings_server_metadata_scan_description)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            errorText?.let { text ->
+                Text(
+                    text,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
         }
     }
 }

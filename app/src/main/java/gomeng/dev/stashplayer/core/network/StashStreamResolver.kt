@@ -130,6 +130,28 @@ class StashGraphQlClient(
         return parseVersionResponse(json)
     }
 
+    suspend fun findServerLibrarySettings(): StashServerLibrarySettings {
+        return parseServerLibrarySettingsResponse(execute(SERVER_LIBRARY_SETTINGS_QUERY))
+    }
+
+    suspend fun setCreateGalleriesFromFolders(enabled: Boolean): StashServerLibrarySettings {
+        return parseConfigureGeneralResponse(
+            execute(
+                CONFIGURE_GENERAL_MUTATION,
+                buildConfigureCreateGalleriesFromFoldersVariables(enabled),
+            ),
+        )
+    }
+
+    suspend fun scanMetadata(): String {
+        return parseMetadataScanResponse(
+            execute(
+                METADATA_SCAN_MUTATION,
+                buildMetadataScanVariables(),
+            ),
+        )
+    }
+
     suspend fun findScenes(
         perPage: Int = 25,
         page: Int = 1,
@@ -533,6 +555,30 @@ class StashGraphQlClient(
             query Version { version { version } }
         """
 
+        val SERVER_LIBRARY_SETTINGS_QUERY = """
+            query ServerLibrarySettings {
+              configuration {
+                general {
+                  createGalleriesFromFolders
+                }
+              }
+            }
+        """
+
+        val CONFIGURE_GENERAL_MUTATION = """
+            mutation ConfigureGeneral(${'$'}input: ConfigGeneralInput!) {
+              configureGeneral(input: ${'$'}input) {
+                createGalleriesFromFolders
+              }
+            }
+        """
+
+        val METADATA_SCAN_MUTATION = """
+            mutation MetadataScan(${'$'}input: ScanMetadataInput!) {
+              metadataScan(input: ${'$'}input)
+            }
+        """
+
         val FIND_SCENES_QUERY = """
             query FindScenes(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!, ${'$'}sceneFilter: SceneFilterType) {
               findScenes(filter: { per_page: ${'$'}perPage, page: ${'$'}page, sort: ${'$'}sort, direction: ${'$'}direction, q: ${'$'}q }, scene_filter: ${'$'}sceneFilter) {
@@ -816,6 +862,14 @@ internal fun buildSceneTagUpdateVariables(
             .filter { it.isNotBlank() }
             .distinct(),
     ),
+)
+
+internal fun buildConfigureCreateGalleriesFromFoldersVariables(enabled: Boolean): Map<String, Any?> = mapOf(
+    "input" to mapOf("createGalleriesFromFolders" to enabled),
+)
+
+internal fun buildMetadataScanVariables(): Map<String, Any?> = mapOf(
+    "input" to emptyMap<String, Any?>(),
 )
 
 internal fun buildFindScenesVariables(
@@ -1158,6 +1212,12 @@ internal fun findGalleriesQueryForTesting(): String = StashGraphQlClient.FIND_GA
 internal fun findGalleryImagesQueryForTesting(): String = StashGraphQlClient.FIND_GALLERY_IMAGES_QUERY
 
 internal fun findGalleryDetailQueryForTesting(): String = StashGraphQlClient.FIND_GALLERY_DETAIL_QUERY
+
+internal fun serverLibrarySettingsQueryForTesting(): String = StashGraphQlClient.SERVER_LIBRARY_SETTINGS_QUERY
+
+internal fun configureGeneralMutationForTesting(): String = StashGraphQlClient.CONFIGURE_GENERAL_MUTATION
+
+internal fun metadataScanMutationForTesting(): String = StashGraphQlClient.METADATA_SCAN_MUTATION
 
 internal fun imageUpdateMutationForTesting(): String = StashGraphQlClient.IMAGE_UPDATE_MUTATION
 

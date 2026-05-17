@@ -86,6 +86,10 @@ data class StashSceneCardPage(
     val totalCount: Int,
 )
 
+data class StashServerLibrarySettings(
+    val createGalleriesFromFolders: Boolean,
+)
+
 fun parseFindScenesResponse(json: String): List<SceneCardModel> {
     return parseFindScenesPageResponse(json).scenes
 }
@@ -164,6 +168,27 @@ fun parseVersionResponse(json: String): String {
     val envelope = parseJson<VersionEnvelope>(json)
     envelope.throwIfErrors()
     return envelope.data?.version?.version ?: "unknown"
+}
+
+fun parseServerLibrarySettingsResponse(json: String): StashServerLibrarySettings {
+    val envelope = parseJson<ConfigurationEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.configuration?.general?.toServerLibrarySettings()
+        ?: error("Stash configuration returned no general settings")
+}
+
+fun parseConfigureGeneralResponse(json: String): StashServerLibrarySettings {
+    val envelope = parseJson<ConfigureGeneralEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.configureGeneral?.toServerLibrarySettings()
+        ?: error("Stash configureGeneral returned no general settings")
+}
+
+fun parseMetadataScanResponse(json: String): String {
+    val envelope = parseJson<MetadataScanEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.metadataScan?.trim()?.takeIf { it.isNotBlank() }
+        ?: error("Stash metadataScan returned no job ID")
 }
 
 fun buildStashStream(profile: StashServerProfile, scene: StashScene): StashStream {
@@ -263,6 +288,36 @@ private data class VersionEnvelope(
 
 private data class VersionData(val version: VersionPayload? = null)
 private data class VersionPayload(val version: String? = null)
+
+private data class ConfigurationEnvelope(
+    val data: ConfigurationData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class ConfigurationData(val configuration: ApiConfiguration? = null)
+private data class ApiConfiguration(val general: ApiConfigGeneral? = null)
+
+private data class ConfigureGeneralEnvelope(
+    val data: ConfigureGeneralData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class ConfigureGeneralData(val configureGeneral: ApiConfigGeneral? = null)
+
+private data class MetadataScanEnvelope(
+    val data: MetadataScanData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class MetadataScanData(val metadataScan: String? = null)
+
+private data class ApiConfigGeneral(
+    val createGalleriesFromFolders: Boolean? = null,
+) {
+    fun toServerLibrarySettings(): StashServerLibrarySettings = StashServerLibrarySettings(
+        createGalleriesFromFolders = createGalleriesFromFolders == true,
+    )
+}
 
 private data class FindSceneEnvelope(
     val data: FindSceneData? = null,

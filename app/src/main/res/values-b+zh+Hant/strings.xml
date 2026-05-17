@@ -1,0 +1,1054 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Stash Player</string>
+    <string name="navigation_home_label">首頁</string>
+    <string name="navigation_browse_label">瀏覽</string>
+    <string name="navigation_explore_label">探索</string>
+    <string name="navigation_shorts_label">短影音</string>
+    <string name="navigation_gallery_label">圖庫</string>
+    <string name="home_recommended_section_title">推薦影片</string>
+    <string name="navigation_queue_label">佇列</string>
+    <string name="navigation_settings_label">設定</string>
+    <string name="explore_screen_subtitle">從一個畫面搜尋、過濾、排序並查看您的 Stash 影片。</string>
+    <string name="explore_requires_server_message">連接 Stash 伺服器以載入探索結果。</string>
+    <string name="explore_empty_prompt_title">開始探索</string>
+    <string name="explore_empty_prompt_message">輸入搜尋字詞或調整篩選器以在此顯示 Stash 影片結果。</string>
+    <string name="explore_load_failed_title">無法載入探索結果</string>
+    <string name="explore_no_results_title">沒有探索結果</string>
+    <string name="explore_no_results_message">嘗試其他搜尋字詞或刪除一些篩選器。</string>
+    <string name="explore_home_section_title">探索和短影音</string>
+    <string name="explore_home_section_subtitle">在您的媒體庫中尋找影片或準備短格式播放。</string>
+    <string name="explore_home_entry_subtitle">從一個螢幕瀏覽所有影片和搜尋結果。</string>
+    <string name="shorts_home_entry_subtitle">以垂直隨機來源的形式播放一分鐘以內的影片。</string>
+    <string name="shorts_placeholder_title">短影音</string>
+    <string name="shorts_placeholder_message">以垂直隨機來源的形式播放一分鐘以內的影片。</string>
+    <string name="gallery_screen_title">圖庫</string>
+    <string name="gallery_browse_mode_galleries">圖庫</string>
+    <string name="gallery_browse_mode_images">圖片</string>
+    <string name="gallery_global_images_load_failed_title">無法載入圖片</string>
+    <string name="gallery_global_images_load_failed_message">重試</string>
+    <string name="gallery_global_images_no_results_title">沒有圖片</string>
+    <string name="gallery_global_images_no_results_message">檢查搜尋/掃描。</string>
+    <string name="gallery_global_images_loading_label">載入中</string>
+    <string name="gallery_global_images_result_count_label">%1$d / %2$d</string>
+    <string name="gallery_global_images_load_more_action">更多</string>
+    <string name="gallery_global_images_end_of_results_label">結束</string>
+    <string name="gallery_requires_server_title">需要 Stash 連線</string>
+    <string name="gallery_requires_server_message">在載入圖庫之前連接到 Stash 伺服器。</string>
+    <string name="gallery_load_failed_title">無法加載圖庫</string>
+    <string name="gallery_load_failed_message">請稍後重試。</string>
+    <string name="gallery_no_results_title">沒有圖庫可展示</string>
+    <string name="gallery_no_results_message">檢查您的Stash庫是否有圖庫。</string>
+    <string name="gallery_image_count_label">%1$d照片</string>
+    <string name="gallery_rating_label">評分%1$s</string>
+    <string name="gallery_tag_count_label">%1$d 的標籤</string>
+    <string name="gallery_performer_count_label">%1$d表演者</string>
+    <string name="gallery_scene_count_label">%1$d場景</string>
+    <string name="gallery_card_thumbnail_content_description">%1$s圖庫封面</string>
+    <string name="gallery_result_count_label">顯示 %2$d 的 %1$d</string>
+    <string name="gallery_metadata_separator">·</string>
+    <string name="gallery_filter_chip_title">標題%1$s</string>
+    <string name="gallery_filter_chip_details">詳情過濾</string>
+    <string name="gallery_filter_chip_code">代碼 %1$s</string>
+    <string name="gallery_filter_chip_photographer">攝影師%1$s</string>
+    <string name="gallery_filter_chip_path">路徑篩選器</string>
+    <string name="gallery_filter_chip_url">URL篩選器</string>
+    <string name="gallery_filter_chip_checksum">校驗和篩選器</string>
+    <string name="gallery_filter_chip_created_at">創建了%1$s</string>
+    <string name="gallery_filter_chip_updated_at">更新了%1$s</string>
+    <string name="gallery_filter_chip_boolean_flags">狀態篩選器</string>
+    <string name="gallery_filter_chip_counts">計數篩選器</string>
+    <string name="gallery_filter_chip_average_resolution">分辨率%1$s</string>
+    <string name="gallery_filter_chip_tags">標籤 %1$s</string>
+    <string name="gallery_filter_chip_studios">工作室%1$s</string>
+    <string name="gallery_filter_chip_performers">表演者%1$s</string>
+    <string name="gallery_filter_chip_scenes">場景%1$s</string>
+    <string name="gallery_filter_chip_parent_folders">父資料夾%1$d</string>
+    <string name="image_filter_orientation_landscape">風景</string>
+    <string name="image_filter_orientation_portrait">肖像</string>
+    <string name="image_filter_orientation_square">廣場</string>
+    <string name="image_filter_chip_o_counter">O 數 %1$s</string>
+    <string name="image_filter_chip_orientation">方向%1$s</string>
+    <string name="image_filter_chip_file_type">文件類型 %1$s</string>
+    <string name="image_filter_chip_performer_age">表演者年齡%1$s</string>
+    <string name="image_filter_chip_performer_favorite">表演者最喜歡的濾鏡</string>
+    <string name="image_filter_chip_performer_tags">表演者標籤%1$s</string>
+    <string name="image_filter_chip_galleries">圖庫%1$s</string>
+    <string name="image_filter_count_min_label">%1$d+</string>
+    <string name="image_filter_count_max_label">最多%1$d</string>
+    <string name="gallery_filter_button_tags">標籤 %1$d</string>
+    <string name="gallery_filter_button_studios">工作室%1$d</string>
+    <string name="gallery_filter_button_performers">表演者%1$d</string>
+    <string name="gallery_filter_button_scenes">關聯場景%1$d</string>
+    <string name="gallery_filter_button_parent_folders">父資料夾%1$d</string>
+    <string name="gallery_filter_button_performer_tags">表演者標籤 %1$d</string>
+    <string name="gallery_filter_button_galleries">圖庫%1$d</string>
+    <string name="gallery_filter_sheet_tags_title">圖庫標籤篩選器</string>
+    <string name="gallery_filter_sheet_studios_title">圖庫工作室篩選器</string>
+    <string name="gallery_filter_sheet_performers_title">圖庫表演者篩選器</string>
+    <string name="gallery_filter_sheet_scenes_title">圖庫連結場景篩選器</string>
+    <string name="gallery_filter_sheet_parent_folders_title">圖庫父資料夾篩選器</string>
+    <string name="gallery_filter_sheet_performer_tags_title">影像執行者標籤篩選器</string>
+    <string name="gallery_filter_sheet_galleries_title">圖片庫篩選器</string>
+    <string name="gallery_filter_sheet_tags_search">搜尋標籤</string>
+    <string name="gallery_filter_sheet_studios_search">搜尋工作室</string>
+    <string name="gallery_filter_sheet_performers_search">搜尋表演者</string>
+    <string name="gallery_filter_sheet_scenes_search">搜尋場景</string>
+    <string name="gallery_filter_sheet_parent_folders_search">輸入父資料夾路徑</string>
+    <string name="gallery_filter_sheet_performer_tags_search">搜尋表演者標籤</string>
+    <string name="gallery_filter_sheet_galleries_search">搜尋圖庫</string>
+    <string name="gallery_load_more_action">載入更多圖庫</string>
+    <string name="gallery_end_of_results_label">所有圖庫均已加載。</string>
+    <string name="gallery_detail_title_fallback">圖庫%1$s</string>
+    <string name="gallery_detail_subtitle">點擊照片可繼續進入全螢幕照片檢視器。</string>
+    <string name="gallery_detail_result_count_label">顯示 %1$d 或 %2$d 照片</string>
+    <string name="gallery_detail_load_failed_title">無法載入照片</string>
+    <string name="gallery_detail_load_failed_message">請稍後重試。</string>
+    <string name="gallery_detail_no_results_title">沒有照片可顯示</string>
+    <string name="gallery_detail_no_results_message">檢查該圖庫是否有連結的照片。</string>
+    <string name="gallery_detail_load_more_action">載入更多照片</string>
+    <string name="gallery_detail_end_of_results_label">所有照片均已載入。</string>
+    <string name="gallery_detail_metadata_title">圖庫訊息</string>
+    <string name="gallery_detail_linked_scenes_title">關聯場景</string>
+    <string name="gallery_detail_files_title">文件訊息</string>
+    <string name="gallery_detail_chapters_title">章節</string>
+    <string name="gallery_file_count_label">%1$d 文件</string>
+    <string name="gallery_code_label">代碼 %1$s</string>
+    <string name="gallery_photographer_label">攝影師%1$s</string>
+    <string name="gallery_file_name_label">文件%1$s</string>
+    <string name="gallery_file_size_label">尺寸%1$s</string>
+    <string name="gallery_detail_chapter_row">%1$s · 照片 %2$d</string>
+    <string name="gallery_photo_open_content_description">打開%1$s照片</string>
+    <string name="gallery_image_card_performers_label">表演者：%1$s</string>
+    <string name="gallery_image_card_linked_galleries_label">連結圖庫：%1$s</string>
+    <string name="gallery_image_o_counter_label">%1$d</string>
+    <string name="gallery_image_organized_label">有組織</string>
+    <string name="gallery_image_unorganized_label">無組織的</string>
+    <string name="gallery_photo_viewer_close_action">關閉</string>
+    <string name="gallery_photo_viewer_previous_action">上一頁</string>
+    <string name="gallery_photo_viewer_next_action">下一步</string>
+    <string name="gallery_photo_viewer_close_content_description">關閉全螢幕照片檢視器</string>
+    <string name="gallery_photo_viewer_previous_content_description">移至上一張照片</string>
+    <string name="gallery_photo_viewer_next_content_description">移至下一張照片</string>
+    <string name="gallery_photo_viewer_empty_message">沒有照片可顯示。</string>
+    <string name="gallery_photo_viewer_missing_image_message">照片 URL 不可用。</string>
+    <string name="gallery_photo_viewer_appreciation_mode_on">模式開啟</string>
+    <string name="gallery_photo_viewer_appreciation_mode_off">鑑賞</string>
+    <string name="gallery_photo_viewer_appreciation_mode_content_description">開啟或關閉欣賞模式</string>
+    <string name="gallery_photo_viewer_tap_navigation_on">點擊導航</string>
+    <string name="gallery_photo_viewer_tap_navigation_off">點擊導航關閉</string>
+    <string name="gallery_photo_viewer_tap_navigation_content_description">在欣賞模式下開啟或關閉左右點擊照片導航</string>
+    <string name="gallery_photo_viewer_first_image_feedback">第一張圖片</string>
+    <string name="gallery_photo_viewer_last_image_feedback">最後一張圖片</string>
+    <string name="gallery_photo_viewer_slideshow_play">幻燈片</string>
+    <string name="gallery_photo_viewer_slideshow_pause">暫停</string>
+    <string name="gallery_photo_viewer_slideshow_content_description">播放或暫停照片幻燈片</string>
+    <string name="gallery_photo_viewer_fit_mode">適合</string>
+    <string name="gallery_photo_viewer_original_mode">原創</string>
+    <string name="gallery_photo_viewer_display_mode_content_description">切換照片適合/原始尺寸</string>
+    <string name="gallery_photo_viewer_details_content_description">顯示當前照片詳細信息</string>
+    <string name="gallery_photo_viewer_more_tools_content_description">顯示更多照片工具</string>
+    <string name="gallery_photo_viewer_details_title">圖片詳情</string>
+    <string name="gallery_photo_viewer_details_dismiss">關閉</string>
+    <string name="gallery_photo_detail_title_label">標題</string>
+    <string name="gallery_photo_detail_id_label">身分證號</string>
+    <string name="gallery_photo_detail_dimensions_label">尺寸</string>
+    <string name="gallery_photo_detail_file_size_label">文件大小</string>
+    <string name="gallery_photo_detail_file_name_label">檔案名稱</string>
+    <string name="gallery_photo_detail_path_label">路徑</string>
+    <string name="gallery_photo_detail_date_label">日期</string>
+    <string name="gallery_photo_detail_studio_label">工作室</string>
+    <string name="gallery_photo_detail_rating_label">評級</string>
+    <string name="gallery_photo_detail_o_counter_label">O計數</string>
+    <string name="gallery_photo_detail_organized_label">組織機構</string>
+    <string name="gallery_photo_detail_photographer_label">攝影師</string>
+    <string name="gallery_photo_detail_performers_label">表演者</string>
+    <string name="gallery_photo_detail_tags_label">標籤</string>
+    <string name="gallery_photo_detail_linked_galleries_label">連結圖庫</string>
+    <string name="gallery_photo_detail_details_label">詳情</string>
+    <string name="gallery_photo_viewer_o_decrement">-O</string>
+    <string name="gallery_photo_viewer_o_increment">+O</string>
+    <string name="gallery_photo_viewer_o_reset">復位O</string>
+    <string name="gallery_photo_viewer_o_decrement_content_description">減少目前照片 O 計數</string>
+    <string name="gallery_photo_viewer_o_increment_content_description">增加目前照片 O 計數</string>
+    <string name="gallery_photo_viewer_o_reset_content_description">重置目前照片 O 計數</string>
+    <string name="gallery_photo_viewer_open_linked_gallery">圖庫：%1$s</string>
+    <string name="gallery_photo_viewer_open_linked_gallery_content_description">開啟連結圖庫%1$s</string>
+    <string name="gallery_photo_viewer_rating_save_failed">無法保存照片評級</string>
+    <string name="gallery_photo_viewer_server_missing">如果沒有 Stash 連線則無法儲存。</string>
+    <string name="shorts_requires_server_title">需要 Stash 連線</string>
+    <string name="shorts_requires_server_message">在載入 Shorts 之前連接 Stash 伺服器。</string>
+    <string name="shorts_loading_title">加載短影音</string>
+    <string name="shorts_loading_message">按隨機順序準備一分鐘以內的影片。</string>
+    <string name="shorts_empty_title">沒有可顯示的短影音</string>
+    <string name="shorts_empty_message">檢查您的 Stash 庫中是否有短於一分鐘的影片。</string>
+    <string name="shorts_error_title">無法載入 Shorts 內容</string>
+    <string name="shorts_error_message">稍後再試一次。</string>
+    <string name="shorts_stream_error_title">無法播放該短片</string>
+    <string name="shorts_retry_action">重試</string>
+    <string name="shorts_skip_action">下一步</string>
+    <string name="shorts_play_content_description">播放短片</string>
+    <string name="shorts_pause_content_description">短暫暫停</string>
+    <string name="shorts_like_content_description">喜歡短篇</string>
+    <string name="shorts_liked_content_description">脫掉短影音就像</string>
+    <string name="shorts_not_interested_content_description">不感興趣</string>
+    <string name="shorts_not_interested_selected_content_description">刪除 不感興趣</string>
+    <string name="shorts_delete_content_description">刪除 Shorts 視頻</string>
+    <string name="shorts_delete_failed_message">無法刪除該 Shorts 影片。</string>
+    <string name="shorts_seek_content_description">短影音播放位置</string>
+    <string name="shorts_seek_preview">%1$s / %2$s</string>
+    <string name="shorts_speed_hold_feedback">1.5倍速</string>
+    <string name="queue_explore_entry_label">前往探索</string>
+    <string name="queue_library_subtitle">根據新增至佇列中的項目或「探索」卡中的「稍後觀看」建立的本機播放清單。</string>
+    <string name="scene_card_queue_remove_content_description">從佇列中刪除</string>
+    <string name="scene_card_queue_removed_feedback">從隊列中刪除。</string>
+    <string name="settings_title">設定</string>
+    <string name="settings_subtitle">調整伺服器、安全性、播放、外觀、介面、支援和開發人員選項。</string>
+    <string name="settings_back_button">返回</string>
+    <string name="settings_row_open_indicator">&gt;</string>
+    <string name="settings_category_server_title">伺服器</string>
+    <string name="settings_category_server_description">管理Stash伺服器連線和Hybrid推薦狀態。</string>
+    <string name="settings_category_security_title">安全性</string>
+    <string name="settings_category_security_description">透過裝置身份驗證保護應用程式存取。</string>
+    <string name="settings_category_playback_title">回放</string>
+    <string name="settings_category_playback_description">選擇預設的串流模式以及播放結束時會發生什麼。</string>
+    <string name="settings_category_appearance_title">外觀</string>
+    <string name="settings_category_appearance_description">調整應用程式主題的顯示方式。</string>
+    <string name="settings_category_interface_title">介面</string>
+    <string name="settings_category_interface_description">管理應用程式語言和顯示行為。</string>
+    <string name="settings_category_support_title">支援</string>
+    <string name="settings_category_support_description">檢查應用程式版本並發出報告連結。</string>
+    <string name="settings_category_development_title">發展</string>
+    <string name="settings_category_development_description">開啟或關閉播放器調試顯示。</string>
+    <string name="settings_default_stream_preference_title">預設流模式</string>
+    <string name="settings_default_stream_preference_description">選擇播放器首先使用的串流優先權。</string>
+    <string name="settings_stream_preference_auto_label">汽車</string>
+    <string name="settings_stream_preference_auto_description">讓應用程式從 Stash 傳回的候選流中選擇一個穩定的流。</string>
+    <string name="settings_stream_preference_direct_label">Direct第一</string>
+    <string name="settings_stream_preference_direct_description">先試試原來的Direct流。</string>
+    <string name="settings_stream_preference_hls_label">HLS第一</string>
+    <string name="settings_stream_preference_hls_description">首先嘗試HLS 流。</string>
+    <string name="settings_playback_end_action_title">播放結束時</string>
+    <string name="settings_playback_end_action_description">選擇影片播放結束後播放器執行的操作。</string>
+    <string name="settings_playback_end_action_stop_label">停止</string>
+    <string name="settings_playback_end_action_stop_description">將目前影片保留為結束狀態。</string>
+    <string name="settings_playback_end_action_repeat_label">重複</string>
+    <string name="settings_playback_end_action_repeat_description">從頭開始重播目前影片。</string>
+    <string name="settings_playback_end_action_play_next_label">播放下一個視頻</string>
+    <string name="settings_playback_end_action_play_next_description">繼續播放隊列或建議的影片。</string>
+    <string name="settings_background_playback_title">後台播放</string>
+    <string name="settings_background_playback_description">當應用程式移至背景時，請保持目前影片播放。</string>
+    <string name="settings_pip_title">啟用PiP</string>
+    <string name="settings_pip_label">使用PiP</string>
+    <string name="settings_pip_description">回家時進入一個小播放器，播放器中顯示一個PiP按鈕。</string>
+    <string name="settings_shorts_max_duration_title">短影音最大長度</string>
+    <string name="settings_shorts_max_duration_description">選擇“短片”標籤中顯示的最長影片。</string>
+    <string name="settings_shorts_max_duration_value_label">%1$d秒</string>
+    <string name="settings_shorts_recommendation_reset_title">重置 Shorts 推薦</string>
+    <string name="settings_shorts_recommendation_reset_description">僅刪除 Shorts 學習內容，例如「讚」、「不感興趣」、「完成」和「跳過」。</string>
+    <string name="settings_shorts_recommendation_reset_button">重置學習歷史</string>
+    <string name="settings_shorts_recommendation_reset_confirm_title">重置 Shorts 推薦學習？</string>
+    <string name="settings_shorts_recommendation_reset_confirm_message">保留收藏夾、稍後觀看、佇列、播放歷史記錄和伺服器設定。</string>
+    <string name="settings_shorts_recommendation_reset_confirm_button">重置</string>
+    <string name="settings_shorts_recommendation_reset_cancel_button">取消</string>
+    <string name="settings_shorts_recommendation_reset_success">Shorts 推薦學習已重置。</string>
+    <string name="settings_playback_orientation_title">自動定向控制</string>
+    <string name="settings_playback_orientation_description">選擇玩家是否跟隨裝置旋轉感應器。</string>
+    <string name="settings_playback_orientation_off_label">關閉</string>
+    <string name="settings_playback_orientation_off_description">保持應用程式當前的方向行為。</string>
+    <string name="settings_playback_orientation_sensor_label">跟隨感測器</string>
+    <string name="settings_playback_orientation_sensor_description">當播放器打開時，請跟隨裝置旋轉感應器。</string>
+    <string name="settings_subtitle_language_title">字幕語言</string>
+    <string name="settings_subtitle_language_description">選擇串流中包含的字幕軌道的首選語言。</string>
+    <string name="settings_subtitle_language_auto_label">從作業系統語言自動</string>
+    <string name="settings_subtitle_language_auto_description">首選與裝置語言相符的字幕。</string>
+    <string name="settings_subtitle_language_off_label">關閉</string>
+    <string name="settings_subtitle_language_off_description">不顯示字幕軌道。</string>
+    <string name="settings_subtitle_language_korean_label">한국어</string>
+    <string name="settings_subtitle_language_korean_description">한국어 자막을 우선 선택합니다。</string>
+    <string name="settings_subtitle_language_english_label">英語</string>
+    <string name="settings_subtitle_language_english_description">更喜歡英文字幕。</string>
+    <string name="settings_subtitle_language_japanese_label">日本語</string>
+    <string name="settings_subtitle_language_japanese_description">日本語字幕を優先します。</string>
+    <string name="settings_subtitle_language_chinese_label">中文</string>
+    <string name="settings_subtitle_language_chinese_description">優先選擇中文字幕。</string>
+    <string name="settings_subtitle_language_russian_label">俄羅斯</string>
+    <string name="settings_subtitle_language_russian_description">Предпочитать русские субтитры。</string>
+    <string name="settings_subtitle_language_spanish_label">西班牙語</string>
+    <string name="settings_subtitle_language_spanish_description">更喜歡西班牙語字幕。</string>
+    <string name="settings_subtitle_font_scale_title">字幕字體大小</string>
+    <string name="settings_subtitle_font_scale_description">調整用於播放器字幕的文字大小。</string>
+    <string name="settings_subtitle_font_scale_reset_button">重設為預設值</string>
+    <string name="settings_subtitle_font_scale_value_format">%1$d%%</string>
+    <string name="settings_subtitle_position_title">字幕位置</string>
+    <string name="settings_subtitle_position_description">選擇字幕垂直顯示的位置。</string>
+    <string name="settings_subtitle_position_bottom_label">底部</string>
+    <string name="settings_subtitle_position_bottom_description">在播放器底部附近顯示字幕。</string>
+    <string name="settings_subtitle_position_middle_label">中</string>
+    <string name="settings_subtitle_position_middle_description">在播放器中間顯示字幕。</string>
+    <string name="settings_subtitle_position_top_label">頂部</string>
+    <string name="settings_subtitle_position_top_description">在播放器頂部附近顯示字幕。</string>
+    <string name="settings_subtitle_text_alignment_title">字幕文字對齊方式</string>
+    <string name="settings_subtitle_text_alignment_description">選擇多行字幕文字的對齊方式。</string>
+    <string name="settings_subtitle_text_alignment_start_label">開始</string>
+    <string name="settings_subtitle_text_alignment_start_description">將字幕文字與起始側對齊。</string>
+    <string name="settings_subtitle_text_alignment_center_label">中心</string>
+    <string name="settings_subtitle_text_alignment_center_description">居中字幕文字。</string>
+    <string name="settings_subtitle_text_alignment_end_label">結束</string>
+    <string name="settings_subtitle_text_alignment_end_description">將字幕文字與末尾對齊。</string>
+    <string name="player_pip_button_content_description">輸入PiP</string>
+    <string name="player_pip_action_play">玩</string>
+    <string name="player_pip_action_pause">暫停</string>
+    <string name="player_pip_action_previous">上一個視頻</string>
+    <string name="player_pip_action_next">下一個視頻</string>
+    <string name="player_orientation_toggle_sensor_content_description">打開感測器方向</string>
+    <string name="player_orientation_toggle_off_content_description">關閉感測器方向</string>
+    <string name="player_orientation_hud_off">感測器方向關閉</string>
+    <string name="player_orientation_hud_sensor">感測器方向打開</string>
+    <string name="player_more_options_content_description">為玩家開啟更多選項</string>
+    <string name="settings_theme_section_title">主題</string>
+    <string name="settings_theme_mode_title">主題模式</string>
+    <string name="settings_theme_mode_description">以深色模式、淺色模式或裝置系統主題顯示應用程式。觀看影片時預設為黑暗。</string>
+    <string name="settings_theme_mode_system_label">系統設定</string>
+    <string name="settings_theme_mode_system_description">根據裝置設定在深色和淺色之間切換。</string>
+    <string name="settings_theme_mode_dark_label">黑暗</string>
+    <string name="settings_theme_mode_dark_description">保持較暗的介面，專注於影片觀看。</string>
+    <string name="settings_theme_mode_light_label">光</string>
+    <string name="settings_theme_mode_light_description">為明亮的環境保持更輕的介面。</string>
+    <string name="settings_accent_color_title">預設顏色</string>
+    <string name="settings_accent_color_description">選擇用於主按鈕、選定狀態和反白顯示的應用程式重音。</string>
+    <string name="settings_accent_color_purple_label">紫色</string>
+    <string name="settings_accent_color_purple_description">使用目前預設的Stash Player顏色。</string>
+    <string name="settings_accent_color_blue_label">藍色</string>
+    <string name="settings_accent_color_blue_description">使用平靜、清晰的藍色調。</string>
+    <string name="settings_accent_color_cyan_label">青色</string>
+    <string name="settings_accent_color_cyan_description">使用適合媒體狀態表面的青色強調色。</string>
+    <string name="settings_accent_color_amber_label">琥珀色</string>
+    <string name="settings_accent_color_amber_description">使用更溫暖的琥珀色。</string>
+    <string name="settings_accent_color_rose_label">玫瑰</string>
+    <string name="settings_accent_color_rose_description">對選定的州使用更強烈的玫瑰色。</string>
+    <string name="settings_ui_scale_title">使用者介面比例</string>
+    <string name="settings_ui_scale_description">調整應用程式文字、間距和按鈕大小。玩家手勢區域保持不變。</string>
+    <string name="settings_ui_scale_reset_button">重設為預設值</string>
+    <string name="settings_ui_scale_value_format">%1$s (%2$d%%)</string>
+    <string name="settings_ui_scale_compact_label">緊湊型</string>
+    <string name="settings_ui_scale_compact_description">在每個螢幕上顯示更多項目。</string>
+    <string name="settings_ui_scale_default_label">預設</string>
+    <string name="settings_ui_scale_default_description">使用目前的應用程式大小。</string>
+    <string name="settings_ui_scale_comfortable_label">舒適</string>
+    <string name="settings_ui_scale_comfortable_description">使文字和觸控目標稍大一些。</string>
+    <string name="settings_ui_scale_large_label">大號</string>
+    <string name="settings_ui_scale_large_description">使應用程式 UI 更大以便於閱讀。</string>
+    <string name="settings_language_section_title">語言</string>
+    <string name="settings_language_title">應用語言</string>
+    <string name="settings_language_description">選擇應用程式的顯示語言。新畫面應從字串資源鍵建置。</string>
+    <string name="settings_language_system_label">系統預設</string>
+    <string name="settings_language_system_description">遵循設備語言設定。</string>
+    <string name="settings_language_korean_label">韓語</string>
+    <string name="settings_language_korean_description">使用韓語作為應用程式顯示語言。</string>
+    <string name="settings_language_english_label">英語</string>
+    <string name="settings_language_english_description">使用英語作為應用程式顯示語言。</string>
+    <string name="settings_language_chinese_simplified_label">简体中文</string>
+    <string name="settings_language_chinese_simplified_description">使用簡體中文作為應用程式顯示語言。</string>
+    <string name="settings_language_chinese_traditional_label">繁體中文</string>
+    <string name="settings_language_chinese_traditional_description">使用繁體中文作為應用程式顯示語言。</string>
+    <string name="settings_player_section_title">玩家</string>
+    <string name="settings_player_debug_overlay_title">偵錯資訊疊加</string>
+    <string name="settings_player_debug_overlay_description">在播放器中顯示串流類型、MIME 和 .m3u8 狀態。 URL、API 金鑰和標頭永遠不會顯示。</string>
+    <string name="settings_debug_log_title">應用程式調試日誌查看器</string>
+    <string name="settings_debug_log_description">在此應用程式會話期間將最近的日誌保留在記憶體中。敏感的身份驗證值被Stash。</string>
+    <string name="settings_debug_log_empty">尚未記錄任何日誌。</string>
+    <string name="settings_debug_log_copy_button">複製</string>
+    <string name="settings_debug_log_clear_button">清除</string>
+    <string name="settings_debug_log_clipboard_label">Stash Player調試日誌</string>
+    <string name="settings_debug_log_copy_complete">將日誌複製到剪貼簿。</string>
+    <string name="settings_debug_log_clear_complete">已清除日誌。</string>
+    <string name="settings_support_version_title">版本</string>
+    <string name="settings_support_version_description">目前版本：%1$s。點選開啟GitHub發布。</string>
+    <string name="settings_support_unknown_version">未知</string>
+    <string name="settings_support_update_check_title">檢查更新</string>
+    <string name="settings_support_update_check_description">檢查 GitHub 版本以取得最新的應用程式版本。當有新版本可用時，該應用程式會通知您。</string>
+    <string name="settings_support_update_check_button">檢查最新版本</string>
+    <string name="settings_support_update_checking">正在檢查...</string>
+    <string name="settings_support_update_available">%1$s 版本可用。目前版本：%2$s。</string>
+    <string name="settings_support_update_available_snackbar">%1$s版本可用</string>
+    <string name="settings_support_update_current">您正在使用最新版本。 (%1$s)</string>
+    <string name="settings_support_update_failed">無法檢查更新。稍後再試一次。</string>
+    <string name="settings_support_update_download_button">下載更新</string>
+    <string name="settings_support_update_downloading">正在下載更新...</string>
+    <string name="settings_support_update_download_failed">無法下載更新 APK。從發布頁面重試。</string>
+    <string name="settings_support_update_install_started">下載完成。打開安裝程式。</string>
+    <string name="settings_support_update_install_permission_required">允許安裝此應用程式的 APK，然後重試。</string>
+    <string name="settings_support_update_changelog_action">變化</string>
+    <string name="settings_support_update_changelog_title">版本%1$s變更</string>
+    <string name="settings_support_update_changelog_empty">此版本不包括可見的更改清單文字。</string>
+    <string name="settings_support_update_changelog_close">關閉</string>
+    <string name="settings_support_update_open_action">發布</string>
+    <string name="settings_support_issue_title">報告問題</string>
+    <string name="settings_support_issue_description">在 GitHub 問題中回報問題或查看進度。</string>
+    <string name="settings_support_link_open_failed">無法開啟連結。</string>
+    <string name="settings_recommendation_section_title">Hybrid推薦</string>
+    <string name="settings_recommendation_status_description">使用Stash Hybrid Recommendations Engine外掛程式作為主要推薦來源。</string>
+    <string name="settings_recommendation_fallback_description">如果外掛程式遺失或失敗，則使用 Stash 預設建議。</string>
+    <string name="settings_recommendation_no_stash_server">先保存你的Stash伺服器</string>
+    <string name="settings_optional_api_key_label">API Key（可選）</string>
+    <string name="settings_recommendation_testing">正在檢查Hybrid推薦狀態...</string>
+    <string name="settings_recommendation_test_button">查看Hybrid推薦狀態</string>
+    <string name="settings_stash_server_section_title">Stash伺服器</string>
+    <string name="settings_server_library_section_title">Stash庫</string>
+    <string name="settings_server_create_galleries_from_folders_title">從包含圖像的資料夾建立圖庫</string>
+    <string name="settings_server_create_galleries_from_folders_description">在 Stash 掃描期間將影像資料夾分組到圖庫中的伺服器設定。</string>
+    <string name="settings_server_library_loading">正在載入伺服器庫設定...</string>
+    <string name="settings_server_library_load_failed">無法載入伺服器庫設定。</string>
+    <string name="settings_server_library_update_saving">正在儲存伺服器庫設定...</string>
+    <string name="settings_server_library_update_saved">已儲存伺服器庫設定。</string>
+    <string name="settings_server_library_update_failed">無法保存伺服器庫設定。</string>
+    <string name="settings_server_metadata_scan_button">開始庫掃描</string>
+    <string name="settings_server_metadata_scan_description">掃描在 Stash 伺服器上運行，對於大型庫可能需要一段時間。</string>
+    <string name="settings_server_metadata_scan_confirm_title">開始庫掃描？</string>
+    <string name="settings_server_metadata_scan_confirm_message">Stash 伺服器將開始元資料掃描。影像資料夾庫設定將應用於下次掃描。</string>
+    <string name="settings_server_metadata_scan_confirm_button">開始掃描</string>
+    <string name="settings_server_metadata_scan_cancel_button">取消</string>
+    <string name="settings_server_metadata_scan_starting">請求媒體庫掃描...</string>
+    <string name="settings_server_metadata_scan_started">媒體庫掃描開始。職位編號：%1$s</string>
+    <string name="settings_server_metadata_scan_failed">無法啟動庫掃描。</string>
+    <string name="settings_server_name_label">伺服器名稱</string>
+    <string name="settings_server_url_label">伺服器URL</string>
+    <string name="settings_api_key_label">API Key</string>
+    <string name="settings_save_in_progress">正在儲存...</string>
+    <string name="settings_save_complete">已儲存</string>
+    <string name="settings_save_button">儲存</string>
+    <string name="settings_connection_testing">正在檢查連接...</string>
+    <string name="settings_connection_success">已連線：Stash %1$s</string>
+    <string name="settings_connection_failed">連線失敗</string>
+    <string name="settings_connection_test_button">測試連接</string>
+    <string name="settings_server_clear_complete">伺服器設定已清除</string>
+    <string name="settings_server_clear_button">清除伺服器設定</string>
+    <string name="settings_open_onboarding_button">再次打開入職</string>
+    <string name="settings_insecure_auth_blocked">此身份驗證方法不能與目前位址一起使用。檢查它是否是本地網路位址。</string>
+    <string name="settings_biometric_app_lock_title">設備認證應用鎖</string>
+    <string name="settings_biometric_app_lock_description">使用指紋、臉部、PIN、圖案或裝置憑證重新啟動應用程式。</string>
+    <string name="settings_biometric_app_lock_enabled_status">應用程式鎖已開啟。</string>
+    <string name="settings_biometric_app_lock_disabled_status">應用程式鎖定已關閉。</string>
+    <string name="settings_recent_apps_privacy_title">Stash最近的應用程式預覽</string>
+    <string name="settings_recent_apps_privacy_description">從 Android 最近的應用程式中Stash Stash Player 預覽。在Android 12及以下版本上，截圖和螢幕錄製也可能被阻止。</string>
+    <string name="setup_auth_mode_link_only_label">僅透過連結連接</string>
+    <string name="setup_auth_mode_link_only_description">連接到停用身份驗證的 Stash 伺服器，無需 API Key 或 ID/密碼。</string>
+    <string name="setup_auth_mode_api_key_label">聯絡API Key</string>
+    <string name="setup_auth_mode_api_key_description">儲存 API Key 並將其用於 Stash API 和流程請求。</string>
+    <string name="setup_auth_mode_password_label">使用ID/密碼登入</string>
+    <string name="setup_auth_mode_password_description">從不儲存密碼。成功後，僅儲存會話 cookie。</string>
+    <string name="setup_username_label">身分證號</string>
+    <string name="setup_password_label">密碼</string>
+    <string name="setup_username_password_required">輸入 ID 和密碼。</string>
+    <string name="setup_biometric_offer_title">使用設備鎖保護應用程式</string>
+    <string name="setup_biometric_offer_description">在開啟已儲存的 Stash 連接之前，需要裝置指紋、臉部、PIN、圖案或裝置憑證。</string>
+    <string name="setup_biometric_offer_enable_button">打開</string>
+    <string name="setup_biometric_offer_later_button">後來</string>
+    <string name="biometric_prompt_title">解鎖Stash Player</string>
+    <string name="biometric_prompt_failed">身份驗證不符。</string>
+    <string name="biometric_lock_title">應用程式已鎖定</string>
+    <string name="biometric_lock_description">在開啟已儲存的 Stash 連線之前需要進行裝置身份驗證。</string>
+    <string name="biometric_unlock_button">解鎖</string>
+    <string name="biometric_availability_available">設備認證可用。</string>
+    <string name="biometric_availability_none_enrolled">未註冊生物識別資訊。在裝置設定中新增指紋或臉部。</string>
+    <string name="biometric_availability_no_device_credential">未設定設備鎖定。首先設定 PIN、圖案或螢幕鎖定。</string>
+    <string name="biometric_availability_no_hardware">該設備不支援生物識別硬體。</string>
+    <string name="biometric_availability_hardware_unavailable">生物辨識硬體暫時無法使用。</string>
+    <string name="biometric_availability_security_update_required">在使用生物辨識身份驗證之前，需要進行裝置安全性更新。</string>
+    <string name="biometric_availability_unsupported">該設備不支援請求的身份驗證方法。</string>
+    <string name="biometric_availability_unknown">無法檢查設備身份驗證狀態。</string>
+    <string name="auto_kr_0001" formatted="false">首頁</string>
+    <string name="auto_kr_0002" formatted="false">瀏覽</string>
+    <string name="auto_kr_0003" formatted="false">搜尋</string>
+    <string name="auto_kr_0004" formatted="false">播放隊列</string>
+    <string name="auto_kr_0005" formatted="false">設定</string>
+    <string name="auto_kr_0006" formatted="false">加載標籤失敗</string>
+    <string name="auto_kr_0007" formatted="false">已經在隊列中了。</string>
+    <string name="auto_kr_0008" formatted="false">新增到播放隊列。</string>
+    <string name="auto_kr_0009" formatted="false">已新增</string>
+    <string name="auto_kr_0010" formatted="false">添加到隊列</string>
+    <string name="auto_kr_0011" formatted="false">播放隊列已清除。</string>
+    <string name="auto_kr_0012" formatted="false">撤銷</string>
+    <string name="auto_kr_0013" formatted="false">已從稍後觀看中刪除。</string>
+    <string name="auto_kr_0014" formatted="false">從「稍後觀看」新增到播放佇列。</string>
+    <string name="auto_kr_0015">將 %1$s 稍後觀看項目新增至播放佇列。</string>
+    <string name="auto_kr_0016" formatted="false">稍後觀看</string>
+    <string name="auto_kr_0017" formatted="false">我的篩選器</string>
+    <string name="auto_kr_0019">%1$s 已刪除</string>
+    <string name="auto_kr_0020">%1$s失敗</string>
+    <string name="auto_kr_0021" formatted="false">沒有刪除的項目</string>
+    <string name="auto_kr_0022" formatted="false">類似標籤</string>
+    <string name="auto_kr_0023" formatted="false">相似的檔名</string>
+    <string name="auto_kr_0024" formatted="false">視覺相似度</string>
+    <string name="auto_kr_0025" formatted="false">持續時間相似</string>
+    <string name="auto_kr_0026" formatted="false">解析度匹配</string>
+    <string name="auto_kr_0027" formatted="false">味覺訊號</string>
+    <string name="auto_kr_0028" formatted="false">類似視頻</string>
+    <string name="auto_kr_0029" formatted="false">該影片還沒有推薦緩存</string>
+    <string name="auto_kr_0030" formatted="false">無法加載推薦。請再試一次。</string>
+    <string name="auto_kr_0031" formatted="false">再試一次</string>
+    <string name="auto_kr_0032" formatted="false">重新加載類似視頻</string>
+    <string name="auto_kr_0033" formatted="false">Stash預設推薦</string>
+    <string name="auto_kr_0034" formatted="false">Stash Hybrid 推薦</string>
+    <string name="auto_kr_0035" formatted="false">無標題視頻</string>
+    <string name="auto_kr_0036">打開類似影片：%1$s</string>
+    <string name="auto_kr_0037">播放類似影片：%1$s</string>
+    <string name="auto_kr_0038">新增到播放佇列：%1$s</string>
+    <string name="auto_kr_0039" formatted="false">玩</string>
+    <string name="auto_kr_0040" formatted="false">佇列</string>
+    <string name="auto_kr_0041">已新增至播放佇列：%1$s</string>
+    <string name="auto_kr_0042" formatted="false">高配</string>
+    <string name="auto_kr_0043" formatted="false">中等匹配</string>
+    <string name="auto_kr_0044" formatted="false">低匹配</string>
+    <string name="auto_kr_0045">%1$s 小時</string>
+    <string name="auto_kr_0046">%1$s 小時 %2$s 分鐘</string>
+    <string name="auto_kr_0047">%1$s 分鐘</string>
+    <string name="auto_kr_0048" formatted="false">最近更新</string>
+    <string name="auto_kr_0049" formatted="false">最近發布</string>
+    <string name="auto_kr_0050" formatted="false">最近新增</string>
+    <string name="auto_kr_0051" formatted="false">玩得最多的</string>
+    <string name="auto_kr_0052" formatted="false">長影片</string>
+    <string name="auto_kr_0053" formatted="false">短</string>
+    <string name="auto_kr_0054" formatted="false">中等</string>
+    <string name="auto_kr_0055" formatted="false">長</string>
+    <string name="auto_kr_0056" formatted="false">很長</string>
+    <string name="auto_kr_0057" formatted="false">看過</string>
+    <string name="auto_kr_0058" formatted="false">無人看管</string>
+    <string name="auto_kr_0059" formatted="false">履歷</string>
+    <string name="auto_kr_0060">%1$s後</string>
+    <string name="auto_kr_0061">%1$s前</string>
+    <string name="auto_kr_0062">%1$s-%2$s 分鐘</string>
+    <string name="auto_kr_0063">%1$s 分鐘或以上</string>
+    <string name="auto_kr_0064">%1$s 分鐘或更少</string>
+    <string name="auto_kr_0065" formatted="false">儲存</string>
+    <string name="auto_kr_0066" formatted="false">標籤</string>
+    <string name="auto_kr_0067" formatted="false">日期和持續時間</string>
+    <string name="auto_kr_0068" formatted="false">評級和品質</string>
+    <string name="auto_kr_0069" formatted="false">本地</string>
+    <string name="auto_kr_0070" formatted="false">所有篩選器</string>
+    <string name="auto_kr_0071" formatted="false">排序</string>
+    <string name="auto_kr_0072" formatted="false">Direction</string>
+    <string name="auto_kr_0073" formatted="false">隨機</string>
+    <string name="auto_kr_0074" formatted="false">顯示</string>
+    <string name="auto_kr_0075" formatted="false">行動</string>
+    <string name="auto_kr_0076" formatted="false">查看</string>
+    <string name="auto_kr_0077" formatted="false">清除選擇</string>
+    <string name="auto_kr_0078" formatted="false">選擇計數</string>
+    <string name="auto_kr_0079" formatted="false">選擇全部</string>
+    <string name="auto_kr_0080" formatted="false">播放選擇</string>
+    <string name="auto_kr_0081" formatted="false">刪除</string>
+    <string name="auto_kr_0082" formatted="false">更多</string>
+    <string name="auto_kr_0083" formatted="false">網格</string>
+    <string name="auto_kr_0084" formatted="false">清單</string>
+    <string name="auto_kr_0085" formatted="false">日期、持續時間、狀態</string>
+    <string name="auto_kr_0086" formatted="false">本地和保存的篩選器</string>
+    <string name="auto_kr_0087" formatted="false">隨機和洗牌</string>
+    <string name="auto_kr_0088" formatted="false">播放第一個視頻</string>
+    <string name="auto_kr_0089" formatted="false">反轉選擇</string>
+    <string name="auto_kr_0090" formatted="false">已儲存/最近的篩選器</string>
+    <string name="auto_kr_0091" formatted="false">編輯篩選器</string>
+    <string name="auto_kr_0092" formatted="false">篩選器</string>
+    <string name="auto_kr_0093" formatted="false">隨機開啟</string>
+    <string name="auto_kr_0094" formatted="false">隨機關閉</string>
+    <string name="auto_kr_0095" formatted="false">再次隨機播放</string>
+    <string name="auto_kr_0096">已儲存%1$s</string>
+    <string name="auto_kr_0097">開啟已儲存/最近的篩選器、%1$s已儲存的篩選器</string>
+    <string name="auto_kr_0098" formatted="false">開啟已儲存/最近的篩選器</string>
+    <string name="auto_kr_0099">篩選 %1$s</string>
+    <string name="auto_kr_0100">打開所有篩選器，%1$s活躍篩選器</string>
+    <string name="auto_kr_0101" formatted="false">打開所有篩選器</string>
+    <string name="auto_kr_0102">直接打開%1$s過濾，%2$s活躍</string>
+    <string name="auto_kr_0103">直接打開%1$s篩選器</string>
+    <string name="auto_kr_0104">%1$s 快速選擇：%2$s</string>
+    <string name="auto_kr_0105">%1$s 即時切換：%2$s</string>
+    <string name="auto_kr_0106" formatted="false">再次隨機排序</string>
+    <string name="auto_kr_0107" formatted="false">開啟隨機排序</string>
+    <string name="auto_kr_0108" formatted="false">查看模式</string>
+    <string name="auto_kr_0109">%1$s 總計 · %2$s 顯示</string>
+    <string name="auto_kr_0110">顯示%1$s</string>
+    <string name="auto_kr_0111" formatted="false">影片選擇操作工具列</string>
+    <string name="auto_kr_0112" formatted="false">影片發現工具列</string>
+    <string name="auto_kr_0113">已選擇%1$s</string>
+    <string name="auto_kr_0114">已選擇%1$s視頻</string>
+    <string name="auto_kr_0115" formatted="false">最近發布的視頻</string>
+    <string name="auto_kr_0116" formatted="false">最近新增的視頻</string>
+    <string name="auto_kr_0117" formatted="false">最近更新的視頻</string>
+    <string name="auto_kr_0118">編輯%1$s篩選器</string>
+    <string name="auto_kr_0119">清除 %1$s 篩選器</string>
+    <string name="auto_kr_0120" formatted="false">已加入至收藏夾</string>
+    <string name="auto_kr_0121" formatted="false">已從收藏夾中刪除</string>
+    <string name="auto_kr_0122" formatted="false">720p 或更高</string>
+    <string name="auto_kr_0123" formatted="false">1080p 或更高</string>
+    <string name="auto_kr_0124" formatted="false">1440p 或更高</string>
+    <string name="auto_kr_0125" formatted="false">4K 或更高</string>
+    <string name="auto_kr_0126" formatted="false">全部</string>
+    <string name="auto_kr_0127">%1$s或更高</string>
+    <string name="auto_kr_0128">%1$s或更低</string>
+    <string name="auto_kr_0129" formatted="false">無濾鏡</string>
+    <string name="auto_kr_0130" formatted="false">空篩選器</string>
+    <string name="auto_kr_0131">%1$s · 應用</string>
+    <string name="auto_kr_0132">快速套用已儲存的篩選器 %1$s</string>
+    <string name="auto_kr_0133" formatted="false">標籤</string>
+    <string name="auto_kr_0134" formatted="false">新篩選器</string>
+    <string name="auto_kr_0135" formatted="false">標題</string>
+    <string name="auto_kr_0136" formatted="false">表演者</string>
+    <string name="auto_kr_0137" formatted="false">工作室</string>
+    <string name="auto_kr_0138" formatted="false">findTags、scene_filter.tags 和已儲存/最近的篩選器序列化已經過驗證。</string>
+    <string name="auto_kr_0139" formatted="false">GraphQL findPerformers/查詢解析器、SceneFilterType.performers 映射和已儲存/最近的篩選器序列化尚未準備好。</string>
+    <string name="auto_kr_0140" formatted="false">GraphQL findStudios/查詢解析器、SceneFilterType.studios 映射和已儲存/最近的篩選器序列化尚未準備好。</string>
+    <string name="auto_kr_0141">已選擇%1$s</string>
+    <string name="auto_kr_0142" formatted="false">未選擇</string>
+    <string name="auto_kr_0143" formatted="false">應用標籤篩選器</string>
+    <string name="auto_kr_0144" formatted="false">清除</string>
+    <string name="auto_kr_0145" formatted="false">清除選定的標籤並保持篩選表開啟。</string>
+    <string name="auto_kr_0146" formatted="false">關閉標籤篩選器</string>
+    <string name="auto_kr_0147">%1$s已選準備申請</string>
+    <string name="auto_kr_0148">· 已儲存%1$s</string>
+    <string name="auto_kr_0149">%1$s已儲存</string>
+    <string name="auto_kr_0150" formatted="false">搜尋/選擇標籤</string>
+    <string name="auto_kr_0151" formatted="false">日期、時長、手錶狀態</string>
+    <string name="auto_kr_0152" formatted="false">星級、解析度、檔案類型</string>
+    <string name="auto_kr_0153" formatted="false">收藏夾和保存的篩選器</string>
+    <string name="auto_kr_0154" formatted="false">隨機排序/洗牌</string>
+    <string name="auto_kr_0155">%1$s 的標籤</string>
+    <string name="auto_kr_0156">日期 %1$s</string>
+    <string name="auto_kr_0157">時長%1$s</string>
+    <string name="auto_kr_0158">評分%1$s</string>
+    <string name="auto_kr_0159" formatted="false">僅限收藏夾</string>
+    <string name="auto_kr_0160">已儲存的篩選器：%1$s</string>
+    <string name="auto_kr_0161" formatted="false">Stash Hybrid 推薦可用</string>
+    <string name="auto_kr_0162" formatted="false">預設建議使用Stash</string>
+    <string name="auto_kr_0163" formatted="false">認證失敗。檢查 API 金鑰</string>
+    <string name="auto_kr_0164" formatted="false">Hybrid建議回應太慢</string>
+    <string name="auto_kr_0165" formatted="false">無法查看Hybrid推薦狀態</string>
+    <string name="auto_kr_0166">Hybrid推薦回覆無效（HTTP %1$s）</string>
+    <string name="auto_kr_0167" formatted="false">無法加載推薦視頻</string>
+    <string name="auto_kr_0168">影片%1$s</string>
+    <string name="auto_kr_0169">影片%1$s</string>
+    <string name="auto_kr_0170">影片%1$s</string>
+    <string name="auto_kr_0171" formatted="false">自動推薦</string>
+    <string name="auto_kr_0172" formatted="false">原版Direct</string>
+    <string name="auto_kr_0173">Stash 示範影片 %1$s</string>
+    <string name="auto_kr_0174" formatted="false">Stash沒有回傳刪除完成。</string>
+    <string name="auto_kr_0175">標籤： %1$s</string>
+    <string name="auto_kr_0176" formatted="false">同一工作室</string>
+    <string name="auto_kr_0177">亮度%1$s%%</string>
+    <string name="auto_kr_0178" formatted="false">沒有訊息</string>
+    <string name="auto_kr_0179" formatted="false">路徑/URL</string>
+    <string name="auto_kr_0180" formatted="false">串流媒體</string>
+    <string name="auto_kr_0181" formatted="false">縮圖</string>
+    <string name="auto_kr_0182">URL 可用 · %1$s</string>
+    <string name="auto_kr_0183">可用·%1$s</string>
+    <string name="auto_kr_0184" formatted="false">無</string>
+    <string name="auto_kr_0185" formatted="false">雪碧</string>
+    <string name="auto_kr_0186" formatted="false">流候選人</string>
+    <string name="auto_kr_0187">活躍%1$s/%2$s·%3$s原版</string>
+    <string name="auto_kr_0188" formatted="false">推薦來源</string>
+    <string name="auto_kr_0189" formatted="false">詳情</string>
+    <string name="auto_kr_0190" formatted="false">查看播放調試詳細信息</string>
+    <string name="auto_kr_0191" formatted="false">回放調試詳細信息</string>
+    <string name="auto_kr_0192" formatted="false">關閉</string>
+    <string name="auto_kr_0193">%1$s框</string>
+    <string name="auto_kr_0194">圖片可用·%1$s</string>
+    <string name="auto_kr_0195" formatted="false">1.5 倍快速播放</string>
+    <string name="auto_kr_0196">評分%1$s</string>
+    <string name="auto_kr_0197">玩過%1$s次</string>
+    <string name="auto_kr_0198" formatted="false">未知</string>
+    <string name="auto_kr_0199" formatted="false">展開詳情</string>
+    <string name="auto_kr_0200" formatted="false">折疊詳情</string>
+    <string name="auto_kr_0201" formatted="false">正在準備播放...</string>
+    <string name="auto_kr_0202" formatted="false">緩衝中…</string>
+    <string name="auto_kr_0203" formatted="false">播放完畢</string>
+    <string name="auto_kr_0204" formatted="false">播放失敗</string>
+    <string name="auto_kr_0205" formatted="false">解鎖</string>
+    <string name="auto_kr_0206" formatted="false">鎖定玩家</string>
+    <string name="auto_kr_0207" formatted="false">串流媒體選項</string>
+    <string name="auto_kr_0208" formatted="false">播放速度</string>
+    <string name="auto_kr_0209" formatted="false">縱橫比</string>
+    <string name="auto_kr_0210" formatted="false">播放模式</string>
+    <string name="auto_kr_0211" formatted="false">打開流選項</string>
+    <string name="auto_kr_0212">選擇播放速度，目前%1$s</string>
+    <string name="auto_kr_0213">選擇寬高比，目前%1$s</string>
+    <string name="auto_kr_0214">切換寬高比，目前%1$s，下一個%2$s</string>
+    <string name="auto_kr_0215" formatted="false">隨機播放</string>
+    <string name="auto_kr_0216" formatted="false">順序播放</string>
+    <string name="auto_kr_0217" formatted="false">切換到順序播放</string>
+    <string name="auto_kr_0218" formatted="false">切換到隨機播放</string>
+    <string name="auto_kr_0219" formatted="false">當播放清單至少有 2 項時可以隨機播放</string>
+    <string name="auto_kr_0220">選擇播放模式，目前%1$s</string>
+    <string name="auto_kr_0221">開啟播放列表，%1$s項目</string>
+    <string name="auto_kr_0222" formatted="false">無播放清單</string>
+    <string name="auto_kr_0223" formatted="false">上一個影片或開頭</string>
+    <string name="auto_kr_0224" formatted="false">暫停</string>
+    <string name="auto_kr_0225" formatted="false">下一個視頻</string>
+    <string name="auto_kr_0226" formatted="false">沒有下一個視頻</string>
+    <string name="auto_kr_0227" formatted="false">新增到播放隊列</string>
+    <string name="auto_kr_0228" formatted="false">新增到播放隊列</string>
+    <string name="auto_kr_0229" formatted="false">從收藏夾中刪除</string>
+    <string name="auto_kr_0230" formatted="false">加入收藏夾</string>
+    <string name="auto_kr_0231" formatted="false">從稍後觀看中刪除</string>
+    <string name="auto_kr_0232" formatted="false">添加到稍後觀看</string>
+    <string name="auto_kr_0233" formatted="false">無法保存評分</string>
+    <string name="auto_kr_0234" formatted="false">評級</string>
+    <string name="auto_kr_0235">正在儲存評分，目前%1$s</string>
+    <string name="auto_kr_0236">調整評級，目前%1$s</string>
+    <string name="auto_kr_0237" formatted="false">已收藏</string>
+    <string name="auto_kr_0238" formatted="false">最愛</string>
+    <string name="auto_kr_0239" formatted="false">稍後觀看</string>
+    <string name="auto_kr_0240" formatted="false">已新增至播放佇列，不允許重複</string>
+    <string name="auto_kr_0241" formatted="false">更多詳情</string>
+    <string name="auto_kr_0242" formatted="false">打開更多詳情</string>
+    <string name="auto_kr_0243" formatted="false">播放清單</string>
+    <string name="auto_kr_0244" formatted="false">專案</string>
+    <string name="auto_kr_0245" formatted="false">· 洗牌</string>
+    <string name="auto_kr_0246" formatted="false">目前</string>
+    <string name="auto_kr_0247">播放清單重新排序句柄：%1$s、%2$s/%3$s</string>
+    <string name="auto_kr_0248" formatted="false">向上移動</string>
+    <string name="auto_kr_0249" formatted="false">下移</string>
+    <string name="auto_kr_0250" formatted="false">從播放清單中刪除</string>
+    <string name="auto_kr_0251" formatted="false">正在刪除影片...</string>
+    <string name="auto_kr_0252">%1$s 播放清單操作</string>
+    <string name="auto_kr_0253" formatted="false">正在儲存評級...</string>
+    <string name="auto_kr_0254">已儲存評分 %1$s</string>
+    <string name="auto_kr_0255">無法儲存評分：%1$s</string>
+    <string name="auto_kr_0256" formatted="false">無評級</string>
+    <string name="auto_kr_0257">%1$s-星級</string>
+    <string name="auto_kr_0258">%1$s.5星評級</string>
+    <string name="auto_kr_0259" formatted="false">使用另一個流重試</string>
+    <string name="auto_kr_0260">直播：%1$s</string>
+    <string name="auto_kr_0261">流策略：%1$s</string>
+    <string name="auto_kr_0262" formatted="false">優先選擇原來的 Direct，失敗時回退到 HLS/轉碼</string>
+    <string name="auto_kr_0263" formatted="false">優先考慮Direct原候選人</string>
+    <string name="auto_kr_0264" formatted="false">優先考慮HLS/轉碼候選者</string>
+    <string name="auto_kr_0265" formatted="false">串流類型：未知 · 編解碼器：自動 · 解碼器：Android auto</string>
+    <string name="auto_kr_0266">串流類型：%1$s · 標籤：%2$s · Mime 類型：%3$s · .m3u8：%4$s · 編解碼器：自動 · 解碼器：Android 自動</string>
+    <string name="auto_kr_0267" formatted="false">重試當前流</string>
+    <string name="auto_kr_0268" formatted="false">其他串流</string>
+    <string name="auto_kr_0269" formatted="false">嘗試另一個串流</string>
+    <string name="auto_kr_0270" formatted="false">開啟設定</string>
+    <string name="auto_kr_0271" formatted="false">開啟播放設定</string>
+    <string name="auto_kr_0272" formatted="false">播放下一個視頻</string>
+    <string name="auto_kr_0273" formatted="false">從頭開始玩</string>
+    <string name="auto_kr_0274" formatted="false">從頭開始播放當前視頻</string>
+    <string name="auto_kr_0275" formatted="false">鎖定 · 使用鎖定鈕解鎖</string>
+    <string name="auto_kr_0276" formatted="false">預設 1x</string>
+    <string name="auto_kr_0277">速度 %1$sx</string>
+    <string name="auto_kr_0278" formatted="false">適合</string>
+    <string name="auto_kr_0279" formatted="false">填充</string>
+    <string name="auto_kr_0280" formatted="false">作物</string>
+    <string name="auto_kr_0281">螢幕%1$s</string>
+    <string name="auto_kr_0282" formatted="false">返回詳細視圖</string>
+    <string name="auto_kr_0283" formatted="false">全螢幕檢視</string>
+    <string name="auto_kr_0284" formatted="false">退出全螢幕</string>
+    <string name="auto_kr_0285" formatted="false">關閉播放器</string>
+    <string name="auto_kr_0286" formatted="false">關閉視訊訊息</string>
+    <string name="auto_kr_0287" formatted="false">查看影片訊息</string>
+    <string name="auto_kr_0288">體積%1$s%%</string>
+    <string name="auto_kr_0289" formatted="false">刪除選定的視頻</string>
+    <string name="auto_kr_0290">從 Stash 中刪除 %1$s 選定的影片。</string>
+    <string name="auto_kr_0291" formatted="false">此操作無法撤銷。為防止意外刪除，您必須選取下方的確認方塊。</string>
+    <string name="auto_kr_0292" formatted="false">與Stash來源刪除對話框一樣，預設刪除產生的輔助文件，而實際的視訊文件是可選的。</string>
+    <string name="auto_kr_0293" formatted="false">同時刪除實際的影片檔和 funscript</string>
+    <string name="auto_kr_0294" formatted="false">刪除產生的副文件</string>
+    <string name="auto_kr_0295" formatted="false">我了解此刪除操作無法撤銷。</string>
+    <string name="auto_kr_0296" formatted="false">取消</string>
+    <string name="auto_kr_0297" formatted="false">正在刪除...</string>
+    <string name="auto_kr_0298" formatted="false">已選擇</string>
+    <string name="auto_kr_0299" formatted="false">正在加載類似視頻...</string>
+    <string name="auto_kr_0300">建議評分%1$s</string>
+    <string name="auto_kr_0301">詳細篩選%1$s</string>
+    <string name="auto_kr_0302" formatted="false">詳細篩選器</string>
+    <string name="auto_kr_0303" formatted="false">將日期、影片長度和觀看狀態應用於探索結果。</string>
+    <string name="auto_kr_0304" formatted="false">日期</string>
+    <string name="auto_kr_0305" formatted="false">清除日期</string>
+    <string name="auto_kr_0306" formatted="false">開始日期</string>
+    <string name="auto_kr_0307" formatted="false">結束日期</string>
+    <string name="auto_kr_0308" formatted="false">持續時間</string>
+    <string name="auto_kr_0309" formatted="false">清除持續時間</string>
+    <string name="auto_kr_0310" formatted="false">最短分鐘數</string>
+    <string name="auto_kr_0311" formatted="false">範例：10</string>
+    <string name="auto_kr_0312" formatted="false">最長分鐘數</string>
+    <string name="auto_kr_0313" formatted="false">範例：90</string>
+    <string name="auto_kr_0314" formatted="false">觀看狀態</string>
+    <string name="auto_kr_0315" formatted="false">狀態清晰</string>
+    <string name="auto_kr_0316" formatted="false">申請</string>
+    <string name="auto_kr_0317" formatted="false">已儲存</string>
+    <string name="auto_kr_0318">本地%1$s</string>
+    <string name="auto_kr_0319" formatted="false">當地媒體庫</string>
+    <string name="auto_kr_0320" formatted="false">收藏夾、稍後觀看、播放佇列和保存的篩選器僅儲存在此應用程式中。它們不會發送到 Stash 伺服器。</string>
+    <string name="auto_kr_0321" formatted="false">列表篩選器</string>
+    <string name="auto_kr_0322" formatted="false">僅顯示收藏夾</string>
+    <string name="auto_kr_0323" formatted="false">儲存目前篩選器</string>
+    <string name="auto_kr_0324" formatted="false">已儲存的篩選器名稱</string>
+    <string name="auto_kr_0325" formatted="false">範例：4★+ MP4</string>
+    <string name="auto_kr_0326" formatted="false">清除已套用的篩選器</string>
+    <string name="auto_kr_0327" formatted="false">已儲存的篩選器</string>
+    <string name="auto_kr_0328" formatted="false">您還沒有任何已儲存的篩選器。</string>
+    <string name="auto_kr_0329">%1$s · 應用</string>
+    <string name="auto_kr_0330">品質及評價%1$s</string>
+    <string name="auto_kr_0331" formatted="false">品質和評級篩選器</string>
+    <string name="auto_kr_0332" formatted="false">將評級、解析度和文件類型應用於探索結果。</string>
+    <string name="auto_kr_0333" formatted="false">明確評級</string>
+    <string name="auto_kr_0334" formatted="false">選擇與玩家具有相同星形滑桿的最小/最大分數。最大值可以留空，設定後不能低於最小值。</string>
+    <string name="auto_kr_0335" formatted="false">解析度</string>
+    <string name="auto_kr_0336" formatted="false">格式清晰</string>
+    <string name="auto_kr_0337" formatted="false">文件類型</string>
+    <string name="auto_kr_0338" formatted="false">最低分數</string>
+    <string name="auto_kr_0339" formatted="false">未設定</string>
+    <string name="auto_kr_0340" formatted="false">或更高</string>
+    <string name="auto_kr_0341" formatted="false">最高分</string>
+    <string name="auto_kr_0342" formatted="false">或更低</string>
+    <string name="auto_kr_0343">評級篩選器 %1$s</string>
+    <string name="auto_kr_0344" formatted="false">已儲存的篩選器</string>
+    <string name="auto_kr_0345" formatted="false">沒有儲存的篩選器</string>
+    <string name="auto_kr_0346">%1$s 已儲存篩選器</string>
+    <string name="auto_kr_0347">· %1$s最近</string>
+    <string name="auto_kr_0348" formatted="false">關閉已儲存的篩選器</string>
+    <string name="auto_kr_0349" formatted="false">快速套用已儲存的篩選器</string>
+    <string name="auto_kr_0350" formatted="false">套用常用的已儲存篩選器，無需捲動清單。</string>
+    <string name="auto_kr_0351" formatted="false">最近的篩選器</string>
+    <string name="auto_kr_0352" formatted="false">直接從已儲存的濾鏡畫面重新套用最近使用的組合。</string>
+    <string name="auto_kr_0353" formatted="false">電流篩選器</string>
+    <string name="auto_kr_0354" formatted="false">無有源篩選器</string>
+    <string name="auto_kr_0355">名為“%1$s”的篩選器已存在，因此它將另存為“%2$s”。</string>
+    <string name="auto_kr_0356" formatted="false">留空以另存為「我的篩選器」。</string>
+    <string name="auto_kr_0357" formatted="false">快速保存</string>
+    <string name="auto_kr_0358" formatted="false">搜尋已儲存的篩選器</string>
+    <string name="auto_kr_0359" formatted="false">按名稱查找...</string>
+    <string name="auto_kr_0360" formatted="false">您還沒有任何已儲存的篩選器。按名稱儲存目前篩選器以便稍後再次載入。</string>
+    <string name="auto_kr_0361" formatted="false">沒有已儲存的篩選器與搜尋詞相符。</string>
+    <string name="auto_kr_0362">刪除已儲存的篩選器 %1$s</string>
+    <string name="auto_kr_0363" formatted="false">已選擇</string>
+    <string name="auto_kr_0364">標籤%1$s</string>
+    <string name="auto_kr_0365" formatted="false">清除標籤</string>
+    <string name="auto_kr_0366" formatted="false">清除已儲存的篩選器</string>
+    <string name="auto_kr_0367" formatted="false">清除隨機</string>
+    <string name="auto_kr_0368" formatted="false">標籤篩選器</string>
+    <string name="auto_kr_0369" formatted="false">搜尋並選擇標籤，然後點擊“應用”以更新“探索”結果。</string>
+    <string name="auto_kr_0370" formatted="false">搜尋標籤</string>
+    <string name="auto_kr_0371" formatted="false">標籤名稱...</string>
+    <string name="auto_kr_0372" formatted="false">無法加載標籤。</string>
+    <string name="auto_kr_0373" formatted="false">沒有可顯示的標籤。</string>
+    <string name="auto_kr_0374" formatted="false">重置</string>
+    <string name="auto_kr_0375" formatted="false">濾鏡輪轂</string>
+    <string name="auto_kr_0376">%1$s 已儲存篩選器</string>
+    <string name="auto_kr_0377">%1$s主動篩選器·僅開啟您需要編輯的部分</string>
+    <string name="auto_kr_0378" formatted="false">全部重置</string>
+    <string name="auto_kr_0379" formatted="false">立即重新套用最近使用的組合。</string>
+    <string name="auto_kr_0380">未設定·%1$s</string>
+    <string name="auto_kr_0381" formatted="false">運行</string>
+    <string name="auto_kr_0382" formatted="false">打開</string>
+    <string name="auto_kr_0383" formatted="false">推薦影片立即播放</string>
+    <string name="auto_kr_0384">伺服器狀態·%1$s</string>
+    <string name="auto_kr_0385">錯誤：%1$s</string>
+    <string name="auto_kr_0386">編輯%1$s篩選器</string>
+    <string name="auto_kr_0387">清除%1$s</string>
+    <string name="auto_kr_0388">清除 %1$s 篩選器</string>
+    <string name="auto_kr_0389" formatted="false">, 選定的</string>
+    <string name="auto_kr_0390" formatted="false">正在播放</string>
+    <string name="auto_kr_0391" formatted="false">無題</string>
+    <string name="auto_kr_0392" formatted="false">部分</string>
+    <string name="auto_kr_0393" formatted="false">選項</string>
+    <string name="auto_kr_0394" formatted="false">使用中</string>
+    <string name="auto_kr_0395">%1$s · %2$s 項目</string>
+    <string name="auto_kr_0396" formatted="false">狀態</string>
+    <string name="auto_kr_0397">%1$s 項目</string>
+    <string name="auto_kr_0398">%1$s 項目</string>
+    <string name="auto_kr_0399" formatted="false">日期、時長、播放狀態</string>
+    <string name="auto_kr_0400" formatted="false">本地並保存</string>
+    <string name="auto_kr_0401" formatted="false">排序方向</string>
+    <string name="auto_kr_0402" formatted="false">搜尋...</string>
+    <string name="auto_kr_0403" formatted="false">清除搜尋</string>
+    <string name="auto_kr_0404" formatted="false">更多行動</string>
+    <string name="auto_kr_0405" formatted="false">更多選擇動作</string>
+    <string name="auto_kr_0406" formatted="false">儲存您的 Stash 伺服器 URL 和 API 金鑰，以載入最近的影片並播放真正的串流 URL。</string>
+    <string name="auto_kr_0407" formatted="false">儲存您的伺服器 URL 和 API 金鑰，以在主標籤上顯示類似 Stash FrontPage 的推薦群組。</string>
+    <string name="auto_kr_0408" formatted="false">沒有可顯示的視訊群組。</string>
+    <string name="auto_kr_0409" formatted="false">無法載入發現列表</string>
+    <string name="auto_kr_0410" formatted="false">需要Stash伺服器設定。</string>
+    <string name="auto_kr_0411" formatted="false">刪除失敗</string>
+    <string name="auto_kr_0412" formatted="false">瀏覽</string>
+    <string name="auto_kr_0413" formatted="false">按標題瀏覽 Stash 影片庫，同時變更排序選項。</string>
+    <string name="auto_kr_0414">%1$s 項目</string>
+    <string name="auto_kr_0415" formatted="false">首先設定您的Stash伺服器</string>
+    <string name="auto_kr_0416" formatted="false">載入瀏覽清單需要伺服器 URL 和 API 金鑰。</string>
+    <string name="auto_kr_0417" formatted="false">無法載入瀏覽列表</string>
+    <string name="auto_kr_0418" formatted="false">加載更多</string>
+    <string name="auto_kr_0419" formatted="false">沒有可顯示的視頻</string>
+    <string name="auto_kr_0420" formatted="false">嘗試減少篩選器或變更排序選項。</string>
+    <string name="auto_kr_0421" formatted="false">這是最後一項。</string>
+    <string name="auto_kr_0422" formatted="false">降序↓</string>
+    <string name="auto_kr_0423" formatted="false">升序↑</string>
+    <string name="auto_kr_0424" formatted="false">影片繼續</string>
+    <string name="auto_kr_0425" formatted="false">空</string>
+    <string name="auto_kr_0426" formatted="false">已儲存的視頻</string>
+    <string name="auto_kr_0427" formatted="false">最喜歡的視頻</string>
+    <string name="auto_kr_0428" formatted="false">播放隊列</string>
+    <string name="auto_kr_0429" formatted="false">隨機播放</string>
+    <string name="auto_kr_0430" formatted="false">瀏覽和探索</string>
+    <string name="auto_kr_0431" formatted="false">伺服器狀態</string>
+    <string name="auto_kr_0432" formatted="false">最近新增/更新的影片和篩選器瀏覽</string>
+    <string name="auto_kr_0433" formatted="false">使用搜尋字詞和已儲存的篩選器尋找視頻</string>
+    <string name="auto_kr_0434" formatted="false">需要設定</string>
+    <string name="auto_kr_0435" formatted="false">連接您的 Stash 伺服器，開始從主頁瀏覽和探索。</string>
+    <string name="auto_kr_0436" formatted="false">需要注意</string>
+    <string name="auto_kr_0437" formatted="false">無法載入伺服器部分。檢查您的網路和設定。</string>
+    <string name="auto_kr_0438" formatted="false">已連接</string>
+    <string name="auto_kr_0439" formatted="false">已保存Stash伺服器</string>
+    <string name="auto_kr_0440">%1$s影片準備繼續</string>
+    <string name="auto_kr_0441" formatted="false">透過瀏覽或探索添加影片。</string>
+    <string name="auto_kr_0442">%1$s影片稍後觀看</string>
+    <string name="auto_kr_0443" formatted="false">儲存影片以供稍後觀看。</string>
+    <string name="auto_kr_0444">%1$s最喜歡的視頻</string>
+    <string name="auto_kr_0445" formatted="false">將經常觀看的影片收藏為最愛。</string>
+    <string name="auto_kr_0446" formatted="false">從瀏覽最近新增的影片開始，或在您知道自己想要什麼時進行探索。</string>
+    <string name="auto_kr_0447" formatted="false">未知錯誤</string>
+    <string name="auto_kr_0448" formatted="false">清爽</string>
+    <string name="auto_kr_0449" formatted="false">重新整理</string>
+    <string name="auto_kr_0450" formatted="false">Stash款</string>
+    <string name="auto_kr_0451" formatted="false">從伺服器載入的最近/恢復群組。</string>
+    <string name="auto_kr_0452" formatted="false">尚無伺服器視訊部分</string>
+    <string name="auto_kr_0453" formatted="false">您可以直接從瀏覽或探索中尋找影片。</string>
+    <string name="auto_kr_0454">%1$s %2$s 項目</string>
+    <string name="auto_kr_0455" formatted="false">瀏覽新影片或直接使用濾鏡進行探索。</string>
+    <string name="auto_kr_0456" formatted="false">-10秒</string>
+    <string name="auto_kr_0457" formatted="false">播放/暫停</string>
+    <string name="auto_kr_0458" formatted="false">+10 秒</string>
+    <string name="auto_kr_0459">目前%1$s</string>
+    <string name="auto_kr_0460">目前%1$s</string>
+    <string name="auto_kr_0461">目前%1$s</string>
+    <string name="auto_kr_0462">%1$s表</string>
+    <string name="auto_kr_0463" formatted="false">按播放清單順序開啟下一個影片。</string>
+    <string name="auto_kr_0464" formatted="false">隨機播放清單順序並按可見順序播放。</string>
+    <string name="auto_kr_0465" formatted="false">當播放清單至少有 2 個項目時可用。</string>
+    <string name="auto_kr_0466" formatted="false">目前播放順序</string>
+    <string name="auto_kr_0467" formatted="false">播放清單表</string>
+    <string name="auto_kr_0468" formatted="false">影片</string>
+    <string name="auto_kr_0469" formatted="false">球員評分</string>
+    <string name="auto_kr_0470" formatted="false">Stash 伺服器設定遺失。在「設定」中儲存伺服器 URL 和 API 金鑰。</string>
+    <string name="auto_kr_0471">無法載入播放訊息。\n%1$s</string>
+    <string name="auto_kr_0472" formatted="false">從Stash載入影片訊息</string>
+    <string name="auto_kr_0473" formatted="false">無法載入推薦影片。</string>
+    <string name="auto_kr_0474" formatted="false">Stash 未回傳評級儲存完成。</string>
+    <string name="auto_kr_0475" formatted="false">Stash Hybrid 推薦</string>
+    <string name="auto_kr_0476" formatted="false">播放清單順序已更改</string>
+    <string name="auto_kr_0477" formatted="false">已從播放清單中刪除</string>
+    <string name="auto_kr_0478" formatted="false">無法從播放清單中刪除</string>
+    <string name="auto_kr_0479" formatted="false">新增到播放佇列失敗</string>
+    <string name="auto_kr_0480" formatted="false">亮度控制不可用</string>
+    <string name="auto_kr_0481" formatted="false">到開始</string>
+    <string name="auto_kr_0482" formatted="false">應用隨機播放清單順序</string>
+    <string name="auto_kr_0483" formatted="false">應用順序播放</string>
+    <string name="auto_kr_0484" formatted="false">已在播放佇列中</string>
+    <string name="auto_kr_0485" formatted="false">已加入至收藏夾</string>
+    <string name="auto_kr_0486" formatted="false">添加到稍後觀看</string>
+    <string name="auto_kr_0487" formatted="false">已從稍後觀看中刪除</string>
+    <string name="auto_kr_0488" formatted="false">從原來的職位恢復？</string>
+    <string name="auto_kr_0489" formatted="false">從頭開始玩</string>
+    <string name="auto_kr_0490" formatted="false">串流</string>
+    <string name="auto_kr_0491" formatted="false">打亂順序</string>
+    <string name="auto_kr_0492" formatted="false">順序</string>
+    <string name="auto_kr_0493">目前評分 %1$s</string>
+    <string name="auto_kr_0494" formatted="false">演奏</string>
+    <string name="auto_kr_0495">%1$s 向上移動</string>
+    <string name="auto_kr_0496">%1$s 下移</string>
+    <string name="auto_kr_0497" formatted="false">播放全部</string>
+    <string name="auto_kr_0498" formatted="false">播放整個播放佇列</string>
+    <string name="auto_kr_0499" formatted="false">隨機播放隊列</string>
+    <string name="auto_kr_0500" formatted="false">清除</string>
+    <string name="auto_kr_0501" formatted="false">清除播放佇列</string>
+    <string name="auto_kr_0502" formatted="false">將全部新增到佇列中</string>
+    <string name="auto_kr_0503" formatted="false">將所有稍後觀看項目新增至佇列中</string>
+    <string name="auto_kr_0504" formatted="false">刪除</string>
+    <string name="auto_kr_0505" formatted="false">根據新增至佇列中的項目或「探索」卡中的「稍後觀看」建立的本機播放清單。</string>
+    <string name="auto_kr_0506" formatted="false">下一個隊列</string>
+    <string name="auto_kr_0507" formatted="false">播放隊列為空</string>
+    <string name="auto_kr_0508" formatted="false">在「探索」中選擇影片以建立連續播放的隊列。</string>
+    <string name="auto_kr_0509" formatted="false">前往探索</string>
+    <string name="auto_kr_0510" formatted="false">收集有一天要觀看的候選項，然後在準備好後將它們發送到播放隊列。</string>
+    <string name="auto_kr_0511" formatted="false">稍後沒有可觀看的視頻</string>
+    <string name="auto_kr_0512" formatted="false">從“探索”中儲存您喜歡的影片以供稍後觀看。</string>
+    <string name="auto_kr_0513" formatted="false">前往探索</string>
+    <string name="auto_kr_0514" formatted="false">沒有最喜歡的視頻</string>
+    <string name="auto_kr_0515" formatted="false">透過瀏覽將經常觀看的影片儲存為收藏夾。</string>
+    <string name="auto_kr_0516" formatted="false">將“稍後觀看”項目發送到隊列以立即觀看。</string>
+    <string name="auto_kr_0517" formatted="false">所有「稍後觀看」項目均已在隊列中。</string>
+    <string name="queue_playback_history_title" formatted="false">最近播放紀錄</string>
+    <string name="queue_playback_history_subtitle">自動保持最新的%1$d項目</string>
+    <string name="queue_playback_history_action_label" formatted="false">查看歷史記錄</string>
+    <string name="queue_playback_history_action_content_description" formatted="false">查看最近播放記錄</string>
+    <string name="queue_playback_history_collapse_label" formatted="false">Stash歷史記錄</string>
+    <string name="queue_playback_history_collapse_content_description" formatted="false">Stash最近的播放歷史記錄</string>
+    <string name="queue_playback_history_empty_title" formatted="false">還沒有播放歷史記錄</string>
+    <string name="queue_playback_history_empty_message" formatted="false">播放視頻，最新的項目將顯示在此。</string>
+    <string name="auto_kr_0518" formatted="false">搜尋失敗</string>
+    <string name="auto_kr_0519" formatted="false">從工具列調整搜尋、篩選、排序和檢視操作。</string>
+    <string name="auto_kr_0520" formatted="false">無</string>
+    <string name="auto_kr_0521">搜尋字詞：%1$s · 篩選器 %2$s · 排序：%3$s %4$s · 頁面大小：%5$s</string>
+    <string name="auto_kr_0522" formatted="false">載入搜尋結果需要伺服器 URL 和 API 金鑰。</string>
+    <string name="auto_kr_0523" formatted="false">開始搜尋</string>
+    <string name="auto_kr_0524" formatted="false">輸入搜尋字詞或設定篩選器以在此顯示 Stash 影片結果。</string>
+    <string name="auto_kr_0525" formatted="false">無法載入搜尋結果</string>
+    <string name="auto_kr_0526" formatted="false">沒有搜尋結果</string>
+    <string name="auto_kr_0527" formatted="false">嘗試更改搜尋詞或減少篩選器。</string>
+    <string name="auto_kr_0528" formatted="false">這是最後的結果。</string>
+    <string name="auto_kr_0529" formatted="false">在實體設備上，輸入 Mac/伺服器的 LAN IP 或網域，而不是 127.0.0.1。 Android模擬器使用10.0.2.2:9999。</string>
+    <string name="auto_kr_0530" formatted="false">伺服器名稱</string>
+    <string name="auto_kr_0531" formatted="false">伺服器URL，例如http://192.168.0.10:9999</string>
+    <string name="auto_kr_0532" formatted="false">輸入伺服器URL。</string>
+    <string name="auto_kr_0533" formatted="false">正在檢查連接...</string>
+    <string name="auto_kr_0534">已連線：Stash %1$s</string>
+    <string name="auto_kr_0535" formatted="false">連線失敗</string>
+    <string name="auto_kr_0536" formatted="false">測試連接並保存</string>
+    <string name="auto_kr_0537" formatted="false">保存而不測試</string>
+    <string name="auto_kr_0538" formatted="false">使用自動名稱儲存</string>
+    <string name="player_o_counter_label" formatted="false">O計數</string>
+    <string name="player_o_counter_value_label">%1$d次</string>
+    <string name="player_o_counter_add_content_description">新增O計數，目前%1$s</string>
+    <string name="player_o_counter_saving_content_description">正在儲存O計數，目前%1$s</string>
+    <string name="player_o_counter_saved">已儲存 O 計數 %1$d 次</string>
+    <string name="player_o_counter_save_failed">儲存 O 計數失敗：%1$s</string>
+    <string name="player_seek_target_badge_content_description">求目標%1$s</string>
+    <string name="player_seek_preview_timeline_content_description">求，目標%1$s / %2$s，更改%3$s</string>
+    <string name="player_seek_bar_content_description" formatted="false">播放位置</string>
+    <string name="player_seek_bar_state_description">%1$d%%</string>
+    <string name="stash_sort_bitrate_label" formatted="false">位元率</string>
+    <string name="stash_sort_code_label" formatted="false">程式碼</string>
+    <string name="stash_sort_file_count_label" formatted="false">文件數</string>
+    <string name="stash_sort_filesize_label" formatted="false">文件大小</string>
+    <string name="stash_sort_file_mod_time_label" formatted="false">文件修改時間</string>
+    <string name="stash_sort_framerate_label" formatted="false">幀率</string>
+    <string name="stash_sort_group_scene_number_label" formatted="false">群組場景編號</string>
+    <string name="stash_sort_id_label" formatted="false">身分證號</string>
+    <string name="stash_sort_interactive_label" formatted="false">互動</string>
+    <string name="stash_sort_interactive_speed_label" formatted="false">互動速度</string>
+    <string name="stash_sort_last_o_at_label" formatted="false">最後 0 點</string>
+    <string name="stash_sort_last_played_at_label" formatted="false">上次玩的時間</string>
+    <string name="stash_sort_movie_scene_number_label" formatted="false">電影場景編號</string>
+    <string name="stash_sort_o_counter_label" formatted="false">O 計數</string>
+    <string name="stash_sort_organized_label" formatted="false">有組織</string>
+    <string name="stash_sort_performer_count_label" formatted="false">表演者人數</string>
+    <string name="stash_sort_play_duration_label" formatted="false">播放時長</string>
+    <string name="stash_sort_resume_time_label" formatted="false">恢復時間</string>
+    <string name="stash_sort_path_label" formatted="false">路徑</string>
+    <string name="stash_sort_perceptual_similarity_label" formatted="false">感知相似性</string>
+    <string name="stash_sort_random_label" formatted="false">隨機</string>
+    <string name="stash_sort_rating_label" formatted="false">評級</string>
+    <string name="stash_sort_resolution_label" formatted="false">解析度</string>
+    <string name="stash_sort_studio_label" formatted="false">工作室</string>
+    <string name="stash_sort_tag_count_label" formatted="false">標籤計數</string>
+    <string name="stash_sort_performer_age_label" formatted="false">表演者年齡</string>
+    <string name="gallery_sort_date_label" formatted="false">日期</string>
+    <string name="gallery_sort_images_count_label" formatted="false">圖片數量</string>
+    <string name="gallery_sort_created_at_label" formatted="false">創建於</string>
+    <string name="gallery_sort_updated_at_label" formatted="false">更新於</string>
+    <string name="gallery_display_mode_wall_label" formatted="false">牆</string>
+    <string name="gallery_image_unfiled_folder_label" formatted="false">未歸檔</string>
+    <string name="gallery_toolbar_content_description" formatted="false">圖庫發現工具列</string>
+    <string name="gallery_toolbar_operations_content_description">圖庫操作選單，%1$d目前可見</string>
+    <string name="gallery_operations_open_first_action" formatted="false">打開第一個圖庫</string>
+    <string name="gallery_operations_open_random_action" formatted="false">打開隨機圖庫</string>
+    <string name="gallery_selection_open_action" formatted="false">公開選拔</string>
+    <string name="gallery_selection_random_action" formatted="false">隨機選擇</string>
+</resources>

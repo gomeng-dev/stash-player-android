@@ -8,6 +8,8 @@ Browse, search, queue, swipe through Shorts, and watch with a gesture-first nati
 
 <p>
   <a href="README.ko.md"><img alt="Korean README" src="https://img.shields.io/badge/README-%ED%95%9C%EA%B5%AD%EC%96%B4-7c3aed?style=for-the-badge"></a>
+  <a href="README.zh-CN.md"><img alt="Simplified Chinese README" src="https://img.shields.io/badge/README-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-7c3aed?style=for-the-badge"></a>
+  <a href="README.zh-TW.md"><img alt="Traditional Chinese README" src="https://img.shields.io/badge/README-%E7%B9%81%E9%AB%94%E4%B8%AD%E6%96%87-7c3aed?style=for-the-badge"></a>
   <a href="https://github.com/gomeng-dev/stash-player-android/releases"><img alt="Download APK" src="https://img.shields.io/badge/download-APK-34d399?style=for-the-badge&logo=github&logoColor=white"></a>
   <img alt="Android 10+" src="https://img.shields.io/badge/Android-10%2B-34d399?style=for-the-badge&logo=android&logoColor=white">
   <img alt="Kotlin + Compose" src="https://img.shields.io/badge/Kotlin%20%2B%20Compose-111827?style=for-the-badge&logo=kotlin&logoColor=white">
@@ -61,7 +63,7 @@ The screenshots below were captured from the real Android app with public demo m
 3. Open the APK and allow installs from your browser or file manager if Android asks.
 4. Launch **Stash Player** and connect it to your Stash server.
 
-> Current public release: **v1.5.0**. This `main` branch README may also mention features already merged for the next release.
+> Current public release: **v1.7.0**.
 
 ## What you need
 

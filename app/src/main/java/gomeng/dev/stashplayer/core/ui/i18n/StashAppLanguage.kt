@@ -7,6 +7,8 @@ enum class StashAppLanguage(
     SYSTEM("system", null),
     KOREAN("ko", "ko"),
     ENGLISH("en", "en"),
+    CHINESE_SIMPLIFIED("zh-hans", "zh-Hans"),
+    CHINESE_TRADITIONAL("zh-hant", "zh-Hant"),
     ;
 
     companion object {

@@ -6,6 +6,36 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-05-17
+
+### English
+
+- Added Simplified Chinese and Traditional Chinese app language options, including localized Android string resources.
+- Added Simplified Chinese and Traditional Chinese README files and linked them from the existing README badges.
+- Added Settings access to Stash's "create galleries from folders containing images" server option, plus a guarded library scan action.
+- Verified the current feature set with unit tests, debug assembly, lint, resource checks, and placeholder parity checks for the new Chinese resources.
+
+### 한국어
+
+- 중국어 간체와 중국어 번체 앱 언어 옵션을 추가하고 Android 문자열 리소스를 현지화했습니다.
+- 중국어 간체와 중국어 번체 README를 추가하고 기존 README 배지에서 연결했습니다.
+- 설정에서 Stash 서버의 "이미지가 들어있는 폴더로부터 갤러리 생성" 옵션을 확인/변경하고, 확인 모달 뒤 라이브러리 스캔을 시작할 수 있게 했습니다.
+- 새 중국어 리소스의 placeholder parity 확인을 포함해 unit test, debug assemble, lint, 리소스 검증으로 현재 기능 세트를 확인했습니다.
+
+### 简体中文
+
+- 新增简体中文和繁体中文应用语言选项，并加入对应的 Android 字符串资源。
+- 新增简体中文和繁体中文 README，并从现有 README 徽章链接。
+- 在设置中加入 Stash 服务器的“从包含图片的文件夹创建图库”选项，并提供带确认弹窗的媒体库扫描操作。
+- 通过单元测试、debug 构建、lint、资源检查，以及新中文资源的占位符一致性检查验证当前功能。
+
+### 繁體中文
+
+- 新增簡體中文和繁體中文應用程式語言選項，並加入對應的 Android 字串資源。
+- 新增簡體中文和繁體中文 README，並從現有 README 徽章連結。
+- 在設定中加入 Stash 伺服器的「從包含圖片的資料夾建立圖庫」選項，並提供帶確認對話框的媒體庫掃描操作。
+- 透過單元測試、debug 建置、lint、資源檢查，以及新中文資源的佔位符一致性檢查驗證目前功能。
+
 ## [1.6.12] - 2026-05-17
 
 ### English
