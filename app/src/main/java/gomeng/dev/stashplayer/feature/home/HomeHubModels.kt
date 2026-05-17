@@ -55,7 +55,19 @@ data class HomeDashboardStat(
     val subtitle: String?,
 )
 
+enum class HomeQuickActionKey {
+    PlayQueue,
+    ShuffleQueue,
+    OpenQueue,
+    OpenWatchLater,
+    OpenFavorites,
+    OpenExplore,
+    OpenShorts,
+    OpenSettings,
+}
+
 data class HomeQuickActionModel(
+    val key: HomeQuickActionKey,
     val label: String,
     val action: HomeHubAction,
     val enabled: Boolean,
@@ -119,14 +131,54 @@ fun buildHomeQuickActions(
     canPlayQueue: Boolean,
     canShuffleQueue: Boolean,
 ): List<HomeQuickActionModel> = listOf(
-    HomeQuickActionModel(stashString(R.string.auto_kr_0428), HomeHubAction.PlayQueue, canPlayQueue),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0429), HomeHubAction.ShuffleQueue, canShuffleQueue),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0004), HomeHubAction.OpenQueue, true),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0016), HomeHubAction.OpenQueue, true),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0238), HomeHubAction.OpenFavorites, true),
-    HomeQuickActionModel(stashString(R.string.navigation_explore_label), HomeHubAction.OpenExplore, true),
-    HomeQuickActionModel(stashString(R.string.navigation_shorts_label), HomeHubAction.OpenShorts, true),
-    HomeQuickActionModel(stashString(R.string.auto_kr_0005), HomeHubAction.OpenSettings, true),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.PlayQueue,
+        label = stashString(R.string.auto_kr_0428),
+        action = HomeHubAction.PlayQueue,
+        enabled = canPlayQueue,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.ShuffleQueue,
+        label = stashString(R.string.auto_kr_0429),
+        action = HomeHubAction.ShuffleQueue,
+        enabled = canShuffleQueue,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.OpenQueue,
+        label = stashString(R.string.auto_kr_0004),
+        action = HomeHubAction.OpenQueue,
+        enabled = true,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.OpenWatchLater,
+        label = stashString(R.string.auto_kr_0016),
+        action = HomeHubAction.OpenQueue,
+        enabled = true,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.OpenFavorites,
+        label = stashString(R.string.auto_kr_0238),
+        action = HomeHubAction.OpenFavorites,
+        enabled = true,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.OpenExplore,
+        label = stashString(R.string.navigation_explore_label),
+        action = HomeHubAction.OpenExplore,
+        enabled = true,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.OpenShorts,
+        label = stashString(R.string.navigation_shorts_label),
+        action = HomeHubAction.OpenShorts,
+        enabled = true,
+    ),
+    HomeQuickActionModel(
+        key = HomeQuickActionKey.OpenSettings,
+        label = stashString(R.string.auto_kr_0005),
+        action = HomeHubAction.OpenSettings,
+        enabled = true,
+    ),
 )
 
 fun homePreviewSectionTitle(sectionId: HomeHubSectionId): String = when (sectionId) {

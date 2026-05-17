@@ -497,7 +497,7 @@ private fun HomeQuickActionRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        items(actions, key = { it.label }) { action ->
+        items(actions, key = { it.key }) { action ->
             StashActionPill(
                 label = action.label,
                 enabled = action.enabled,
@@ -525,15 +525,15 @@ private fun HomeQuickActionRow(
     }
 }
 
-private fun homeQuickActionIcon(action: HomeQuickActionModel): ImageVector = when (action.label) {
-    stashString(R.string.auto_kr_0428) -> Icons.Outlined.PlayArrow
-    stashString(R.string.auto_kr_0429) -> Icons.Outlined.Shuffle
-    stashString(R.string.auto_kr_0004) -> Icons.AutoMirrored.Outlined.PlaylistPlay
-    stashString(R.string.auto_kr_0016) -> Icons.Outlined.Bookmarks
-    stashString(R.string.auto_kr_0238) -> Icons.Outlined.Star
-    stashString(R.string.navigation_explore_label) -> Icons.Outlined.Explore
-    stashString(R.string.navigation_shorts_label) -> Icons.Outlined.PlayArrow
-    else -> Icons.Outlined.Settings
+private fun homeQuickActionIcon(action: HomeQuickActionModel): ImageVector = when (action.key) {
+    HomeQuickActionKey.PlayQueue -> Icons.Outlined.PlayArrow
+    HomeQuickActionKey.ShuffleQueue -> Icons.Outlined.Shuffle
+    HomeQuickActionKey.OpenQueue -> Icons.AutoMirrored.Outlined.PlaylistPlay
+    HomeQuickActionKey.OpenWatchLater -> Icons.Outlined.Bookmarks
+    HomeQuickActionKey.OpenFavorites -> Icons.Outlined.Star
+    HomeQuickActionKey.OpenExplore -> Icons.Outlined.Explore
+    HomeQuickActionKey.OpenShorts -> Icons.Outlined.PlayArrow
+    HomeQuickActionKey.OpenSettings -> Icons.Outlined.Settings
 }
 
 @Composable

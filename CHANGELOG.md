@@ -6,6 +6,32 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-05-17
+
+### English
+
+- Fixed the Home tab crash that could occur in Chinese/localized app languages when multiple quick action labels resolve to the same translated text.
+- Keyed Home quick actions and their icons with stable locale-independent identifiers instead of visible labels.
+- Added regression coverage for unique Home quick action keys so localized label collisions cannot break the Compose lazy row again.
+
+### 한국어
+
+- 중국어 등 현지화 앱 언어에서 홈 빠른 실행 라벨이 같은 번역 텍스트로 겹칠 때 홈 탭이 종료될 수 있던 문제를 수정했습니다.
+- 홈 빠른 실행 항목과 아이콘을 표시 라벨이 아니라 로케일과 무관한 안정 식별자로 매칭하도록 바꿨습니다.
+- 현지화 라벨 중복이 Compose lazy row를 다시 깨뜨리지 않도록 홈 빠른 실행 키 고유성 회귀 테스트를 추가했습니다.
+
+### 简体中文
+
+- 修复在中文等本地化语言下，多个首页快捷操作显示为相同翻译文本时可能导致首页崩溃的问题。
+- 首页快捷操作及其图标改用与语言无关的稳定标识符，而不是可见标签文本。
+- 新增首页快捷操作 key 唯一性的回归测试，防止本地化标签冲突再次破坏 Compose lazy row。
+
+### 繁體中文
+
+- 修復在中文等本地化語言下，多個首頁快捷操作顯示為相同翻譯文字時可能導致首頁崩潰的問題。
+- 首頁快捷操作及其圖示改用與語言無關的穩定識別碼，而不是可見標籤文字。
+- 新增首頁快捷操作 key 唯一性的回歸測試，避免本地化標籤衝突再次破壞 Compose lazy row。
+
 ## [1.7.0] - 2026-05-17
 
 ### English
