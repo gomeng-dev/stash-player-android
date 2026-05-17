@@ -1,11 +1,8 @@
 package gomeng.dev.stashplayer.core.network
 
 import android.net.Uri
-import gomeng.dev.stashplayer.core.model.GalleryImageFolderGroup
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteResult
 import gomeng.dev.stashplayer.core.model.StashGalleryPage
-import gomeng.dev.stashplayer.core.model.StashGallerySortOption
-import gomeng.dev.stashplayer.core.model.StashImageFolderPage
 import gomeng.dev.stashplayer.core.model.StashImagePage
 import gomeng.dev.stashplayer.core.model.StashSceneDeleteOptions
 import gomeng.dev.stashplayer.core.model.SceneCardModel
@@ -75,107 +72,6 @@ data class StashStream(
     val height: Int? = null,
     val tags: List<gomeng.dev.stashplayer.core.model.SceneCardTagChip> = emptyList(),
 )
-
-internal fun enrichImageFolderGroupsWithPreviewPages(
-    folders: List<GalleryImageFolderGroup>,
-    previewPagesByPath: Map<String, StashImagePage>,
-): List<GalleryImageFolderGroup> = folders.mapNotNull { folder ->
-    if (folder.hasSubFolders) return@mapNotNull null
-    val previewPage = previewPagesByPath[folder.path] ?: return@mapNotNull folder
-    if (previewPage.totalCount <= 0) return@mapNotNull null
-    folder.copy(
-        imageCountOverride = previewPage.totalCount,
-        coverImageOverride = previewPage.images.firstOrNull(),
-    )
-}
-
-private const val IMAGE_FOLDER_INDEX_SOURCE_PAGES_PER_UI_PAGE = 6
-private const val IMAGE_FOLDER_PREVIEW_BATCH_SIZE = 24
-private val FIND_IMAGES_BATCH_ALIAS_REGEX = Regex("[A-Za-z_][A-Za-z0-9_]*")
-private val FIND_IMAGES_BATCH_VARIABLE_SPECS = listOf(
-    "perPage" to "Int!",
-    "page" to "Int!",
-    "q" to "String",
-    "sort" to "String!",
-    "direction" to "SortDirectionEnum!",
-    "imageFilter" to "ImageFilterType",
-)
-private const val FIND_IMAGES_BATCH_RESULT_SELECTION = """
-    count
-    images {
-      id
-      title
-      date
-      rating100
-      details
-      photographer
-      organized
-      o_counter
-      paths { thumbnail preview image }
-      visual_files {
-        ... on ImageFile {
-          path
-          basename
-          width
-          height
-          size
-          parent_folder { id path basename }
-        }
-      }
-      studio { name }
-      tags { id name }
-      performers { id name }
-      galleries { id title }
-    }
-"""
-
-internal data class FindImagesBatchItem(
-    val alias: String,
-    val variables: Map<String, Any?>,
-)
-
-internal data class FindImagesBatchRequest(
-    val query: String,
-    val variables: Map<String, Any?>,
-)
-
-internal fun imageFolderIndexSourcePageRange(page: Int): IntRange {
-    val safePage = page.coerceAtLeast(1)
-    val start = (safePage - 1) * IMAGE_FOLDER_INDEX_SOURCE_PAGES_PER_UI_PAGE + 1
-    return start until start + IMAGE_FOLDER_INDEX_SOURCE_PAGES_PER_UI_PAGE
-}
-
-internal fun buildFindImagesBatchRequest(requests: List<FindImagesBatchItem>): FindImagesBatchRequest {
-    require(requests.isNotEmpty()) { "At least one batched image request is required" }
-    requests.forEach { request ->
-        require(FIND_IMAGES_BATCH_ALIAS_REGEX.matches(request.alias)) { "Invalid GraphQL alias: ${request.alias}" }
-    }
-    val variableDeclarations = requests.flatMapIndexed { index, _ ->
-        FIND_IMAGES_BATCH_VARIABLE_SPECS.map { (name, type) -> "${'$'}$name$index: $type" }
-    }.joinToString(separator = ", ")
-    val fields = requests.mapIndexed { index, request ->
-        """
-        ${request.alias}: findImages(filter: { per_page: ${'$'}perPage$index, page: ${'$'}page$index, q: ${'$'}q$index, sort: ${'$'}sort$index, direction: ${'$'}direction$index }, image_filter: ${'$'}imageFilter$index) {
-          $FIND_IMAGES_BATCH_RESULT_SELECTION
-        }
-        """.trimIndent()
-    }.joinToString(separator = "\n")
-    val variables = buildMap {
-        requests.forEachIndexed { index, request ->
-            FIND_IMAGES_BATCH_VARIABLE_SPECS.forEach { (name, _) ->
-                put("$name$index", request.variables[name])
-            }
-        }
-    }
-    return FindImagesBatchRequest(
-        query = """
-            query FindImageFolderPreviews($variableDeclarations) {
-            $fields
-            }
-        """.trimIndent(),
-        variables = variables,
-    )
-}
 
 data class StashCaptionTrack(
     val languageCode: String,
@@ -342,8 +238,6 @@ class StashGraphQlClient(
         sort: String = "title",
         direction: StashSortDirection = StashSortDirection.Asc,
         imageFilter: StashImageFilterState = StashImageFilterState(),
-        folderDir: String? = null,
-        folderId: String? = null,
     ): StashImagePage {
         val parsedPage = parseFindImagesPageResponse(
             execute(
@@ -355,8 +249,6 @@ class StashGraphQlClient(
                     sort = sort,
                     direction = direction,
                     imageFilter = imageFilter,
-                    folderDir = folderDir,
-                    folderId = folderId,
                 ),
             ),
         )
@@ -369,146 +261,6 @@ class StashGraphQlClient(
                 )
             },
         )
-    }
-
-    suspend fun findImageFoldersPage(
-        perPage: Int = 50,
-        page: Int = 1,
-        query: String? = null,
-        sort: String = "path",
-        direction: StashSortDirection = StashSortDirection.Asc,
-        imageFilter: StashImageFilterState = StashImageFilterState(),
-    ): StashImageFolderPage {
-        val requestedPageSize = perPage.coerceAtLeast(1)
-        var totalCount: Int? = null
-        val enrichedFolders = mutableListOf<GalleryImageFolderGroup>()
-        for (sourcePage in imageFolderIndexSourcePageRange(page)) {
-            val folderPage = fetchImageFoldersPage(
-                perPage = requestedPageSize,
-                page = sourcePage,
-                query = query,
-                sort = sort,
-                direction = direction,
-                imageFilter = imageFilter,
-            )
-            totalCount = totalCount ?: folderPage.totalCount
-            val leafFolders = folderPage.folders.filterNot { folder -> folder.hasSubFolders }
-            if (leafFolders.isNotEmpty()) {
-                val previewPagesByPath = findImageFolderPreviewPages(
-                    folders = leafFolders,
-                    query = query,
-                    sort = sort,
-                    direction = direction,
-                    imageFilter = imageFilter,
-                )
-                enrichedFolders += enrichImageFolderGroupsWithPreviewPages(
-                    folders = leafFolders,
-                    previewPagesByPath = previewPagesByPath,
-                )
-            }
-            if (enrichedFolders.size >= requestedPageSize) break
-            val safeTotalCount = totalCount ?: folderPage.totalCount
-            if (sourcePage * requestedPageSize >= safeTotalCount) break
-        }
-        return StashImageFolderPage(
-            folders = enrichedFolders.take(requestedPageSize),
-            totalCount = totalCount ?: 0,
-        )
-    }
-
-    private suspend fun fetchImageFoldersPage(
-        perPage: Int,
-        page: Int,
-        query: String?,
-        sort: String,
-        direction: StashSortDirection,
-        imageFilter: StashImageFilterState,
-    ): StashImageFolderPage = parseFindImageFoldersPageResponse(
-        execute(
-            FIND_IMAGE_FOLDERS_QUERY,
-            buildFindImageFoldersVariables(
-                perPage = perPage,
-                page = page,
-                query = query,
-                sort = sort,
-                direction = direction,
-                imageFilter = imageFilter,
-            ),
-        ),
-    )
-
-    private suspend fun findImageFolderPreviewPages(
-        folders: List<GalleryImageFolderGroup>,
-        query: String?,
-        sort: String,
-        direction: StashSortDirection,
-        imageFilter: StashImageFilterState,
-    ): Map<String, StashImagePage> {
-        val pairs = mutableListOf<Pair<String, StashImagePage>>()
-        for (chunk in folders.chunked(IMAGE_FOLDER_PREVIEW_BATCH_SIZE)) {
-            val aliasToPath = chunk.mapIndexed { index, folder -> "folder$index" to folder.path }.toMap()
-            val batch = buildFindImagesBatchRequest(
-                chunk.mapIndexed { index, folder ->
-                    FindImagesBatchItem(
-                        alias = "folder$index",
-                        variables = buildFindImagesVariables(
-                            perPage = 1,
-                            page = 1,
-                            query = query,
-                            sort = sort,
-                            direction = direction,
-                            imageFilter = imageFilter,
-                            folderDir = folder.path,
-                            folderId = folder.folderId,
-                        ),
-                    )
-                },
-            )
-            val pagesByAlias = parseFindImagesBatchResponse(execute(batch.query, batch.variables))
-            pairs += pagesByAlias.mapNotNull { (alias, page) ->
-                aliasToPath[alias]?.let { path -> path to page }
-            }
-        }
-        return pairs.toMap()
-    }
-
-    suspend fun findImageFolderCounts(
-        folders: List<GalleryImageFolderGroup>,
-        query: String? = null,
-        imageFilter: StashImageFilterState = StashImageFilterState(),
-    ): Map<String, Int> {
-        val foldersById = folders.mapNotNull { folder ->
-            val folderId = folder.folderId?.trim()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-            folderId to folder
-        }.distinctBy { (folderId, _) -> folderId }
-        if (foldersById.isEmpty()) return emptyMap()
-        val counts = mutableMapOf<String, Int>()
-        for (chunk in foldersById.chunked(IMAGE_FOLDER_PREVIEW_BATCH_SIZE)) {
-            val aliasToFolderId = chunk.mapIndexed { index, (folderId, _) -> "folder$index" to folderId }.toMap()
-            val batch = buildFindImagesBatchRequest(
-                chunk.mapIndexed { index, (folderId, folder) ->
-                    FindImagesBatchItem(
-                        alias = "folder$index",
-                        variables = buildFindImagesVariables(
-                            perPage = 1,
-                            page = 1,
-                            query = query,
-                            sort = "path",
-                            direction = StashSortDirection.Asc,
-                            imageFilter = imageFilter,
-                            folderDir = folder.path,
-                            folderId = folderId,
-                        ),
-                    )
-                },
-            )
-            val pagesByAlias = parseFindImagesBatchResponse(execute(batch.query, batch.variables))
-            pagesByAlias.forEach { (alias, page) ->
-                val folderId = aliasToFolderId[alias] ?: return@forEach
-                counts[folderId] = page.totalCount
-            }
-        }
-        return counts
     }
 
     suspend fun findGalleryDetail(galleryId: String): StashGalleryDetailModel? {
@@ -823,6 +575,7 @@ class StashGraphQlClient(
                   tags { id name }
                   performers { id name }
                   scenes { id title }
+                  folder { path basename }
                   files {
                     path
                     basename
@@ -855,27 +608,12 @@ class StashGraphQlClient(
                       width
                       height
                       size
-                      parent_folder { id path basename }
                     }
                   }
                   studio { name }
                   tags { id name }
                   performers { id name }
                   galleries { id title }
-                }
-              }
-            }
-        """
-
-        val FIND_IMAGE_FOLDERS_QUERY = """
-            query FindImageFolders(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!, ${'$'}folderFilter: FolderFilterType) {
-              findFolders(filter: { per_page: ${'$'}perPage, page: ${'$'}page, q: ${'$'}q, sort: ${'$'}sort, direction: ${'$'}direction }, folder_filter: ${'$'}folderFilter) {
-                count
-                folders {
-                  id
-                  path
-                  basename
-                  sub_folders { id }
                 }
               }
             }
@@ -897,6 +635,7 @@ class StashGraphQlClient(
                 tags { id name }
                 performers { id name }
                 scenes { id title }
+                folder { path basename }
                 files {
                   path
                   basename
@@ -1135,50 +874,14 @@ internal fun buildFindImagesVariables(
     sort: String,
     direction: StashSortDirection,
     imageFilter: StashImageFilterState = StashImageFilterState(),
-    folderDir: String? = null,
-    folderId: String? = null,
 ): Map<String, Any?> = mapOf(
     "perPage" to perPage,
     "page" to page.coerceAtLeast(1),
     "q" to query?.trim()?.takeIf { it.isNotBlank() },
     "sort" to sort,
     "direction" to direction.graphQlValue,
-    "imageFilter" to imageFilter.toGraphQlImageFilterOrNull(folderDir = folderDir, folderId = folderId),
+    "imageFilter" to imageFilter.toGraphQlImageFilterOrNull(),
 )
-
-internal fun buildFindImageFoldersVariables(
-    perPage: Int,
-    page: Int,
-    query: String?,
-    sort: String,
-    direction: StashSortDirection,
-    imageFilter: StashImageFilterState = StashImageFilterState(),
-): Map<String, Any?> = mapOf(
-    "perPage" to perPage,
-    "page" to page.coerceAtLeast(1),
-    "q" to query?.trim()?.takeIf { it.isNotBlank() },
-    "sort" to sort,
-    "direction" to direction.graphQlValue,
-    "folderFilter" to buildImageFolderFilter(imageFilter),
-)
-
-private fun buildImageFolderFilter(imageFilter: StashImageFilterState): Map<String, Any?> {
-    val filesFilter = mutableMapOf<String, Any?>(
-        "image_count" to mapOf("value" to 0, "modifier" to "GREATER_THAN"),
-    )
-    imageFilter.toGraphQlImageFilterOrNull()?.let { filesFilter["images_filter"] = it }
-    return mapOf("files_filter" to filesFilter)
-}
-
-internal fun imageFolderServerSortValue(sortOption: StashGallerySortOption): String = when (sortOption.serverValue) {
-    "random" -> "path"
-    else -> "path"
-}
-
-internal fun imageFolderServerDirection(
-    sortOption: StashGallerySortOption,
-    direction: StashSortDirection,
-): StashSortDirection = if (sortOption.serverValue == "path") direction else StashSortDirection.Asc
 
 internal fun buildFindGalleryDetailVariables(galleryId: String): Map<String, Any?> = mapOf(
     "id" to galleryId.trim(),
@@ -1370,7 +1073,7 @@ private fun StashGalleryFilterState.toGraphQlGalleryFilterOrNull(): Map<String, 
     parentFolders.toGalleryEntityCriterionOrNull()?.let { put("parent_folder", it) }
 }.takeIf { it.isNotEmpty() }
 
-private fun StashImageFilterState.toGraphQlImageFilterOrNull(folderDir: String? = null, folderId: String? = null): Map<String, Any?>? = buildMap {
+private fun StashImageFilterState.toGraphQlImageFilterOrNull(): Map<String, Any?>? = buildMap {
     text.title.toTextCriterionOrNull()?.let { put("title", it) }
     text.details.toTextCriterionOrNull()?.let { put("details", it) }
     text.code.toTextCriterionOrNull()?.let { put("code", it) }
@@ -1408,44 +1111,7 @@ private fun StashImageFilterState.toGraphQlImageFilterOrNull(folderDir: String? 
     studios.toGalleryEntityCriterionOrNull()?.let { put("studios", it) }
     performers.toGalleryEntityCriterionOrNull()?.let { put("performers", it) }
     galleries.toGalleryEntityCriterionOrNull()?.let { put("galleries", it) }
-    val normalizedFolderId = folderId?.trim()?.takeIf { it.isNotBlank() }
-    val normalizedFolderDir = folderDir?.trim()?.takeIf { it.isNotBlank() }
-    if (normalizedFolderId != null || normalizedFolderDir != null) {
-        put(
-            "files_filter",
-            buildMap {
-                normalizedFolderId?.let { id ->
-                    put(
-                        "parent_folder",
-                        mapOf(
-                            "value" to listOf(id),
-                            "modifier" to "EQUALS",
-                        ),
-                    )
-                } ?: normalizedFolderDir?.let { path ->
-                    put(
-                        "path",
-                        mapOf(
-                            "value" to path.toDirectChildFilePathRegex(),
-                            "modifier" to "MATCHES_REGEX",
-                        ),
-                    )
-                }
-            },
-        )
-    }
 }.takeIf { it.isNotEmpty() }
-
-private fun String.toDirectChildFilePathRegex(): String {
-    val normalized = trim()
-        .replace('\\', '/')
-        .trimEnd('/')
-    val escaped = normalized.split('/')
-        .filter { it.isNotEmpty() }
-        .joinToString("[\\\\/]") { segment -> Regex.escape(segment) }
-    val prefix = if (normalized.startsWith('/')) "[\\\\/]" else ""
-    return "^$prefix$escaped[\\\\/][^\\\\/]+$"
-}
 
 private fun List<StashSelectedEntity>.toGalleryEntityCriterionOrNull(): Map<String, Any?>? {
     val ids = normalizedGalleryEntities().map { it.id }

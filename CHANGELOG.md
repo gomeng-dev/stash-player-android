@@ -6,6 +6,22 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.6.12] - 2026-05-17
+
+### English
+
+- Fixed folder-created Stash galleries so blank gallery titles fall back to the server folder name before falling back to the numeric gallery ID.
+- Removed the custom Gallery > Images > Folders mode now that Stash can create folder-backed galleries directly.
+- Kept Gallery parent-folder filtering intact for server-backed galleries while simplifying the Images tab display modes to Grid and Wall.
+- Updated regression coverage for folder-backed gallery naming and the retired image-folder grouping mode.
+
+### 한국어
+
+- Stash에서 폴더로 생성된 갤러리의 제목이 비어 있을 때 숫자 ID로 표시되기 전에 서버 폴더 이름을 표시하도록 수정했습니다.
+- Stash 자체의 폴더 기반 갤러리 생성 기능을 사용하도록, 앱의 별도 Gallery > Images > Folders 모드를 제거했습니다.
+- 서버 기반 갤러리의 부모 폴더 필터는 유지하고, Images 탭 표시 모드는 Grid와 Wall로 단순화했습니다.
+- 폴더 기반 갤러리 이름 fallback과 제거된 이미지 폴더 그룹핑 모드에 맞춰 회귀 테스트를 갱신했습니다.
+
 ## [1.6.11] - 2026-05-17
 
 ### English

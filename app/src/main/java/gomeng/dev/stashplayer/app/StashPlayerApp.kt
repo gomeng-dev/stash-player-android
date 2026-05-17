@@ -27,6 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import gomeng.dev.stashplayer.app.navigation.StashNavHost
 import gomeng.dev.stashplayer.app.navigation.isFoldLikeLayoutBySmallestWidthDp
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
@@ -39,7 +43,7 @@ import gomeng.dev.stashplayer.core.ui.theme.StashPlayerTheme
 import gomeng.dev.stashplayer.core.ui.theme.resolveStashDarkTheme
 import gomeng.dev.stashplayer.feature.security.BiometricAppLockGate
 
-class StashPlayerApp : Application() {
+class StashPlayerApp : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         updateStashStringContext(this)
@@ -50,6 +54,16 @@ class StashPlayerApp : Application() {
             previousHandler?.uncaughtException(thread, throwable)
         }
     }
+
+    override fun newImageLoader(): ImageLoader = ImageLoader.Builder(this)
+        .components {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                add(ImageDecoderDecoder.Factory())
+            } else {
+                add(GifDecoder.Factory())
+            }
+        }
+        .build()
 }
 
 @Composable

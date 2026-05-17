@@ -86,7 +86,6 @@ enum class StashGalleryDisplayMode {
     Grid,
     List,
     Wall,
-    Folders,
 }
 
 enum class StashScenesViewMode(@StringRes val labelRes: Int) {

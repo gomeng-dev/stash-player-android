@@ -1024,10 +1024,7 @@
     <string name="gallery_sort_created_at_label" formatted="false">Created At</string>
     <string name="gallery_sort_updated_at_label" formatted="false">Updated At</string>
     <string name="gallery_display_mode_wall_label" formatted="false">Wall</string>
-    <string name="gallery_display_mode_folders_label" formatted="false">Folders</string>
     <string name="gallery_image_unfiled_folder_label" formatted="false">Unfiled</string>
-    <string name="gallery_image_folder_open_content_description">Open %1$s folder</string>
-    <string name="gallery_image_folder_back_action" formatted="false">Folder list</string>
     <string name="gallery_toolbar_content_description" formatted="false">Gallery discovery toolbar</string>
     <string name="gallery_toolbar_operations_content_description">Gallery operations menu, %1$d currently visible</string>
     <string name="gallery_operations_open_first_action" formatted="false">Open first gallery</string>

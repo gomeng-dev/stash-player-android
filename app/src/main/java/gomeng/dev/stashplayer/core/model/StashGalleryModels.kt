@@ -55,51 +55,12 @@ data class GalleryImageModel(
     val oCounter: Int? = null,
     val fileName: String? = null,
     val filePath: String? = null,
-    val parentFolderId: String? = null,
-    val parentFolderPath: String? = null,
-    val parentFolderName: String? = null,
 ) {
     val bestDisplayUrl: String?
         get() = imageUrl ?: previewUrl ?: thumbnailUrl
 
     val bestViewerImageUrl: String?
         get() = imageUrl.nonBlankOrNull() ?: previewUrl.nonBlankOrNull() ?: thumbnailUrl.nonBlankOrNull()
-}
-
-data class GalleryImageFolderItem(
-    val image: GalleryImageModel,
-    val originalIndex: Int,
-)
-
-data class GalleryImageFolderViewerRequest(
-    val initialIndex: Int,
-    val images: List<GalleryImageModel>,
-)
-
-data class GalleryImageFolderGroup(
-    val title: String,
-    val path: String,
-    val items: List<GalleryImageFolderItem>,
-    val folderId: String? = null,
-    val imageCountOverride: Int? = null,
-    val coverImageOverride: GalleryImageModel? = null,
-    val hasSubFolders: Boolean = false,
-    val showLoadedItemCount: Boolean = true,
-) {
-    val id: String get() = folderId?.trim()?.takeIf { it.isNotBlank() } ?: path.ifBlank { "__unfiled__" }
-    val knownImageCount: Int? get() = imageCountOverride ?: items.size.takeIf { showLoadedItemCount && it > 0 }
-    val imageCount: Int get() = knownImageCount ?: 0
-    val images: List<GalleryImageModel> get() = items.map { it.image }
-    val coverImage: GalleryImageModel? get() = coverImageOverride ?: items.firstOrNull()?.image
-
-    fun viewerRequestForImage(imageId: String): GalleryImageFolderViewerRequest? {
-        val index = items.indexOfFirst { item -> item.image.id == imageId }
-        if (index < 0) return null
-        return GalleryImageFolderViewerRequest(
-            initialIndex = index,
-            images = images,
-        )
-    }
 }
 
 data class GalleryLinkedSceneModel(
@@ -1042,11 +1003,6 @@ data class StashImagePage(
     val totalCount: Int,
 )
 
-data class StashImageFolderPage(
-    val folders: List<GalleryImageFolderGroup>,
-    val totalCount: Int,
-)
-
 enum class StashGalleryBrowseMode {
     Galleries,
     Images,
@@ -1137,7 +1093,6 @@ data class StashGalleryGlobalImageGridPageState(
     val randomSeed: Int? = null,
     val displayMode: StashGalleryDisplayMode = StashGalleryDisplayMode.Grid,
     val images: List<GalleryImageModel> = emptyList(),
-    val folderGroups: List<GalleryImageFolderGroup> = emptyList(),
     val nextPage: Int = 1,
     val hasMore: Boolean = true,
     val isLoading: Boolean = false,
@@ -1207,18 +1162,10 @@ data class StashGalleryGlobalImageGridPageState(
     )
 
     val serverSort: String
-        get() = if (displayMode == StashGalleryDisplayMode.Folders && sortOption.isRandomSort()) {
-            defaultStashImageSortOption().serverValue
-        } else {
-            imageServerSortValue(sortOption, randomSeed)
-        }
+        get() = imageServerSortValue(sortOption, randomSeed)
 
     val serverDirection: StashSortDirection
-        get() = if (displayMode == StashGalleryDisplayMode.Folders && sortOption.isRandomSort()) {
-            defaultStashImageSortOption().defaultDirection
-        } else {
-            sortDirection
-        }
+        get() = sortDirection
 
     fun loading(): StashGalleryGlobalImageGridPageState = copy(isLoading = true, error = null)
 
@@ -1228,7 +1175,6 @@ data class StashGalleryGlobalImageGridPageState(
         perPage: Int,
     ): StashGalleryGlobalImageGridPageState = copy(
         images = images,
-        folderGroups = emptyList(),
         nextPage = 2,
         hasMore = perPage < totalCount,
         isLoading = false,
@@ -1242,43 +1188,6 @@ data class StashGalleryGlobalImageGridPageState(
         perPage: Int,
     ): StashGalleryGlobalImageGridPageState = copy(
         images = this.images + images,
-        folderGroups = emptyList(),
-        nextPage = nextPage + 1,
-        hasMore = nextPage * perPage < totalCount,
-        isLoading = false,
-        error = null,
-        totalCount = totalCount,
-    )
-
-    fun withFirstFolderPage(
-        folders: List<GalleryImageFolderGroup>,
-        totalCount: Int,
-        perPage: Int,
-    ): StashGalleryGlobalImageGridPageState = copy(
-        images = emptyList(),
-        folderGroups = folders.asServerBackedImageFolderIndex(
-            sortDirection = sortDirection,
-            sortOption = sortOption,
-            randomSeed = randomSeed,
-        ),
-        nextPage = 2,
-        hasMore = perPage < totalCount,
-        isLoading = false,
-        error = null,
-        totalCount = totalCount,
-    )
-
-    fun withNextFolderPage(
-        folders: List<GalleryImageFolderGroup>,
-        totalCount: Int,
-        perPage: Int,
-    ): StashGalleryGlobalImageGridPageState = copy(
-        images = emptyList(),
-        folderGroups = (this.folderGroups + folders).asServerBackedImageFolderIndex(
-            sortDirection = sortDirection,
-            sortOption = sortOption,
-            randomSeed = randomSeed,
-        ),
         nextPage = nextPage + 1,
         hasMore = nextPage * perPage < totalCount,
         isLoading = false,
@@ -1301,35 +1210,6 @@ data class StashGalleryGlobalImageGridPageState(
     companion object {
         fun initial(): StashGalleryGlobalImageGridPageState = StashGalleryGlobalImageGridPageState()
     }
-}
-
-data class StashGalleryImageModeContentState(
-    val visibleCount: Int,
-    val totalCount: Int?,
-    val statusPageState: StashGalleryGlobalImageGridPageState,
-    val isSelectedFolderDetail: Boolean,
-)
-
-fun resolveStashGalleryImageModeContentState(
-    imagePageState: StashGalleryGlobalImageGridPageState,
-    selectedImageFolderPath: String?,
-    selectedImageFolderPageState: StashGalleryGlobalImageGridPageState,
-): StashGalleryImageModeContentState {
-    val isFolderMode = imagePageState.displayMode == StashGalleryDisplayMode.Folders
-    val isSelectedFolderDetail = isFolderMode && selectedImageFolderPath != null
-    val statusPageState = if (isSelectedFolderDetail) selectedImageFolderPageState else imagePageState
-    val visibleCount = when {
-        isSelectedFolderDetail -> selectedImageFolderPageState.images.size
-        isFolderMode -> imagePageState.folderGroups.size
-        else -> imagePageState.images.size
-    }
-
-    return StashGalleryImageModeContentState(
-        visibleCount = visibleCount,
-        totalCount = statusPageState.totalCount,
-        statusPageState = statusPageState,
-        isSelectedFolderDetail = isSelectedFolderDetail,
-    )
 }
 
 data class StashGalleryBrowseModeSwitchResult(
@@ -1476,136 +1356,6 @@ fun GalleryImageModel.galleryImageLinkedGalleryLabels(limit: Int = 2): List<Stri
 fun GalleryImageModel.galleryImagePerformerLabels(limit: Int = 2): List<String> = performerChips
     .mapNotNull { it.label.trim().takeIf { label -> label.isNotBlank() } }
     .take(limit.coerceAtLeast(0))
-
-fun List<GalleryImageFolderGroup>.asServerBackedImageFolderIndex(
-    sortDirection: StashSortDirection = StashSortDirection.Asc,
-    sortOption: StashGallerySortOption = defaultStashImageSortOption(),
-    randomSeed: Int? = null,
-): List<GalleryImageFolderGroup> {
-    val distinctFolders = distinctBy { group -> group.id.ifBlank { group.path } }
-    val pathComparator = compareBy<GalleryImageFolderGroup> { group ->
-        if (group.path.isBlank()) 1 else 0
-    }.thenBy { group -> group.path.lowercase(Locale.US) }
-    val pathSorted = distinctFolders.sortedWith(pathComparator)
-    return if (sortOption.isRandomSort()) {
-        val seed = normalizeStashRandomSortSeed(randomSeed ?: 0)
-        val randomComparator = compareBy<GalleryImageFolderGroup> { group ->
-            group.path.toStableFolderRandomSortKey(seed)
-        }.thenBy { group -> group.path.lowercase(Locale.US) }
-        when (sortDirection) {
-            StashSortDirection.Asc -> pathSorted.sortedWith(randomComparator)
-            StashSortDirection.Desc -> pathSorted.sortedWith(randomComparator.reversed())
-        }
-    } else {
-        when (sortDirection) {
-            StashSortDirection.Asc -> pathSorted
-            StashSortDirection.Desc -> pathSorted.let { sorted ->
-                val filed = sorted.filter { it.path.isNotBlank() }.reversed()
-                val unfiled = sorted.filter { it.path.isBlank() }
-                filed + unfiled
-            }
-        }
-    }
-}
-
-fun groupGalleryImagesByParentFolder(
-    images: List<GalleryImageModel>,
-    unfiledLabel: String,
-    sortDirection: StashSortDirection = StashSortDirection.Asc,
-    sortOption: StashGallerySortOption = defaultStashImageSortOption(),
-    randomSeed: Int? = null,
-    countOverridesByFolderId: Map<String, Int> = emptyMap(),
-): List<GalleryImageFolderGroup> {
-    val groups = linkedMapOf<String, GalleryImageFolderAccumulator>()
-    images.forEachIndexed { index, image ->
-        val folderId = image.parentFolderId.normalizedFolderValueOrNull()
-        val folderPath = image.parentFolderPath.normalizedFolderPathOrNull()
-            ?: image.filePath.toStashParentFolderPathOrEmpty()
-        val fallbackTitle = folderPath.toStashFolderTitleOrDefault(unfiledLabel)
-        val folderTitle = image.parentFolderName.normalizedFolderValueOrNull() ?: fallbackTitle
-        val groupKey = folderId ?: folderPath.ifBlank { "__unfiled__" }
-        groups.getOrPut(groupKey) {
-            GalleryImageFolderAccumulator(
-                folderId = folderId,
-                path = folderPath,
-                title = folderTitle,
-            )
-        }.items.add(GalleryImageFolderItem(image = image, originalIndex = index))
-    }
-    val folderComparator = compareBy<GalleryImageFolderAccumulator> { group ->
-        if (group.path.isBlank()) 1 else 0
-    }.thenBy { group -> group.path.lowercase(Locale.US) }
-    val pathSortedFolders = groups.values.sortedWith(folderComparator)
-    val sortedFolders = if (sortOption.isRandomSort()) {
-        val seed = normalizeStashRandomSortSeed(randomSeed ?: 0)
-        val randomComparator = compareBy<GalleryImageFolderAccumulator> { group ->
-            group.path.toStableFolderRandomSortKey(seed)
-        }.thenBy { group -> group.path.lowercase(Locale.US) }
-        when (sortDirection) {
-            StashSortDirection.Asc -> pathSortedFolders.sortedWith(randomComparator)
-            StashSortDirection.Desc -> pathSortedFolders.sortedWith(randomComparator.reversed())
-        }
-    } else {
-        when (sortDirection) {
-            StashSortDirection.Asc -> pathSortedFolders
-            StashSortDirection.Desc -> pathSortedFolders.let { sorted ->
-                val filed = sorted.filter { it.path.isNotBlank() }.reversed()
-                val unfiled = sorted.filter { it.path.isBlank() }
-                filed + unfiled
-            }
-        }
-    }
-    val itemComparator = compareBy<GalleryImageFolderItem> { item ->
-        item.image.filePath.toStashSortablePathOrEmpty().lowercase(Locale.US)
-    }.thenBy { item -> item.originalIndex }
-    val sortedItemComparator = when (sortDirection) {
-        StashSortDirection.Asc -> itemComparator
-        StashSortDirection.Desc -> itemComparator.reversed()
-    }
-    return sortedFolders.map { group ->
-        val countOverride = group.folderId?.let(countOverridesByFolderId::get)
-        GalleryImageFolderGroup(
-            title = group.title,
-            path = group.path,
-            items = group.items.sortedWith(sortedItemComparator),
-            folderId = group.folderId,
-            imageCountOverride = countOverride,
-            showLoadedItemCount = false,
-        )
-    }
-}
-
-fun List<GalleryImageFolderGroup>.exactCountOverridesByFolderId(): Map<String, Int> = mapNotNull { group ->
-    val folderId = group.folderId.normalizedFolderValueOrNull() ?: return@mapNotNull null
-    val count = group.imageCountOverride ?: return@mapNotNull null
-    folderId to count
-}.toMap()
-
-fun List<GalleryImageFolderGroup>.withExactFolderCounts(countsByFolderId: Map<String, Int>): List<GalleryImageFolderGroup> =
-    map { group ->
-        val count = group.folderId.normalizedFolderValueOrNull()?.let(countsByFolderId::get)
-        if (count == null) group else group.copy(imageCountOverride = count)
-    }
-
-private data class GalleryImageFolderAccumulator(
-    val folderId: String?,
-    val path: String,
-    val title: String,
-    val items: MutableList<GalleryImageFolderItem> = mutableListOf(),
-)
-
-private fun String.toStableFolderRandomSortKey(seed: Int): Long {
-    val normalized = ifBlank { "__unfiled__" }.lowercase(Locale.US)
-    var hash = seed.toLong() xor 0x9E3779B97F4A7C15UL.toLong()
-    normalized.forEach { char ->
-        hash = (hash xor char.code.toLong()) * 0x100000001B3L
-    }
-    hash = hash xor (hash ushr 33)
-    hash *= 0xff51afd7ed558ccdUL.toLong()
-    hash = hash xor (hash ushr 33)
-    hash *= 0xc4ceb9fe1a85ec53UL.toLong()
-    return hash xor (hash ushr 33)
-}
 
 data class GalleryPhotoDetailRow(
     val label: String,
@@ -1815,8 +1565,7 @@ fun stashGalleryGridLayoutPolicy(
     displayMode: StashGalleryDisplayMode,
     isFoldLikeLayout: Boolean,
 ): StashGalleryGridLayoutPolicy = when (displayMode) {
-    StashGalleryDisplayMode.Grid,
-    StashGalleryDisplayMode.Folders -> StashGalleryGridLayoutPolicy(
+    StashGalleryDisplayMode.Grid -> StashGalleryGridLayoutPolicy(
         columns = if (isFoldLikeLayout) 3 else 2,
         thumbnailHeightDp = if (isFoldLikeLayout) 180 else 156,
     )
@@ -1839,7 +1588,6 @@ fun stashGalleryGridThumbnailHeightDp(isFoldLikeLayout: Boolean): Int =
 fun stashGalleryImageDisplayModes(): List<StashGalleryDisplayMode> = listOf(
     StashGalleryDisplayMode.Grid,
     StashGalleryDisplayMode.Wall,
-    StashGalleryDisplayMode.Folders,
 )
 
 fun stashGalleryImageGridLayoutPolicy(
@@ -1851,7 +1599,6 @@ fun stashGalleryImageGridLayoutPolicy(
         thumbnailHeightDp = if (isFoldLikeLayout) 148 else 112,
     )
     StashGalleryDisplayMode.Grid,
-    StashGalleryDisplayMode.Folders,
     StashGalleryDisplayMode.List -> StashGalleryGridLayoutPolicy(
         columns = if (isFoldLikeLayout) 4 else 3,
         thumbnailHeightDp = if (isFoldLikeLayout) 176 else 132,
@@ -1865,33 +1612,3 @@ fun stashGalleryImageGridThumbnailHeightDp(isFoldLikeLayout: Boolean): Int =
     stashGalleryImageGridLayoutPolicy(StashGalleryDisplayMode.Grid, isFoldLikeLayout).thumbnailHeightDp
 
 private fun String?.nonBlankOrNull(): String? = this?.trim()?.takeIf { it.isNotBlank() }
-
-private fun String?.toStashParentFolderPathOrEmpty(): String {
-    val normalized = toStashSortablePathOrEmpty()
-        .takeIf { it.isNotBlank() }
-        ?: return ""
-    val parent = normalized.substringBeforeLast('/', missingDelimiterValue = "")
-        .trimEnd('/')
-    return parent.takeIf { it.isNotBlank() } ?: ""
-}
-
-private fun String?.normalizedFolderValueOrNull(): String? = this?.trim()?.takeIf { it.isNotBlank() }
-
-private fun String?.normalizedFolderPathOrNull(): String? = normalizedFolderValueOrNull()
-    ?.replace('\\', '/')
-    ?.trimEnd('/')
-    ?.takeIf { it.isNotBlank() }
-
-private fun String?.toStashSortablePathOrEmpty(): String = this?.substringBefore('#')
-    ?.substringBefore('?')
-    ?.trim()
-    ?.replace('\\', '/')
-    ?.trimEnd('/')
-    ?.takeIf { it.isNotBlank() }
-    ?: ""
-
-private fun String.toStashFolderTitleOrDefault(defaultLabel: String): String =
-    substringAfterLast('/', missingDelimiterValue = this)
-        .trim()
-        .takeIf { it.isNotBlank() }
-        ?: defaultLabel
