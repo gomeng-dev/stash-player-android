@@ -146,6 +146,7 @@ import gomeng.dev.stashplayer.core.player.PlayerTransportController
 import gomeng.dev.stashplayer.core.player.PlayerWatchPageController
 import gomeng.dev.stashplayer.core.player.resolvePlayerPlaylistDrawerPresentationPolicy
 import gomeng.dev.stashplayer.core.player.resolvePlayerPresentationOverlayAlpha
+import gomeng.dev.stashplayer.core.player.resolvePlayerResumeStartPositionMs
 import gomeng.dev.stashplayer.core.player.sanitizePlaybackErrorText
 import gomeng.dev.stashplayer.core.player.shouldAutoHidePlayerControls
 import gomeng.dev.stashplayer.core.player.shouldAutoFallbackPlaybackSource
@@ -608,16 +609,28 @@ private fun RealPlayerRoute(
     var repeatedFromSceneId by remember(sceneId) { mutableStateOf<String?>(null) }
     var autoAdvanceArmed by remember(stream) { mutableStateOf(false) }
     var playbackPrepared by remember(stream) { mutableStateOf(false) }
+    val resolvedResumeStartPositionMs = remember(stream) {
+        resolvePlayerResumeStartPositionMs(
+            startPositionMs = stream.startPositionMs,
+            durationSeconds = stream.durationSeconds,
+        )
+    }
+    val shouldShowResumePrompt = remember(stream) {
+        shouldPromptForPlayerResumePosition(
+            startPositionMs = stream.startPositionMs,
+            durationSeconds = stream.durationSeconds,
+        )
+    }
     var resumeStartPositionMs by remember(stream) {
         mutableStateOf<Long?>(
-            if (shouldPromptForPlayerResumePosition(stream.startPositionMs)) {
+            if (shouldShowResumePrompt) {
                 null
             } else {
-                stream.startPositionMs
+                resolvedResumeStartPositionMs
             },
         )
     }
-    var resumePromptVisible by remember(stream) { mutableStateOf(shouldPromptForPlayerResumePosition(stream.startPositionMs)) }
+    var resumePromptVisible by remember(stream) { mutableStateOf(shouldShowResumePrompt) }
 
     BackHandler {
         when (
@@ -854,7 +867,7 @@ private fun RealPlayerRoute(
     LaunchedEffect(stream, resumePromptVisible) {
         if (resumePromptVisible && resumeStartPositionMs == null) {
             delay(RESUME_PROMPT_TIMEOUT_MS)
-            resumeStartPositionMs = stream.startPositionMs
+            resumeStartPositionMs = resolvedResumeStartPositionMs
             resumePromptVisible = false
         }
     }

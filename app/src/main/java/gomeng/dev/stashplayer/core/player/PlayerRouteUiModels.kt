@@ -22,8 +22,24 @@ data class PlayerPictureInPictureAspectRatio(
     val height: Int,
 )
 
-fun shouldPromptForPlayerResumePosition(startPositionMs: Long): Boolean =
-    startPositionMs >= PLAYER_RESUME_PROMPT_MIN_POSITION_MS
+fun resolvePlayerResumeStartPositionMs(
+    startPositionMs: Long,
+    durationSeconds: Double?,
+): Long {
+    val durationMs = ((durationSeconds ?: 0.0) * 1000.0).toLong().coerceAtLeast(0L)
+    return if (isPlayerWatchedAtPosition(positionMs = startPositionMs, durationMs = durationMs)) {
+        0L
+    } else {
+        startPositionMs.coerceAtLeast(0L)
+    }
+}
+
+fun shouldPromptForPlayerResumePosition(
+    startPositionMs: Long,
+    durationSeconds: Double? = null,
+): Boolean =
+    startPositionMs >= PLAYER_RESUME_PROMPT_MIN_POSITION_MS &&
+        resolvePlayerResumeStartPositionMs(startPositionMs, durationSeconds) > 0L
 
 fun buildResumePlaybackPromptState(
     resumePositionMs: Long,

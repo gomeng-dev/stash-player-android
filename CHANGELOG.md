@@ -6,6 +6,28 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.3] - 2026-05-18
+
+### English
+
+- Fixed playlist playback for scenes whose saved resume position is already at the watched threshold, restarting them from the beginning instead of immediately auto-advancing to the next queued scene.
+- Added regression coverage for watched-threshold resume handling, including the exact cutoff boundary.
+
+### 한국어
+
+- 저장된 이어보기 위치가 이미 시청 완료 기준에 도달한 재생목록 영상을 열 때 다음 항목으로 즉시 넘어가지 않고 처음부터 재생되도록 수정했습니다.
+- 시청 완료 기준의 경계값을 포함해 이어보기 위치 재시작 정책 회귀 테스트를 추가했습니다.
+
+### 简体中文
+
+- 修复播放列表中已保存到已看完阈值位置的影片会立即跳到下一项的问题，现在会从开头重新播放。
+- 新增已看完阈值与边界位置的续播回归测试。
+
+### 繁體中文
+
+- 修復播放列表中已儲存到已看完門檻位置的影片會立即跳到下一項的問題，現在會從開頭重新播放。
+- 新增已看完門檻與邊界位置的續播回歸測試。
+
 ## [1.7.2] - 2026-05-18
 
 ### English
