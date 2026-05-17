@@ -63,7 +63,7 @@ The screenshots below were captured from the real Android app with public demo m
 3. Open the APK and allow installs from your browser or file manager if Android asks.
 4. Launch **Stash Player** and connect it to your Stash server.
 
-> Current public release: **v1.7.0**.
+> Current public release: **v1.7.2**.
 
 ## What you need
 

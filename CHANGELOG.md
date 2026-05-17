@@ -6,6 +6,32 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-05-18
+
+### English
+
+- Fixed the public release workflow so Korean, Simplified Chinese, and Traditional Chinese README files are copied into the sanitized public repository snapshot.
+- Added release workflow regression coverage and validation so localized README links cannot be published as broken links again.
+- Updated README current-release badges/copy to point at v1.7.2.
+
+### 한국어
+
+- 공개 릴리즈 workflow가 정리된 공개 저장소 스냅샷에 한국어, 중국어 간체, 중국어 번체 README 파일을 함께 복사하도록 수정했습니다.
+- 현지화 README 링크가 다시 깨진 상태로 배포되지 않도록 릴리즈 workflow 회귀 테스트와 필수 파일 검증을 추가했습니다.
+- README의 현재 공개 릴리즈 표기를 v1.7.2로 갱신했습니다.
+
+### 简体中文
+
+- 修复公开发布 workflow，使其在生成净化后的公开仓库快照时包含韩语、简体中文和繁体中文 README 文件。
+- 新增发布 workflow 回归测试和必需文件校验，防止本地化 README 链接再次以损坏状态发布。
+- 将 README 中的当前公开版本更新为 v1.7.2。
+
+### 繁體中文
+
+- 修復公開發布 workflow，使其在產生淨化後的公開儲存庫快照時包含韓文、簡體中文和繁體中文 README 檔案。
+- 新增發布 workflow 回歸測試與必要檔案驗證，避免本地化 README 連結再次以失效狀態發布。
+- 將 README 中的目前公開版本更新為 v1.7.2。
+
 ## [1.7.1] - 2026-05-17
 
 ### English
