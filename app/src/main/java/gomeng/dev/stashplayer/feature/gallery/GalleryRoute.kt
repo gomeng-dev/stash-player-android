@@ -44,6 +44,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -180,6 +182,7 @@ import gomeng.dev.stashplayer.core.ui.i18n.stashString
 import gomeng.dev.stashplayer.feature.player.PlayerOverlayTransportControls
 import gomeng.dev.stashplayer.feature.player.PlayerRatingControls
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -372,6 +375,8 @@ internal class GalleryDetailRouteStateViewModel : ViewModel() {
     private var activeGalleryId: String? = null
     var reloadToken by mutableLongStateOf(0L)
     var requestSerial by mutableLongStateOf(0L)
+    var detailGridFirstVisibleItemIndex by mutableStateOf(0)
+    var detailGridFirstVisibleItemScrollOffset by mutableStateOf(0)
     var pageState by mutableStateOf(
         StashGalleryImageGridPageState.initial("").copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE),
     )
@@ -386,9 +391,16 @@ internal class GalleryDetailRouteStateViewModel : ViewModel() {
         activeGalleryId = galleryId
         reloadToken = 0L
         requestSerial += 1L
+        detailGridFirstVisibleItemIndex = 0
+        detailGridFirstVisibleItemScrollOffset = 0
         lastDetailResetLoadKey = null
         pageState = StashGalleryImageGridPageState.initial(galleryId)
             .copy(pageSize = GALLERY_IMAGE_GRID_DEFAULT_PAGE_SIZE)
+    }
+
+    fun updateDetailGridScroll(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
+        detailGridFirstVisibleItemIndex = firstVisibleItemIndex
+        detailGridFirstVisibleItemScrollOffset = firstVisibleItemScrollOffset
     }
 }
 
@@ -1182,6 +1194,8 @@ fun GalleryDetailRoute(
     var reloadToken by routeState::reloadToken
     var requestSerial by routeState::requestSerial
     var pageState by routeState::pageState
+    val detailGridFirstVisibleItemIndex = routeState.detailGridFirstVisibleItemIndex
+    val detailGridFirstVisibleItemScrollOffset = routeState.detailGridFirstVisibleItemScrollOffset
 
     fun loadPage(page: Int, reset: Boolean = false) {
         val activeProfile = profile ?: return
@@ -1262,7 +1276,10 @@ fun GalleryDetailRoute(
         isFoldLikeLayout = isFoldLikeLayout,
         pageState = pageState,
         serverProfile = profile,
+        initialGridFirstVisibleItemIndex = detailGridFirstVisibleItemIndex,
+        initialGridFirstVisibleItemScrollOffset = detailGridFirstVisibleItemScrollOffset,
         modifier = modifier,
+        onGridScrollPositionChange = { index, offset -> routeState.updateDetailGridScroll(index, offset) },
         onNavigateBack = onNavigateBack,
         onRetry = {
             if (pageState.images.isEmpty()) {
@@ -2471,6 +2488,9 @@ private fun GalleryDetailContent(
     isFoldLikeLayout: Boolean,
     pageState: StashGalleryImageGridPageState,
     serverProfile: StashServerProfile?,
+    initialGridFirstVisibleItemIndex: Int,
+    initialGridFirstVisibleItemScrollOffset: Int,
+    onGridScrollPositionChange: (Int, Int) -> Unit,
     onNavigateBack: () -> Unit,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
@@ -2487,9 +2507,21 @@ private fun GalleryDetailContent(
     val thumbnailHeight = stashGalleryImageGridThumbnailHeightDp(isFoldLikeLayout).dp
     val images = pageState.images
     val title = pageState.gallery?.title ?: stringResource(R.string.gallery_detail_title_fallback, galleryId)
-    val galleryDetailGridState = rememberLazyGridState()
 
-    Column(
+    key(galleryId) {
+        val galleryDetailGridState = rememberLazyGridState(
+            initialFirstVisibleItemIndex = initialGridFirstVisibleItemIndex,
+            initialFirstVisibleItemScrollOffset = initialGridFirstVisibleItemScrollOffset,
+        )
+        LaunchedEffect(galleryDetailGridState) {
+            snapshotFlow {
+                galleryDetailGridState.firstVisibleItemIndex to galleryDetailGridState.firstVisibleItemScrollOffset
+            }
+                .distinctUntilChanged()
+                .collect { (index, offset) -> onGridScrollPositionChange(index, offset) }
+        }
+
+        Column(
         modifier = modifier
             .fillMaxSize()
             .padding(top = StashSpacing.SectionGap),
@@ -2600,6 +2632,8 @@ private fun GalleryDetailContent(
             }
         }
     }
+}
+
 }
 
 @Composable

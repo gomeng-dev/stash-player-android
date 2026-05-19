@@ -6,6 +6,28 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.4] - 2026-05-19
+
+### English
+
+- Preserved Gallery detail photo-grid loaded pages and viewport position when returning from the photo viewer, while resetting that viewport when switching to a different gallery.
+- Added regression coverage for Gallery detail load-more/back navigation state preservation.
+
+### 한국어
+
+- 사진 뷰어에서 돌아올 때 갤러리 상세 사진 그리드의 추가 로드된 페이지와 스크롤 위치가 유지되도록 하고, 다른 갤러리로 이동할 때는 해당 위치를 초기화했습니다.
+- 갤러리 상세 추가 로드/뒤로 가기 상태 보존 회귀 테스트를 추가했습니다.
+
+### 简体中文
+
+- 从照片查看器返回时保留图库详情照片网格已加载的分页和滚动位置，同时在切换到其他图库时重置该位置。
+- 新增图库详情加载更多/返回导航状态保留的回归测试。
+
+### 繁體中文
+
+- 從照片檢視器返回時保留圖庫詳情照片網格已載入的分頁與捲動位置，同時在切換到其他圖庫時重置該位置。
+- 新增圖庫詳情載入更多/返回導覽狀態保留的迴歸測試。
+
 ## [1.7.3] - 2026-05-18
 
 ### English
