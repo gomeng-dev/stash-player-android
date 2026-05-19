@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.5] - 2026-05-19
+
+### English
+
+- Re-published the latest Gallery back-navigation preservation patch as a requested 1.7.5 release tag, keeping the app version metadata and public APK release assets aligned.
+
+### 한국어
+
+- 요청에 따라 최신 갤러리 뒤로 가기 상태 보존 패치를 1.7.5 릴리즈 태그로 다시 배포하고, 앱 버전 메타데이터와 공개 APK 릴리즈 자산을 맞췄습니다.
+
+### 简体中文
+
+- 按要求将最新的图库返回导航状态保留补丁重新发布为 1.7.5 版本标签，并同步应用版本元数据与公开 APK 发布资源。
+
+### 繁體中文
+
+- 依要求將最新的圖庫返回導覽狀態保留修補重新發佈為 1.7.5 版本標籤，並同步應用版本中繼資料與公開 APK 發佈資產。
+
 ## [1.7.4] - 2026-05-19
 
 ### English

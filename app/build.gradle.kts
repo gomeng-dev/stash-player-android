@@ -60,8 +60,8 @@ android {
         applicationId = "gomeng.dev.stashplayer"
         minSdk = 29
         targetSdk = 35
-        versionCode = 31
-        versionName = "1.7.4"
+        versionCode = 32
+        versionName = "1.7.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
