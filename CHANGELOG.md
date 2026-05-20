@@ -6,6 +6,40 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+### English
+
+- Nothing yet.
+
+### 한국어
+
+- 아직 없습니다.
+
+### 简体中文
+
+- 暂无。
+
+### 繁體中文
+
+- 暫無。
+
+## [1.7.8] - 2026-05-21
+
+### English
+
+- Added active-video preloading with a larger ExoPlayer forward buffer and an app-cache-backed media data source so repeat/nearby seeks can reuse already fetched stream chunks.
+
+### 한국어
+
+- 현재 재생 중인 영상에 더 큰 ExoPlayer 선행 버퍼와 앱 캐시 기반 미디어 데이터 소스를 적용해, 반복/근접 seek 시 이미 받아온 스트림 조각을 재사용하도록 했습니다.
+
+### 简体中文
+
+- 为当前播放视频加入更大的 ExoPlayer 前向缓冲与基于应用缓存的媒体数据源，让重复或相近的拖动跳转可复用已获取的流片段。
+
+### 繁體中文
+
+- 為目前播放影片加入更大的 ExoPlayer 前向緩衝與基於應用快取的媒體資料來源，讓重複或相近的拖曳跳轉可重用已取得的串流片段。
+
 ## [1.7.7] - 2026-05-20
 
 ### English

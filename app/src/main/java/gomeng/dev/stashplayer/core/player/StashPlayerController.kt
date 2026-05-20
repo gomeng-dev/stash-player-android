@@ -2,7 +2,6 @@ package gomeng.dev.stashplayer.core.player
 
 import android.content.Context
 import android.net.Uri
-import gomeng.dev.stashplayer.core.network.StashCaptionTrack
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -11,22 +10,47 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import gomeng.dev.stashplayer.core.network.StashCaptionTrack
+import java.io.File
 
 @OptIn(UnstableApi::class)
 class StashPlayerController(
     context: Context,
     requestHeaders: Map<String, String> = emptyMap(),
 ) {
+    private val preloadPolicy = stashPlayerPreloadPolicy()
+    private val appContext = context.applicationContext
     private val httpDataSourceFactory = DefaultHttpDataSource.Factory()
         .setAllowCrossProtocolRedirects(true)
         .setDefaultRequestProperties(requestHeaders)
+    private val cacheDataSourceFactory = CacheDataSource.Factory()
+        .setCache(StashPlayerMediaCache.get(appContext, preloadPolicy))
+        .setUpstreamDataSourceFactory(httpDataSourceFactory)
+        .setCacheKeyFactory { dataSpec -> sanitizedStashMediaCacheKey(dataSpec.uri.toString()) }
+        .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+    private val loadControl = DefaultLoadControl.Builder()
+        .setBufferDurationsMs(
+            preloadPolicy.minBufferMs,
+            preloadPolicy.maxBufferMs,
+            preloadPolicy.bufferForPlaybackMs,
+            preloadPolicy.bufferForPlaybackAfterRebufferMs,
+        )
+        .setTargetBufferBytes(preloadPolicy.targetBufferBytes)
+        .setPrioritizeTimeOverSizeThresholds(preloadPolicy.prioritizeTimeOverSizeThresholds)
+        .build()
 
-    val player: ExoPlayer = ExoPlayer.Builder(context)
-        .setMediaSourceFactory(DefaultMediaSourceFactory(httpDataSourceFactory))
+    val player: ExoPlayer = ExoPlayer.Builder(appContext)
+        .setLoadControl(loadControl)
+        .setMediaSourceFactory(DefaultMediaSourceFactory(cacheDataSourceFactory))
         .build()
 
     var lastError: PlaybackException? = null
@@ -143,4 +167,17 @@ fun stashCaptionMimeType(captionType: String?): String? = when (captionType?.tri
     "vtt" -> MimeTypes.TEXT_VTT
     "srt" -> MimeTypes.APPLICATION_SUBRIP
     else -> null
+}
+
+@OptIn(UnstableApi::class)
+private object StashPlayerMediaCache {
+    private var sharedCache: SimpleCache? = null
+
+    fun get(context: Context, policy: StashPlayerPreloadPolicy): SimpleCache = synchronized(this) {
+        sharedCache ?: SimpleCache(
+            File(context.cacheDir, policy.cacheDirectoryName),
+            LeastRecentlyUsedCacheEvictor(policy.cacheSizeBytes),
+            StandaloneDatabaseProvider(context),
+        ).also { sharedCache = it }
+    }
 }
