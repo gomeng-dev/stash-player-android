@@ -6,6 +6,28 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.7] - 2026-05-20
+
+### English
+
+- Improved the Shorts feed's client-side recommendation refresh so recent local interactions are penalized and asynchronously loaded liked-scene similarity scores reorder only the safe tail without changing the Settings-owned max-duration filter.
+- Reworked the public README around the end-user install and viewing experience, added a polished screenshot hero, and updated localized release references to v1.7.7.
+
+### 한국어
+
+- Shorts 피드의 클라이언트 측 추천 갱신을 개선해 최근 로컬 상호작용은 순위에서 낮추고, 비동기로 도착한 좋아요 기반 유사도 점수는 설정 기반 최대 길이 필터를 건드리지 않은 채 안전한 tail만 재정렬하도록 했습니다.
+- 공개 README를 설치/감상 사용자 관점으로 다시 구성하고, 스크린샷 히어로 이미지를 추가했으며, 현지화 README의 공개 릴리스 표기를 v1.7.7로 갱신했습니다.
+
+### 简体中文
+
+- 改进 Shorts 信息流的客户端推荐刷新：近期本地互动会被降权，异步加载的已喜欢相似度分数只会重排安全尾部，并保持由设置控制的最长时长筛选不变。
+- 以终端用户安装和观看体验为中心重写公开 README，新增精修截图主视觉，并将本地化 README 的公开版本引用更新为 v1.7.7。
+
+### 繁體中文
+
+- 改進 Shorts 資訊流的用戶端推薦刷新：近期本地互動會被降權，非同步載入的已喜歡相似度分數只會重排安全尾段，並維持由設定控制的最長時長篩選不變。
+- 以終端使用者安裝與觀看體驗為中心重寫公開 README，新增精修截圖主視覺，並將在地化 README 的公開版本引用更新為 v1.7.7。
+
 ## [1.7.6] - 2026-05-20
 
 ### English

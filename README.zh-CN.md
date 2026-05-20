@@ -15,6 +15,8 @@
   <img alt="Kotlin + Compose" src="https://img.shields.io/badge/Kotlin%20%2B%20Compose-111827?style=for-the-badge&logo=kotlin&logoColor=white">
 </p>
 
+<img src="docs/assets/readme/screenshots/00-hero.png" alt="Stash Android Player 预览，显示首页、探索、队列、播放器控制、图片和图库欣赏模式" width="100%">
+
 </div>
 
 ---
@@ -29,9 +31,28 @@ Stash 很强大，但桌面 Web UI 在手机上并不总是顺手。**Stash Andr
 - **队列 / 稍后观看 / 收藏**：本地保存在设备上。
 - **观看页 + Media3 播放器**：支持手势、全屏、流选择、字幕、PiP 和播放列表控制。
 - **推荐**：优先使用 Stash Hybrid Recommendations 插件；不可用时回退到 Stash 默认推荐数据。
-- **图库**：浏览 Stash 图库和图片，支持全屏照片查看器。
+- **图库**：浏览 Stash 图库和图片，支持全屏照片查看器；欣赏模式会隐藏顶部栏和底部工具。
 
 不需要托管服务。应用直接连接你的 Stash 服务器，不会把媒体库元数据上传到本项目。
+
+## 截图
+
+以下截图来自使用公开演示媒体运行的真实 Android 应用，不包含私人媒体、服务器地址、API Key、凭据、Cookie 或个人媒体库数据。
+
+<p align="center">
+  <img src="docs/assets/readme/screenshots/01-home.png" alt="带继续观看和媒体库快捷入口的首页" width="220">
+  <img src="docs/assets/readme/screenshots/02-explore.png" alt="带搜索、筛选和视频卡片的探索页" width="220">
+  <img src="docs/assets/readme/screenshots/03-shorts.png" alt="带竖向播放和本地反馈的短视频信息流" width="220">
+</p>
+<p align="center">
+  <img src="docs/assets/readme/screenshots/04-queue.png" alt="带稍后观看和本地列表的播放队列" width="220">
+  <img src="docs/assets/readme/screenshots/05-watch-page.png" alt="带元数据、评分、标签和操作的观看页" width="220">
+  <img src="docs/assets/readme/screenshots/06-player-controls.png" alt="带进度条、速度、锁定和全屏的播放器控制" width="220">
+</p>
+<p align="center">
+  <img src="docs/assets/readme/screenshots/07-images.png" alt="带搜索、排序和筛选的图片浏览页" width="220">
+  <img src="docs/assets/readme/screenshots/08-photo-viewer.png" alt="隐藏顶部栏和底部工具的照片欣赏模式" width="220">
+</p>
 
 ## 安装
 
@@ -40,7 +61,7 @@ Stash 很强大，但桌面 Web UI 在手机上并不总是顺手。**Stash Andr
 3. 打开 APK，并在 Android 提示时允许浏览器或文件管理器安装应用。
 4. 启动 **Stash Player** 并连接到你的 Stash 服务器。
 
-> 当前公开版本：**v1.7.2**。
+> 当前公开版本：**v1.7.7**。
 
 ## 需要什么
 

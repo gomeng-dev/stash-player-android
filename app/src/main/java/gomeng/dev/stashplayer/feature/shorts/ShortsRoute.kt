@@ -66,7 +66,7 @@ import gomeng.dev.stashplayer.core.model.ShortsExplicitFeedback
 import gomeng.dev.stashplayer.core.model.ShortsFeedState
 import gomeng.dev.stashplayer.core.model.ShortsFeedStatus
 import gomeng.dev.stashplayer.core.model.ShortsInteractionOutcome
-import gomeng.dev.stashplayer.core.model.ShortsRecommendationSignals
+import gomeng.dev.stashplayer.core.model.buildShortsRecommendationSignals
 import gomeng.dev.stashplayer.core.model.applyShortsFeedbackToItems
 import gomeng.dev.stashplayer.core.model.appendDistinctShortsPage
 import gomeng.dev.stashplayer.core.model.buildShortsVideoFilter
@@ -130,7 +130,7 @@ fun ShortsRoute(
         watchLaterSceneIds,
         likedAnchorHybridScores,
     ) {
-        ShortsRecommendationSignals(
+        buildShortsRecommendationSignals(
             interactions = shortsInteractions,
             favoriteSceneIds = favoriteSceneIds,
             watchLaterSceneIds = watchLaterSceneIds,

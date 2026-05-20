@@ -120,6 +120,36 @@ data class ShortsRecommendationSignals(
     val recentSeenSceneIds: List<String> = emptyList(),
 )
 
+fun recentShortsSeenSceneIds(
+    interactions: List<ShortsInteractionRecord>,
+    limit: Int = 24,
+): List<String> {
+    if (limit <= 0 || interactions.isEmpty()) return emptyList()
+    return interactions
+        .asSequence()
+        .sortedByDescending { it.updatedAt }
+        .map { it.sceneId.trim() }
+        .filter { it.isNotBlank() }
+        .distinct()
+        .take(limit)
+        .toList()
+}
+
+fun buildShortsRecommendationSignals(
+    interactions: List<ShortsInteractionRecord>,
+    favoriteSceneIds: Set<String> = emptySet(),
+    watchLaterSceneIds: Set<String> = emptySet(),
+    hybridScores: Map<String, Double> = emptyMap(),
+    likedAnchorHybridScores: Map<String, Double> = emptyMap(),
+): ShortsRecommendationSignals = ShortsRecommendationSignals(
+    interactions = interactions,
+    favoriteSceneIds = favoriteSceneIds,
+    watchLaterSceneIds = watchLaterSceneIds,
+    hybridScores = hybridScores,
+    likedAnchorHybridScores = likedAnchorHybridScores,
+    recentSeenSceneIds = recentShortsSeenSceneIds(interactions),
+)
+
 fun buildShortsVideoFilter(seed: Int): StashVideoFilterState = StashVideoFilterState(
     durationRange = StashDurationRange(maxSeconds = STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS),
 ).withStashRandomShuffleSeed(seed)
