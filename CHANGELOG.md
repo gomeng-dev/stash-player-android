@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.7.6] - 2026-05-20
+
+### English
+
+- Hid the photo viewer top bar while appreciation mode is active, keeping image viewing cleaner while leaving the appreciation toggle reachable from the compact tools rail.
+
+### 한국어
+
+- 사진 뷰어 감상 모드에서는 상단바를 숨겨 이미지를 더 깔끔하게 볼 수 있게 하고, 감상 모드 토글은 하단 도구 레일에서 계속 접근할 수 있게 했습니다.
+
+### 简体中文
+
+- 照片查看器启用欣赏模式时隐藏顶部栏，让图片浏览更干净，同时仍可从底部紧凑工具栏切换欣赏模式。
+
+### 繁體中文
+
+- 照片檢視器啟用欣賞模式時隱藏頂部列，讓圖片瀏覽更乾淨，同時仍可從底部精簡工具列切換欣賞模式。
+
 ## [1.7.5] - 2026-05-19
 
 ### English

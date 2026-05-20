@@ -1817,7 +1817,7 @@ fun GalleryPhotoViewerOverlay(
             )
         }
 
-        if (policy.chromeVisible) {
+        if (policy.chromeVisible && viewerChromePolicy.showTopChrome) {
             Row(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
@@ -1879,7 +1879,9 @@ fun GalleryPhotoViewerOverlay(
                     )
                 }
             }
+        }
 
+        if (policy.chromeVisible) {
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -1911,6 +1913,23 @@ fun GalleryPhotoViewerOverlay(
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        if (!viewerChromePolicy.showAppreciationModeToggleInTopChrome) {
+                            StashSecondaryButton(
+                                text = if (appreciationModeEnabled) {
+                                    stringResource(R.string.gallery_photo_viewer_appreciation_mode_on)
+                                } else {
+                                    stringResource(R.string.gallery_photo_viewer_appreciation_mode_off)
+                                },
+                                onClick = {
+                                    appreciationModeEnabled = !appreciationModeEnabled
+                                    refreshChrome(show = true)
+                                },
+                                selected = appreciationModeEnabled,
+                                contentDescription = stringResource(
+                                    R.string.gallery_photo_viewer_appreciation_mode_content_description,
+                                ),
+                            )
+                        }
                         StashSecondaryButton(
                             text = if (tapNavigationEnabled) {
                                 stringResource(R.string.gallery_photo_viewer_tap_navigation_on)

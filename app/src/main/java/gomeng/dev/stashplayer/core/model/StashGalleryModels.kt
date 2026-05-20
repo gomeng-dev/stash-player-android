@@ -405,6 +405,7 @@ fun resolveGalleryPhotoTapAction(
 }
 
 data class GalleryPhotoViewerChromePolicy(
+    val showTopChrome: Boolean,
     val showEditingControls: Boolean,
     val showLinkedGalleryShortcut: Boolean,
     val showPersistentMetadataChrome: Boolean,
@@ -420,10 +421,11 @@ fun galleryPhotoViewerChromePolicy(
     state: GalleryAppreciationModeState,
 ): GalleryPhotoViewerChromePolicy = if (state.enabled) {
     GalleryPhotoViewerChromePolicy(
+        showTopChrome = false,
         showEditingControls = false,
         showLinkedGalleryShortcut = false,
         showPersistentMetadataChrome = false,
-        showAppreciationModeToggleInTopChrome = true,
+        showAppreciationModeToggleInTopChrome = false,
         bottomActionRowScrollable = true,
         maxBottomRows = 1,
         collapsedBottomRows = 1,
@@ -432,6 +434,7 @@ fun galleryPhotoViewerChromePolicy(
     )
 } else {
     GalleryPhotoViewerChromePolicy(
+        showTopChrome = true,
         showEditingControls = true,
         showLinkedGalleryShortcut = true,
         showPersistentMetadataChrome = true,
