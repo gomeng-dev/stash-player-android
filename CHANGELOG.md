@@ -22,6 +22,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - 暫無。
 
+## [1.7.9] - 2026-05-22
+
+### English
+
+- Moved the photo viewer page-change HUD from the raised lower-center position to the bottom edge so it blocks less of the image while viewing.
+
+### 한국어
+
+- 사진 뷰어에서 이미지를 넘길 때 뜨는 페이지 변경 HUD를 하단 가장자리로 내려 감상 중 이미지를 덜 가리도록 했습니다.
+
+### 简体中文
+
+- 将照片查看器翻页时显示的页码 HUD 从偏上的底部位置移到屏幕底边，减少观看时对图片的遮挡。
+
+### 繁體中文
+
+- 將照片檢視器翻頁時顯示的頁碼 HUD 從偏上的底部位置移到螢幕底邊，減少觀看時對圖片的遮擋。
+
 ## [1.7.8] - 2026-05-21
 
 ### English

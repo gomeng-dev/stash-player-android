@@ -464,6 +464,8 @@ fun shouldShowGalleryPhotoPageChangeHud(
     suppressForDiscreteNavigation: Boolean,
 ): Boolean = !suppressForDiscreteNavigation || !state.enabled || !state.tapNavigationEnabled
 
+fun galleryPhotoPageChangeHudBottomPaddingDp(): Int = 20
+
 fun shouldAutoHideGalleryPhotoChrome(
     state: GalleryAppreciationModeState,
     zoomState: GalleryPhotoZoomState,

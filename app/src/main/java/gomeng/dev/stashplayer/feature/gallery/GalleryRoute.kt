@@ -111,6 +111,7 @@ import gomeng.dev.stashplayer.core.model.galleryImageLinkedGalleryLabels
 import gomeng.dev.stashplayer.core.model.galleryImageMetadataLabels
 import gomeng.dev.stashplayer.core.model.galleryImagePerformerLabels
 import gomeng.dev.stashplayer.core.model.galleryPhotoDetailRows
+import gomeng.dev.stashplayer.core.model.galleryPhotoPageChangeHudBottomPaddingDp
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerChromePolicy
 import gomeng.dev.stashplayer.core.model.galleryPhotoViewerOCounterToolbarActions
 import gomeng.dev.stashplayer.core.model.galleryMetadataLabels
@@ -1809,7 +1810,7 @@ fun GalleryPhotoViewerOverlay(
                 text = hudMessage,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 96.dp)
+                    .padding(bottom = galleryPhotoPageChangeHudBottomPaddingDp().dp)
                     .background(Color.Black.copy(alpha = 0.62f))
                     .padding(horizontal = 18.dp, vertical = 10.dp),
                 style = MaterialTheme.typography.titleMedium,
