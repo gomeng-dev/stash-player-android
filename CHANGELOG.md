@@ -22,6 +22,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - 暫無。
 
+## [1.7.10] - 2026-05-28
+
+### English
+
+- Added a playback setting for long-press fast-forward speed so users can choose how much faster video plays while holding the gesture.
+
+### 한국어
+
+- 길게 누르기 빨리감기 재생 속도 설정을 추가해, 제스처를 누르고 있는 동안 영상이 얼마나 빠르게 재생될지 사용자가 선택할 수 있게 했습니다.
+
+### 简体中文
+
+- 新增长按快进播放速度设置，用户可以选择按住手势时视频加速播放的倍速。
+
+### 繁體中文
+
+- 新增長按快轉播放速度設定，使用者可以選擇按住手勢時影片加速播放的倍速。
+
 ## [1.7.9] - 2026-05-22
 
 ### English

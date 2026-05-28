@@ -149,8 +149,10 @@ data class PlayerPresentationMotionState(
     val renderWatchPageContent: Boolean,
 )
 
-val PLAYER_FAST_PLAYBACK_HOLD_SPEED = 1.5f
-val PLAYER_FAST_PLAYBACK_HOLD_HUD_TEXT = stashString(R.string.auto_kr_0195)
+val PLAYER_FAST_PLAYBACK_HOLD_SPEED = FastPlaybackHoldSpeedPreference.default.playbackSpeed ?: 1.5f
+
+fun playerFastPlaybackHoldHudText(speedPreference: FastPlaybackHoldSpeedPreference): String? =
+    speedPreference.playbackSpeed?.let { stashString(R.string.player_fast_playback_hold_hud_text, speedPreference.displayLabel) }
 
 data class PlayerFastPlaybackHoldUpdate(
     val state: PlayerFastPlaybackHoldState,
@@ -158,11 +160,30 @@ data class PlayerFastPlaybackHoldUpdate(
     val hudText: String?,
 )
 
+enum class PlayerLongPressTimeoutAction {
+    StartFastPlayback,
+    ConsumeOnly,
+    LockedHint,
+}
+
+fun resolvePlayerLongPressTimeoutAction(
+    locked: Boolean,
+    fastPlaybackHoldEnabled: Boolean,
+): PlayerLongPressTimeoutAction = when {
+    locked -> PlayerLongPressTimeoutAction.LockedHint
+    fastPlaybackHoldEnabled -> PlayerLongPressTimeoutAction.StartFastPlayback
+    else -> PlayerLongPressTimeoutAction.ConsumeOnly
+}
+
 data class PlayerFastPlaybackHoldState(
     val active: Boolean,
     private val restoreSpeed: Float?,
 ) {
-    fun start(currentSpeed: Float, locked: Boolean): PlayerFastPlaybackHoldUpdate {
+    fun start(
+        currentSpeed: Float,
+        locked: Boolean,
+        speedPreference: FastPlaybackHoldSpeedPreference = FastPlaybackHoldSpeedPreference.default,
+    ): PlayerFastPlaybackHoldUpdate {
         if (locked) {
             return PlayerFastPlaybackHoldUpdate(
                 state = Idle,
@@ -170,13 +191,18 @@ data class PlayerFastPlaybackHoldState(
                 hudText = playerLockedTouchHint(),
             )
         }
+        val speed = speedPreference.playbackSpeed ?: return PlayerFastPlaybackHoldUpdate(
+            state = Idle,
+            playbackSpeed = null,
+            hudText = null,
+        )
         return PlayerFastPlaybackHoldUpdate(
             state = PlayerFastPlaybackHoldState(
                 active = true,
                 restoreSpeed = currentSpeed,
             ),
-            playbackSpeed = PLAYER_FAST_PLAYBACK_HOLD_SPEED,
-            hudText = PLAYER_FAST_PLAYBACK_HOLD_HUD_TEXT,
+            playbackSpeed = speed,
+            hudText = playerFastPlaybackHoldHudText(speedPreference),
         )
     }
 

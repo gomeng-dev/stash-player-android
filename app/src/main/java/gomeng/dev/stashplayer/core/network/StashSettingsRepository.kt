@@ -1,6 +1,7 @@
 package gomeng.dev.stashplayer.core.network
 
 import android.content.Context
+import gomeng.dev.stashplayer.core.player.FastPlaybackHoldSpeedPreference
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_DEFAULT
@@ -92,6 +93,10 @@ class StashSettingsRepository(private val context: Context) {
 
     val playbackEndAction: Flow<PlaybackEndAction> = context.stashSettingsDataStore.data.map { prefs ->
         playbackEndActionFromPersistedValue(prefs[Keys.PlaybackEndAction])
+    }
+
+    val fastPlaybackHoldSpeed: Flow<FastPlaybackHoldSpeedPreference> = context.stashSettingsDataStore.data.map { prefs ->
+        fastPlaybackHoldSpeedFromPersistedValue(prefs[Keys.FastPlaybackHoldSpeed])
     }
 
     val backgroundPlaybackEnabled: Flow<Boolean> = context.stashSettingsDataStore.data.map { prefs ->
@@ -235,6 +240,12 @@ class StashSettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setFastPlaybackHoldSpeed(speedPreference: FastPlaybackHoldSpeedPreference) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.FastPlaybackHoldSpeed] = persistFastPlaybackHoldSpeedValue(speedPreference)
+        }
+    }
+
     suspend fun setBackgroundPlaybackEnabled(enabled: Boolean) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.BackgroundPlaybackEnabled] = enabled
@@ -344,6 +355,7 @@ class StashSettingsRepository(private val context: Context) {
         val UiScale = stringPreferencesKey("ui_scale")
         val DefaultStreamPreference = stringPreferencesKey("default_stream_preference")
         val PlaybackEndAction = stringPreferencesKey("playback_end_action")
+        val FastPlaybackHoldSpeed = stringPreferencesKey("fast_playback_hold_speed")
         val BackgroundPlaybackEnabled = booleanPreferencesKey("background_playback_enabled")
         val PictureInPictureEnabled = booleanPreferencesKey("picture_in_picture_enabled")
         val ShortsMaxDurationSeconds = intPreferencesKey("shorts_max_duration_seconds")
@@ -374,6 +386,7 @@ class StashSettingsRepository(private val context: Context) {
         val DEFAULT_UI_SCALE: StashUiScale = StashUiScale.default
         val DEFAULT_STREAM_PREFERENCE: StashStreamPreference = StashStreamPreference.Auto
         val DEFAULT_PLAYBACK_END_ACTION: PlaybackEndAction = PlaybackEndAction.default
+        val DEFAULT_FAST_PLAYBACK_HOLD_SPEED: FastPlaybackHoldSpeedPreference = FastPlaybackHoldSpeedPreference.default
         const val DEFAULT_BACKGROUND_PLAYBACK_ENABLED = false
         const val DEFAULT_PICTURE_IN_PICTURE_ENABLED = false
         const val DEFAULT_SHORTS_MAX_DURATION_SECONDS = STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
@@ -419,6 +432,12 @@ class StashSettingsRepository(private val context: Context) {
 
         fun playbackEndActionFromPersistedValue(value: String?): PlaybackEndAction =
             PlaybackEndAction.fromPersistedValue(value)
+
+        fun persistFastPlaybackHoldSpeedValue(speedPreference: FastPlaybackHoldSpeedPreference): String =
+            speedPreference.persistedValue
+
+        fun fastPlaybackHoldSpeedFromPersistedValue(value: String?): FastPlaybackHoldSpeedPreference =
+            FastPlaybackHoldSpeedPreference.fromPersistedValue(value)
 
         fun persistShortsMaxDurationSeconds(seconds: Int): Int = coerceShortsMaxDurationSeconds(seconds)
 

@@ -63,6 +63,7 @@ import gomeng.dev.stashplayer.core.network.StashStreamPreference
 import gomeng.dev.stashplayer.core.network.canAttemptStashCredentialTransport
 import gomeng.dev.stashplayer.core.network.StashServerAuthMode
 import gomeng.dev.stashplayer.core.network.toSettingsStatusCopy
+import gomeng.dev.stashplayer.core.player.FastPlaybackHoldSpeedPreference
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_DEFAULT
@@ -243,6 +244,7 @@ object PlaybackSettingsCopy {
     val visibleCardTitles: List<Int> = listOf(
         DefaultStreamPreferenceSettingCopy.title,
         PlaybackEndActionSettingCopy.title,
+        FastPlaybackHoldSpeedSettingCopy.title,
         BackgroundPlaybackSettingCopy.title,
         PictureInPictureSettingCopy.title,
         ShortsMaxDurationSettingCopy.title,
@@ -253,6 +255,43 @@ object PlaybackSettingsCopy {
         SubtitleTextAlignmentSettingCopy.title,
     )
 }
+
+object FastPlaybackHoldSpeedSettingCopy {
+    @StringRes val title = R.string.settings_fast_playback_hold_speed_title
+    @StringRes val description = R.string.settings_fast_playback_hold_speed_description
+
+    val options: List<FastPlaybackHoldSpeedOption> = listOf(
+        FastPlaybackHoldSpeedOption(FastPlaybackHoldSpeedPreference.Off, labelFor(FastPlaybackHoldSpeedPreference.Off), descriptionFor(FastPlaybackHoldSpeedPreference.Off)),
+        FastPlaybackHoldSpeedOption(FastPlaybackHoldSpeedPreference.OnePointTwentyFive, labelFor(FastPlaybackHoldSpeedPreference.OnePointTwentyFive), descriptionFor(FastPlaybackHoldSpeedPreference.OnePointTwentyFive)),
+        FastPlaybackHoldSpeedOption(FastPlaybackHoldSpeedPreference.OnePointFive, labelFor(FastPlaybackHoldSpeedPreference.OnePointFive), descriptionFor(FastPlaybackHoldSpeedPreference.OnePointFive)),
+        FastPlaybackHoldSpeedOption(FastPlaybackHoldSpeedPreference.OnePointSeventyFive, labelFor(FastPlaybackHoldSpeedPreference.OnePointSeventyFive), descriptionFor(FastPlaybackHoldSpeedPreference.OnePointSeventyFive)),
+        FastPlaybackHoldSpeedOption(FastPlaybackHoldSpeedPreference.TwoPointZero, labelFor(FastPlaybackHoldSpeedPreference.TwoPointZero), descriptionFor(FastPlaybackHoldSpeedPreference.TwoPointZero)),
+    )
+
+    @StringRes
+    fun labelFor(speedPreference: FastPlaybackHoldSpeedPreference): Int = when (speedPreference) {
+        FastPlaybackHoldSpeedPreference.Off -> R.string.settings_fast_playback_hold_speed_off_label
+        FastPlaybackHoldSpeedPreference.OnePointTwentyFive -> R.string.settings_fast_playback_hold_speed_125_label
+        FastPlaybackHoldSpeedPreference.OnePointFive -> R.string.settings_fast_playback_hold_speed_150_label
+        FastPlaybackHoldSpeedPreference.OnePointSeventyFive -> R.string.settings_fast_playback_hold_speed_175_label
+        FastPlaybackHoldSpeedPreference.TwoPointZero -> R.string.settings_fast_playback_hold_speed_200_label
+    }
+
+    @StringRes
+    fun descriptionFor(speedPreference: FastPlaybackHoldSpeedPreference): Int = when (speedPreference) {
+        FastPlaybackHoldSpeedPreference.Off -> R.string.settings_fast_playback_hold_speed_off_description
+        FastPlaybackHoldSpeedPreference.OnePointTwentyFive -> R.string.settings_fast_playback_hold_speed_125_description
+        FastPlaybackHoldSpeedPreference.OnePointFive -> R.string.settings_fast_playback_hold_speed_150_description
+        FastPlaybackHoldSpeedPreference.OnePointSeventyFive -> R.string.settings_fast_playback_hold_speed_175_description
+        FastPlaybackHoldSpeedPreference.TwoPointZero -> R.string.settings_fast_playback_hold_speed_200_description
+    }
+}
+
+data class FastPlaybackHoldSpeedOption(
+    val speedPreference: FastPlaybackHoldSpeedPreference,
+    @StringRes val label: Int,
+    @StringRes val description: Int,
+)
 
 object PlaybackOrientationSettingCopy {
     @StringRes val title = R.string.settings_playback_orientation_title
@@ -1306,6 +1345,9 @@ private fun PlaybackSettingsContent() {
     val playbackEndAction by repository.playbackEndAction.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PLAYBACK_END_ACTION,
     )
+    val fastPlaybackHoldSpeed by repository.fastPlaybackHoldSpeed.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_FAST_PLAYBACK_HOLD_SPEED,
+    )
     val backgroundPlaybackEnabled by repository.backgroundPlaybackEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_BACKGROUND_PLAYBACK_ENABLED,
     )
@@ -1361,6 +1403,24 @@ private fun PlaybackSettingsContent() {
                 onClick = {
                     coroutineScope.launch {
                         repository.setPlaybackEndAction(option.action)
+                    }
+                },
+            )
+        }
+    }
+
+    SettingsRadioGroupCard(
+        title = FastPlaybackHoldSpeedSettingCopy.title,
+        description = FastPlaybackHoldSpeedSettingCopy.description,
+    ) {
+        FastPlaybackHoldSpeedSettingCopy.options.forEach { option ->
+            SettingsRadioRow(
+                selected = fastPlaybackHoldSpeed == option.speedPreference,
+                label = option.label,
+                description = option.description,
+                onClick = {
+                    coroutineScope.launch {
+                        repository.setFastPlaybackHoldSpeed(option.speedPreference)
                     }
                 },
             )

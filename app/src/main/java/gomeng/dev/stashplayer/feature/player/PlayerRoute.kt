@@ -76,6 +76,7 @@ import gomeng.dev.stashplayer.core.network.redactStashCredentialText
 import gomeng.dev.stashplayer.core.network.spritePreviewHeadersFor
 import gomeng.dev.stashplayer.core.player.AspectRatioMode
 import gomeng.dev.stashplayer.core.player.BrightnessController
+import gomeng.dev.stashplayer.core.player.FastPlaybackHoldSpeedPreference
 import gomeng.dev.stashplayer.core.player.PLAYER_CONTROLS_AUTO_HIDE_MS
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
@@ -230,6 +231,9 @@ fun PlayerRoute(
     val playbackEndAction by settingsRepository.playbackEndAction.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PLAYBACK_END_ACTION,
     )
+    val fastPlaybackHoldSpeed by settingsRepository.fastPlaybackHoldSpeed.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_FAST_PLAYBACK_HOLD_SPEED,
+    )
     val backgroundPlaybackEnabled by settingsRepository.backgroundPlaybackEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_BACKGROUND_PLAYBACK_ENABLED,
     )
@@ -305,6 +309,7 @@ fun PlayerRoute(
             playerDebugOverlayEnabled = playerDebugOverlayEnabled,
             defaultStreamPreference = defaultStreamPreference,
             playbackEndAction = playbackEndAction,
+            fastPlaybackHoldSpeed = fastPlaybackHoldSpeed,
             backgroundPlaybackEnabled = backgroundPlaybackEnabled,
             pictureInPictureEnabled = pictureInPictureEnabled,
             playbackOrientationMode = playbackOrientationMode,
@@ -334,6 +339,7 @@ private fun RealPlayerRoute(
     playerDebugOverlayEnabled: Boolean,
     defaultStreamPreference: StashStreamPreference,
     playbackEndAction: PlaybackEndAction,
+    fastPlaybackHoldSpeed: FastPlaybackHoldSpeedPreference,
     backgroundPlaybackEnabled: Boolean,
     pictureInPictureEnabled: Boolean,
     playbackOrientationMode: PlaybackOrientationMode,
@@ -1240,6 +1246,7 @@ private fun RealPlayerRoute(
         val update = fastPlaybackHoldState.start(
             currentSpeed = playbackSpeed,
             locked = locked,
+            speedPreference = fastPlaybackHoldSpeed,
         )
         fastPlaybackHoldState = update.state
         update.playbackSpeed?.let { speed ->
@@ -1844,6 +1851,7 @@ private fun RealPlayerRoute(
                 hudText = it
             },
             onSeekPreview = updateSeekPreview,
+            fastPlaybackHoldEnabled = fastPlaybackHoldSpeed.enabled,
             onFastPlaybackHoldStart = startFastPlaybackHold,
             onFastPlaybackHoldEnd = endFastPlaybackHold,
             previewFrameFor = previewFrameFor,

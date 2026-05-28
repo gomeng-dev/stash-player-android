@@ -12,6 +12,27 @@ enum class PlaybackOrientationMode(val persistedValue: String) {
     }
 }
 
+enum class FastPlaybackHoldSpeedPreference(
+    val persistedValue: String,
+    val playbackSpeed: Float?,
+    val displayLabel: String,
+) {
+    Off("off", null, "끄기"),
+    OnePointTwentyFive("1.25", 1.25f, "1.25x"),
+    OnePointFive("1.5", 1.5f, "1.5x"),
+    OnePointSeventyFive("1.75", 1.75f, "1.75x"),
+    TwoPointZero("2.0", 2.0f, "2.0x");
+
+    val enabled: Boolean get() = playbackSpeed != null
+
+    companion object {
+        val default: FastPlaybackHoldSpeedPreference = OnePointFive
+
+        fun fromPersistedValue(value: String?): FastPlaybackHoldSpeedPreference =
+            entries.firstOrNull { it.persistedValue == value?.trim()?.lowercase() } ?: default
+    }
+}
+
 enum class SubtitleLanguagePreference(
     val persistedValue: String,
     val mediaLanguageCode: String?,

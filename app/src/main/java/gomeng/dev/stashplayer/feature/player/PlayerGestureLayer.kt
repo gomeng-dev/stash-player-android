@@ -17,6 +17,7 @@ import gomeng.dev.stashplayer.core.network.StashSpriteFrame
 import gomeng.dev.stashplayer.core.player.DoubleTapRegion
 import gomeng.dev.stashplayer.core.player.PlayerGestureExclusionBounds
 import gomeng.dev.stashplayer.core.player.PlayerGestureMode
+import gomeng.dev.stashplayer.core.player.PlayerLongPressTimeoutAction
 import gomeng.dev.stashplayer.core.player.PlayerPresentationDragRelease
 import gomeng.dev.stashplayer.core.player.PlayerPresentationDragSession
 import gomeng.dev.stashplayer.core.player.PlayerPresentationDragUpdate
@@ -33,6 +34,7 @@ import gomeng.dev.stashplayer.core.player.formatPlayerPosition
 import gomeng.dev.stashplayer.core.player.playerLockedTouchHint
 import gomeng.dev.stashplayer.core.player.remainingPlayerLongPressTimeoutMillis
 import gomeng.dev.stashplayer.core.player.release
+import gomeng.dev.stashplayer.core.player.resolvePlayerLongPressTimeoutAction
 import gomeng.dev.stashplayer.core.player.shouldPlayerGestureLayerHandlePointerStart
 import gomeng.dev.stashplayer.core.player.startPlayerPresentationDragSession
 import kotlinx.coroutines.withTimeoutOrNull
@@ -55,6 +57,7 @@ fun PlayerGestureLayer(
     onVolumeFraction: (Float) -> String,
     onHudText: (String?) -> Unit,
     onSeekPreview: (PlayerSeekPreview?) -> Unit,
+    fastPlaybackHoldEnabled: Boolean = true,
     onFastPlaybackHoldStart: () -> Unit,
     onFastPlaybackHoldEnd: () -> Unit,
     previewFrameFor: (Long) -> StashSpriteFrame?,
@@ -78,6 +81,7 @@ fun PlayerGestureLayer(
     val latestOnVolumeFraction by rememberUpdatedState(onVolumeFraction)
     val latestOnHudText by rememberUpdatedState(onHudText)
     val latestOnSeekPreview by rememberUpdatedState(onSeekPreview)
+    val latestFastPlaybackHoldEnabled by rememberUpdatedState(fastPlaybackHoldEnabled)
     val latestOnFastPlaybackHoldStart by rememberUpdatedState(onFastPlaybackHoldStart)
     val latestOnFastPlaybackHoldEnd by rememberUpdatedState(onFastPlaybackHoldEnd)
     val latestPreviewFrameFor by rememberUpdatedState(previewFrameFor)
@@ -116,6 +120,7 @@ fun PlayerGestureLayer(
                             onVolumeFraction = latestOnVolumeFraction,
                             onHudText = latestOnHudText,
                             onSeekPreview = latestOnSeekPreview,
+                            fastPlaybackHoldEnabled = latestFastPlaybackHoldEnabled,
                             onFastPlaybackHoldStart = latestOnFastPlaybackHoldStart,
                             onFastPlaybackHoldEnd = latestOnFastPlaybackHoldEnd,
                             previewFrameFor = latestPreviewFrameFor,
@@ -156,6 +161,7 @@ fun PlayerGestureLayer(
                                         onVolumeFraction = latestOnVolumeFraction,
                                         onHudText = latestOnHudText,
                                         onSeekPreview = latestOnSeekPreview,
+                                        fastPlaybackHoldEnabled = latestFastPlaybackHoldEnabled,
                                         onFastPlaybackHoldStart = latestOnFastPlaybackHoldStart,
                                         onFastPlaybackHoldEnd = latestOnFastPlaybackHoldEnd,
                                         previewFrameFor = latestPreviewFrameFor,
@@ -212,6 +218,7 @@ private suspend fun AwaitPointerEventScope.awaitTapOrHandleDrag(
     onVolumeFraction: (Float) -> String,
     onHudText: (String?) -> Unit,
     onSeekPreview: (PlayerSeekPreview?) -> Unit,
+    fastPlaybackHoldEnabled: Boolean = true,
     onFastPlaybackHoldStart: () -> Unit,
     onFastPlaybackHoldEnd: () -> Unit,
     previewFrameFor: (Long) -> StashSpriteFrame?,
@@ -270,13 +277,18 @@ private suspend fun AwaitPointerEventScope.awaitTapOrHandleDrag(
 
             if (event == null) {
                 longPressArmed = false
-                if (isLocked()) {
-                    onHudText(playerLockedTouchHint())
-                    return PlayerPointerGestureResult.Handled
+                when (resolvePlayerLongPressTimeoutAction(isLocked(), fastPlaybackHoldEnabled)) {
+                    PlayerLongPressTimeoutAction.LockedHint -> {
+                        onHudText(playerLockedTouchHint())
+                        return PlayerPointerGestureResult.Handled
+                    }
+                    PlayerLongPressTimeoutAction.ConsumeOnly -> return PlayerPointerGestureResult.Handled
+                    PlayerLongPressTimeoutAction.StartFastPlayback -> {
+                        fastPlaybackHoldActive = true
+                        onFastPlaybackHoldStart()
+                        continue
+                    }
                 }
-                fastPlaybackHoldActive = true
-                onFastPlaybackHoldStart()
-                continue
             }
 
             val change = event.changes.firstOrNull { it.id == down.id }
