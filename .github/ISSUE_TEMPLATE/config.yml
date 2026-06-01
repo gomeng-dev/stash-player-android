@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/gomeng-dev/stash-player-android/security/advisories/new
+    about: Please report vulnerabilities privately. Do not post credentials, server URLs, or private media in public issues.
+  - name: Stash upstream project
+    url: https://github.com/stashapp/stash
+    about: Use the upstream Stash repository for Stash server issues that are not specific to this Android client.
