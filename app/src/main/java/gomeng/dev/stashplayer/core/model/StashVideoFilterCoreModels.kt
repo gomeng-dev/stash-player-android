@@ -13,6 +13,7 @@ enum class StashVideoFilterCategory(val id: String) {
     Tag("tag"),
     DateRange("date_range"),
     DurationRange("duration_range"),
+    OCounter("o_counter"),
     Rating("rating"),
     PlaybackState("playback_state"),
     LocalFavorite("local_favorite"),
@@ -33,6 +34,7 @@ fun StashVideoFilterCategory.editTarget(): StashVideoFilterEditTarget = when (th
     StashVideoFilterCategory.Tag -> StashVideoFilterEditTarget.Tags
     StashVideoFilterCategory.DateRange,
     StashVideoFilterCategory.DurationRange,
+    StashVideoFilterCategory.OCounter,
     StashVideoFilterCategory.PlaybackState -> StashVideoFilterEditTarget.DateDurationPlayback
     StashVideoFilterCategory.Rating,
     StashVideoFilterCategory.MediaFormat -> StashVideoFilterEditTarget.RatingMedia
@@ -50,6 +52,7 @@ data class StashVideoFilterState(
     val tags: List<StashSelectedTag> = emptyList(),
     val dateRange: StashDateRange? = null,
     val durationRange: StashDurationRange? = null,
+    val oCounterFilter: StashOCounterFilter? = null,
     val ratingRange: StashRatingRange? = null,
     val playbackState: StashPlaybackState? = null,
     val localFavoriteOnly: Boolean = false,
@@ -70,6 +73,9 @@ data class StashVideoFilterState(
         }
         durationRange?.takeUnless { it.isEmpty }?.let { range ->
             add(StashActiveFilterChip(StashVideoFilterCategory.DurationRange, stashString(R.string.auto_kr_0157, range.durationLabel())))
+        }
+        oCounterFilter?.takeUnless { it.isNoOp }?.let { filter ->
+            add(StashActiveFilterChip(StashVideoFilterCategory.OCounter, filter.chipLabel))
         }
         ratingRange?.takeUnless { it.isEmpty }?.let { range ->
             add(StashActiveFilterChip(StashVideoFilterCategory.Rating, stashString(R.string.auto_kr_0158, range.displayLabel())))
@@ -103,6 +109,10 @@ data class StashVideoFilterState(
         durationRange?.takeUnless { it.isEmpty }?.let { range ->
             add("durationMin=${range.minSeconds ?: ""}")
             add("durationMax=${range.maxSeconds ?: ""}")
+        }
+        oCounterFilter?.takeUnless { it.isNoOp }?.let { filter ->
+            add("oCounterOp=${filter.comparator.storageId}")
+            add("oCounterValue=${filter.value}")
         }
         ratingRange?.takeUnless { it.isEmpty }?.let { range ->
             add("ratingMin=${range.min ?: ""}")

@@ -18,6 +18,7 @@ enum class StashDiscoveryFilterSection {
     Tags,
     DateRange,
     DurationRange,
+    OCounter,
     PlaybackState,
     RatingRange,
     MediaFormat,
@@ -78,6 +79,7 @@ fun clearStashDiscoveryFilterSection(
         StashDiscoveryFilterSection.Tags -> current.copy(tags = emptyList())
         StashDiscoveryFilterSection.DateRange -> current.copy(dateRange = null)
         StashDiscoveryFilterSection.DurationRange -> current.copy(durationRange = null)
+        StashDiscoveryFilterSection.OCounter -> current.copy(oCounterFilter = null)
         StashDiscoveryFilterSection.PlaybackState -> current.copy(playbackState = null)
         StashDiscoveryFilterSection.RatingRange -> current.copy(ratingRange = null)
         StashDiscoveryFilterSection.MediaFormat -> current.copy(mediaFormat = StashMediaFormatFilter())

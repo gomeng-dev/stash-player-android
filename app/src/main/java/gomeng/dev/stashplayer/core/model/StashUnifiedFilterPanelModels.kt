@@ -25,6 +25,7 @@ fun StashVideoFilterState.unifiedFilterPanelSections(savedFilterCount: Int): Lis
     val detailLabels = labelsFor(
         StashVideoFilterCategory.DateRange,
         StashVideoFilterCategory.DurationRange,
+        StashVideoFilterCategory.OCounter,
         StashVideoFilterCategory.PlaybackState,
     )
     val ratingMediaLabels = labelsFor(
@@ -77,7 +78,7 @@ fun StashVideoFilterState.hasResettableUnifiedFilterPanelSection(
 ): Boolean = when (target) {
     StashVideoFilterEditTarget.Tags -> tags.isNotEmpty()
     StashVideoFilterEditTarget.DateDurationPlayback ->
-        dateRange?.isEmpty == false || durationRange?.isEmpty == false || playbackState != null
+        dateRange?.isEmpty == false || durationRange?.isEmpty == false || oCounterFilter?.isNoOp == false || playbackState != null
     StashVideoFilterEditTarget.RatingMedia -> ratingRange?.isEmpty == false || !mediaFormat.isEmpty
     StashVideoFilterEditTarget.LocalLibrary -> localFavoriteOnly || savedFilter != null
     StashVideoFilterEditTarget.RandomShuffle -> randomShuffle
@@ -90,6 +91,7 @@ fun StashVideoFilterState.resetUnifiedFilterPanelSection(
     StashVideoFilterEditTarget.DateDurationPlayback -> copy(
         dateRange = null,
         durationRange = null,
+        oCounterFilter = null,
         playbackState = null,
     )
     StashVideoFilterEditTarget.RatingMedia -> copy(

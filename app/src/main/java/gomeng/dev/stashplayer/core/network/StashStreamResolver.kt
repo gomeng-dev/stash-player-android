@@ -1058,6 +1058,9 @@ private fun StashVideoFilterState.toGraphQlSceneFilterOrNull(): Map<String, Any?
     dateRange?.toDateCriterionOrNull()?.let { put("date", it) }
     durationRange?.toIntCriterionOrNull()?.let { put("duration", it) }
     ratingRange?.toRatingCriterionOrNull()?.let { put("rating100", it) }
+    oCounterFilter?.toGraphQlCriterionOrNull()?.let { criterion ->
+        put("o_counter", criterion)
+    }
     playbackState?.let { state ->
         when (state) {
             StashPlaybackState.Watched -> put("play_count", mapOf("value" to 0, "modifier" to "GREATER_THAN"))

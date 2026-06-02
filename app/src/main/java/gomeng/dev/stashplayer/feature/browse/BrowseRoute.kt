@@ -441,6 +441,9 @@ fun BrowseRoute(
         onClearDurationRange = {
             applyBrowseFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.DurationRange), saveRecent = false)
         },
+        onClearOCounter = {
+            applyBrowseFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.OCounter), saveRecent = false)
+        },
         onClearPlaybackState = {
             applyBrowseFilterAction(clearStashDiscoveryFilterSection(pageState.videoFilter, StashDiscoveryFilterSection.PlaybackState), saveRecent = false)
         },
@@ -563,6 +566,7 @@ private fun BrowseContent(
     onClearTags: () -> Unit,
     onClearDateRange: () -> Unit,
     onClearDurationRange: () -> Unit,
+    onClearOCounter: () -> Unit,
     onClearPlaybackState: () -> Unit,
     onClearRatingRange: () -> Unit,
     onClearMediaFormat: () -> Unit,
@@ -716,6 +720,7 @@ private fun BrowseContent(
             onDateDurationPlaybackClick = onOpenDateDurationPlaybackFilter,
             onClearDateRange = onClearDateRange,
             onClearDurationRange = onClearDurationRange,
+            onClearOCounter = onClearOCounter,
             onClearPlaybackState = onClearPlaybackState,
             onRatingMediaFormatClick = onOpenRatingMediaFormatFilter,
             onClearRatingRange = onClearRatingRange,

@@ -33,6 +33,13 @@ fun deserializeStashVideoFilterState(serialized: String): StashVideoFilterState 
                 maxSeconds = fields["durationMax"]?.toIntOrNull(),
             ),
         ),
+        oCounterFilter = stashOCounterComparatorFromStorageId(fields["oCounterOp"])
+            ?.let { comparator ->
+                fields["oCounterValue"]?.toIntOrNull()
+                    ?.takeIf { it >= 0 }
+                    ?.let { value -> StashOCounterFilter(comparator, value) }
+                    ?.takeUnless { it.isNoOp }
+            },
         ratingRange = rangeOrNull(
             StashRatingRange(
                 min = fields["ratingMin"]?.toIntOrNull(),

@@ -87,6 +87,7 @@ fun StashActiveVideoFilterChipsRow(
     onDateDurationPlaybackClick: () -> Unit = {},
     onClearDateRange: () -> Unit = {},
     onClearDurationRange: () -> Unit = {},
+    onClearOCounter: () -> Unit = {},
     onClearPlaybackState: () -> Unit = {},
     onRatingMediaFormatClick: () -> Unit = {},
     onClearRatingRange: () -> Unit = {},
@@ -140,6 +141,14 @@ fun StashActiveVideoFilterChipsRow(
                         onClick = { chip.category.filterSurfaceDescriptor().editTarget?.let(::onEditTargetClick) },
                         clearLabel = stashString(R.string.auto_kr_0309),
                         onClear = onClearDurationRange,
+                    )
+                }
+                StashVideoFilterCategory.OCounter -> {
+                    ActiveFilterChipWithClear(
+                        label = chip.label,
+                        onClick = { chip.category.filterSurfaceDescriptor().editTarget?.let(::onEditTargetClick) },
+                        clearLabel = stashString(R.string.scene_filter_o_count_clear),
+                        onClear = onClearOCounter,
                     )
                 }
                 StashVideoFilterCategory.PlaybackState -> {

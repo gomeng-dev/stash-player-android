@@ -417,6 +417,7 @@ fun StashVideoFilterState.stashToolbarTagFilterBadgeCount(): Int = tags.size
 fun StashVideoFilterState.stashToolbarDateDurationPlaybackBadgeCount(): Int = listOf(
     dateRange?.takeUnless { it.isEmpty },
     durationRange?.takeUnless { it.isEmpty },
+    oCounterFilter?.takeUnless { it.isNoOp },
     playbackState,
 ).count { it != null }
 

@@ -22,6 +22,28 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - 暫無。
 
+## [1.7.11] - 2026-06-02
+
+### English
+
+- Added a scene O-Count comparator filter for Browse/Explore, saved/recent filters, active chips, and Stash GraphQL scene queries.
+- Fixed the O-Count active filter clear action label so it no longer says “Clear duration”.
+
+### 한국어
+
+- 둘러보기/탐색, 저장/최근 필터, 활성 칩, Stash GraphQL 영상 조회에서 사용할 수 있는 영상 O-Count 비교 필터를 추가했습니다.
+- O-Count 활성 필터 해제 버튼이 “길이 해제”로 표시되던 문구를 바로잡았습니다.
+
+### 简体中文
+
+- 新增场景 O-Count 比较筛选器，可用于浏览/探索、保存/最近筛选器、活动筛选标签和 Stash GraphQL 场景查询。
+- 修正 O-Count 活动筛选器清除操作的文案，不再显示为“清除持续时间”。
+
+### 繁體中文
+
+- 新增場景 O-Count 比較篩選器，可用於瀏覽/探索、儲存/最近篩選器、作用中篩選標籤與 Stash GraphQL 場景查詢。
+- 修正 O-Count 作用中篩選器清除操作的文案，不再顯示為「清除持續時間」。
+
 ## [1.7.10] - 2026-05-28
 
 ### English

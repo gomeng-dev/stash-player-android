@@ -127,6 +127,9 @@ fun StashDiscoveryFilterSheets(
             onClearDurationRange = {
                 onApplyFilterAction(clearStashDiscoveryFilterSection(videoFilter, StashDiscoveryFilterSection.DurationRange), false)
             },
+            onClearOCounter = {
+                onApplyFilterAction(clearStashDiscoveryFilterSection(videoFilter, StashDiscoveryFilterSection.OCounter), false)
+            },
             onClearPlaybackState = {
                 onApplyFilterAction(clearStashDiscoveryFilterSection(videoFilter, StashDiscoveryFilterSection.PlaybackState), false)
             },

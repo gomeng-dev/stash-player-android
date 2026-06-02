@@ -1065,4 +1065,8 @@
     <string name="gallery_operations_open_random_action" formatted="false">Open random gallery</string>
     <string name="gallery_selection_open_action" formatted="false">Open selection</string>
     <string name="gallery_selection_random_action" formatted="false">Random from selection</string>
+    <string name="scene_filter_o_count_label" formatted="false">O-Count</string>
+    <string name="scene_filter_o_count_chip">O-Count %1$s %2$d</string>
+    <string name="scene_filter_o_count_placeholder" formatted="false">Example: 0</string>
+    <string name="scene_filter_o_count_clear" formatted="false">Clear O-Count</string>
 </resources>

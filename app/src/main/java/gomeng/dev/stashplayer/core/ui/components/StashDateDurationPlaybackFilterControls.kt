@@ -30,8 +30,10 @@ import gomeng.dev.stashplayer.core.model.StashPlaybackState
 import gomeng.dev.stashplayer.core.model.StashVideoFilterState
 import gomeng.dev.stashplayer.core.model.buildStashDateRangeFromInputs
 import gomeng.dev.stashplayer.core.model.buildStashDurationRangeFromMinuteInputs
+import gomeng.dev.stashplayer.core.model.buildStashOCounterFilterFromInput
 import gomeng.dev.stashplayer.core.model.findMatchingStashDurationPreset
 import gomeng.dev.stashplayer.core.model.stashDurationPresetOptions
+import gomeng.dev.stashplayer.core.model.stashOCounterComparatorOptions
 import gomeng.dev.stashplayer.core.model.toggleStashPlaybackState
 import gomeng.dev.stashplayer.core.ui.designsystem.StashVisibilityFilterChip
 import gomeng.dev.stashplayer.R
@@ -46,6 +48,7 @@ fun StashDateDurationPlaybackFilterButton(
     val count = buildList {
         if (videoFilter.dateRange?.isEmpty == false) add(Unit)
         if (videoFilter.durationRange?.isEmpty == false) add(Unit)
+        if (videoFilter.oCounterFilter?.isNoOp == false) add(Unit)
         if (videoFilter.playbackState != null) add(Unit)
     }.size
     OutlinedButton(
@@ -64,6 +67,7 @@ fun StashDateDurationPlaybackFilterSheet(
     onApply: (StashVideoFilterState) -> Unit,
     onClearDateRange: () -> Unit,
     onClearDurationRange: () -> Unit,
+    onClearOCounter: () -> Unit,
     onClearPlaybackState: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -75,6 +79,10 @@ fun StashDateDurationPlaybackFilterSheet(
     var maxMinutes by remember(videoFilter.durationRange) {
         mutableStateOf(videoFilter.durationRange?.maxSeconds?.let { (it / 60).toString() }.orEmpty())
     }
+    var oCounterComparator by remember(videoFilter.oCounterFilter) {
+        mutableStateOf(videoFilter.oCounterFilter?.comparator ?: stashOCounterComparatorOptions().first())
+    }
+    var oCounterValue by remember(videoFilter.oCounterFilter) { mutableStateOf(videoFilter.oCounterFilter?.value?.toString().orEmpty()) }
     var playbackState by remember(videoFilter.playbackState) { mutableStateOf(videoFilter.playbackState) }
     val draftDurationRange = buildStashDurationRangeFromMinuteInputs(minMinutes, maxMinutes)
     val selectedDurationPreset = findMatchingStashDurationPreset(draftDurationRange)
@@ -84,6 +92,7 @@ fun StashDateDurationPlaybackFilterSheet(
             videoFilter.copy(
                 dateRange = buildStashDateRangeFromInputs(startDate, endDate),
                 durationRange = buildStashDurationRangeFromMinuteInputs(minMinutes, maxMinutes),
+                oCounterFilter = buildStashOCounterFilterFromInput(oCounterComparator, oCounterValue),
                 playbackState = playbackState,
             ),
         )
@@ -186,6 +195,43 @@ fun StashDateDurationPlaybackFilterSheet(
                         placeholder = { Text(stashString(R.string.auto_kr_0313)) },
                     )
                 }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(stashString(R.string.scene_filter_o_count_label), style = MaterialTheme.typography.titleMedium)
+                    TextButton(onClick = {
+                        oCounterValue = ""
+                        onClearOCounter()
+                    }) { Text(stashString(R.string.auto_kr_0309)) }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    stashOCounterComparatorOptions().forEach { comparator ->
+                        StashVisibilityFilterChip(
+                            selected = oCounterComparator == comparator,
+                            onClick = { oCounterComparator = comparator },
+                            label = { Text(comparator.symbol) },
+                        )
+                    }
+                }
+                OutlinedTextField(
+                    value = oCounterValue,
+                    onValueChange = { oCounterValue = it.filter(Char::isDigit) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    label = { Text(stashString(R.string.scene_filter_o_count_label)) },
+                    placeholder = { Text(stashString(R.string.scene_filter_o_count_placeholder)) },
+                )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
