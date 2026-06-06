@@ -66,6 +66,7 @@ import gomeng.dev.stashplayer.core.network.toSettingsStatusCopy
 import gomeng.dev.stashplayer.core.player.FastPlaybackHoldSpeedPreference
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
+import gomeng.dev.stashplayer.core.player.PlayerSideGestureLayout
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_DEFAULT
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_MAX
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_MIN
@@ -245,6 +246,7 @@ object PlaybackSettingsCopy {
         DefaultStreamPreferenceSettingCopy.title,
         PlaybackEndActionSettingCopy.title,
         FastPlaybackHoldSpeedSettingCopy.title,
+        PlayerSideGestureLayoutSettingCopy.title,
         BackgroundPlaybackSettingCopy.title,
         PictureInPictureSettingCopy.title,
         ShortsMaxDurationSettingCopy.title,
@@ -289,6 +291,42 @@ object FastPlaybackHoldSpeedSettingCopy {
 
 data class FastPlaybackHoldSpeedOption(
     val speedPreference: FastPlaybackHoldSpeedPreference,
+    @StringRes val label: Int,
+    @StringRes val description: Int,
+)
+
+object PlayerSideGestureLayoutSettingCopy {
+    @StringRes val title = R.string.settings_player_side_gesture_layout_title
+    @StringRes val description = R.string.settings_player_side_gesture_layout_description
+
+    val options: List<PlayerSideGestureLayoutOption> = listOf(
+        PlayerSideGestureLayoutOption(
+            PlayerSideGestureLayout.Default,
+            labelFor(PlayerSideGestureLayout.Default),
+            descriptionFor(PlayerSideGestureLayout.Default),
+        ),
+        PlayerSideGestureLayoutOption(
+            PlayerSideGestureLayout.Reversed,
+            labelFor(PlayerSideGestureLayout.Reversed),
+            descriptionFor(PlayerSideGestureLayout.Reversed),
+        ),
+    )
+
+    @StringRes
+    fun labelFor(layout: PlayerSideGestureLayout): Int = when (layout) {
+        PlayerSideGestureLayout.Default -> R.string.settings_player_side_gesture_layout_default_label
+        PlayerSideGestureLayout.Reversed -> R.string.settings_player_side_gesture_layout_reversed_label
+    }
+
+    @StringRes
+    fun descriptionFor(layout: PlayerSideGestureLayout): Int = when (layout) {
+        PlayerSideGestureLayout.Default -> R.string.settings_player_side_gesture_layout_default_description
+        PlayerSideGestureLayout.Reversed -> R.string.settings_player_side_gesture_layout_reversed_description
+    }
+}
+
+data class PlayerSideGestureLayoutOption(
+    val layout: PlayerSideGestureLayout,
     @StringRes val label: Int,
     @StringRes val description: Int,
 )
@@ -1348,6 +1386,9 @@ private fun PlaybackSettingsContent() {
     val fastPlaybackHoldSpeed by repository.fastPlaybackHoldSpeed.collectAsState(
         initial = StashSettingsRepository.DEFAULT_FAST_PLAYBACK_HOLD_SPEED,
     )
+    val playerSideGestureLayout by repository.playerSideGestureLayout.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_PLAYER_SIDE_GESTURE_LAYOUT,
+    )
     val backgroundPlaybackEnabled by repository.backgroundPlaybackEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_BACKGROUND_PLAYBACK_ENABLED,
     )
@@ -1421,6 +1462,24 @@ private fun PlaybackSettingsContent() {
                 onClick = {
                     coroutineScope.launch {
                         repository.setFastPlaybackHoldSpeed(option.speedPreference)
+                    }
+                },
+            )
+        }
+    }
+
+    SettingsRadioGroupCard(
+        title = PlayerSideGestureLayoutSettingCopy.title,
+        description = PlayerSideGestureLayoutSettingCopy.description,
+    ) {
+        PlayerSideGestureLayoutSettingCopy.options.forEach { option ->
+            SettingsRadioRow(
+                selected = playerSideGestureLayout == option.layout,
+                label = option.label,
+                description = option.description,
+                onClick = {
+                    coroutineScope.launch {
+                        repository.setPlayerSideGestureLayout(option.layout)
                     }
                 },
             )

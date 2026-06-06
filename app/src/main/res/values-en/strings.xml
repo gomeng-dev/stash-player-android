@@ -248,6 +248,12 @@
     <string name="settings_fast_playback_hold_speed_175_description">Faster than default without jumping straight to 2x.</string>
     <string name="settings_fast_playback_hold_speed_200_label">2.0x</string>
     <string name="settings_fast_playback_hold_speed_200_description">Play at 2x while holding.</string>
+    <string name="settings_player_side_gesture_layout_title">Brightness/volume gesture sides</string>
+    <string name="settings_player_side_gesture_layout_description">Choose which screen edge controls brightness or volume during vertical video drags.</string>
+    <string name="settings_player_side_gesture_layout_default_label">Default (left brightness · right volume)</string>
+    <string name="settings_player_side_gesture_layout_default_description">Keep the existing MX Player-style side layout.</string>
+    <string name="settings_player_side_gesture_layout_reversed_label">Reversed (left volume · right brightness)</string>
+    <string name="settings_player_side_gesture_layout_reversed_description">Control volume on the left edge and brightness on the right edge.</string>
     <string name="player_fast_playback_hold_hud_text">%1$s fast playback</string>
     <string name="settings_background_playback_title">Background playback</string>
     <string name="settings_background_playback_description">Keep the current video playing when the app moves to the background.</string>

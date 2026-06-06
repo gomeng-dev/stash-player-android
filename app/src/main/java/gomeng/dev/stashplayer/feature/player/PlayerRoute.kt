@@ -96,6 +96,7 @@ import gomeng.dev.stashplayer.core.player.PlayerPresentationRouteState
 import gomeng.dev.stashplayer.core.player.PlayerPictureInPictureAspectRatio
 import gomeng.dev.stashplayer.core.player.PlayerPreviousAction
 import gomeng.dev.stashplayer.core.player.PlayerRatingState
+import gomeng.dev.stashplayer.core.player.PlayerSideGestureLayout
 import gomeng.dev.stashplayer.core.player.PlayerSimilarRecommendationsRequestKey
 import gomeng.dev.stashplayer.core.player.PlayerSimilarRecommendationsRequestState
 import gomeng.dev.stashplayer.core.player.PlayerResumeSaveEffectState
@@ -243,6 +244,9 @@ fun PlayerRoute(
     val playbackOrientationMode by settingsRepository.playbackOrientationMode.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PLAYBACK_ORIENTATION_MODE,
     )
+    val playerSideGestureLayout by settingsRepository.playerSideGestureLayout.collectAsState(
+        initial = StashSettingsRepository.DEFAULT_PLAYER_SIDE_GESTURE_LAYOUT,
+    )
     val subtitleLanguage by settingsRepository.subtitleLanguage.collectAsState(
         initial = StashSettingsRepository.DEFAULT_SUBTITLE_LANGUAGE,
     )
@@ -313,6 +317,7 @@ fun PlayerRoute(
             backgroundPlaybackEnabled = backgroundPlaybackEnabled,
             pictureInPictureEnabled = pictureInPictureEnabled,
             playbackOrientationMode = playbackOrientationMode,
+            playerSideGestureLayout = playerSideGestureLayout,
             subtitleLanguage = subtitleLanguage,
             subtitleFontScale = subtitleFontScale,
             subtitlePosition = subtitlePosition,
@@ -343,6 +348,7 @@ private fun RealPlayerRoute(
     backgroundPlaybackEnabled: Boolean,
     pictureInPictureEnabled: Boolean,
     playbackOrientationMode: PlaybackOrientationMode,
+    playerSideGestureLayout: PlayerSideGestureLayout,
     subtitleLanguage: SubtitleLanguagePreference,
     subtitleFontScale: Float,
     subtitlePosition: SubtitlePosition,
@@ -1851,6 +1857,7 @@ private fun RealPlayerRoute(
                 hudText = it
             },
             onSeekPreview = updateSeekPreview,
+            sideGestureLayout = playerSideGestureLayout,
             fastPlaybackHoldEnabled = fastPlaybackHoldSpeed.enabled,
             onFastPlaybackHoldStart = startFastPlaybackHold,
             onFastPlaybackHoldEnd = endFastPlaybackHold,

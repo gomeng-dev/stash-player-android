@@ -8,19 +8,37 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ### English
 
-- Nothing yet.
+Nothing yet.
 
 ### 한국어
 
-- 아직 없습니다.
+아직 없습니다.
 
 ### 简体中文
 
-- 暂无。
+暂无。
 
 ### 繁體中文
 
-- 暫無。
+暫無。
+
+## [1.8.0] - 2026-06-06
+
+### English
+
+- Added a Playback setting to swap the left/right brightness and volume side-drag gestures.
+
+### 한국어
+
+- 플레이어 좌우 가장자리 세로 드래그의 밝기/음량 위치를 바꾸는 재생 설정을 추가했습니다.
+
+### 简体中文
+
+- 新增播放设置，可交换左右边缘纵向拖动的亮度和音量手势位置。
+
+### 繁體中文
+
+- 新增播放設定，可交換左右邊緣縱向拖動的亮度與音量手勢位置。
 
 ## [1.7.11] - 2026-06-02
 

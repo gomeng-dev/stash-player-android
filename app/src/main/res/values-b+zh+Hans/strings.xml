@@ -248,6 +248,12 @@
     <string name="settings_fast_playback_hold_speed_175_description">比默认更快，但不直接到 2 倍速。</string>
     <string name="settings_fast_playback_hold_speed_200_label">2.0x</string>
     <string name="settings_fast_playback_hold_speed_200_description">按住期间以 2 倍速播放。</string>
+    <string name="settings_player_side_gesture_layout_title">亮度/音量手势位置</string>
+    <string name="settings_player_side_gesture_layout_description">选择视频画面左右边缘纵向拖动时分别控制亮度还是音量。</string>
+    <string name="settings_player_side_gesture_layout_default_label">默认（左侧亮度 · 右侧音量）</string>
+    <string name="settings_player_side_gesture_layout_default_description">保留现有 MX Player 风格的位置。</string>
+    <string name="settings_player_side_gesture_layout_reversed_label">反转（左侧音量 · 右侧亮度）</string>
+    <string name="settings_player_side_gesture_layout_reversed_description">左侧控制音量，右侧控制亮度。</string>
     <string name="player_fast_playback_hold_hud_text">%1$s 快速播放</string>
     <string name="settings_background_playback_title">后台播放</string>
     <string name="settings_background_playback_description">当应用程序移至后台时，保持当前视频播放。</string>

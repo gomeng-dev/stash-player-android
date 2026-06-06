@@ -236,6 +236,7 @@ fun classifyPlayerDrag(
     totalDx: Float,
     totalDy: Float,
     gestureExcluded: Boolean = false,
+    sideGestureLayout: PlayerSideGestureLayout = PlayerSideGestureLayout.default,
 ): PlayerGestureMode {
     if (gestureExcluded) return PlayerGestureMode.None
 
@@ -245,8 +246,7 @@ fun classifyPlayerDrag(
 
     return when {
         absDx >= absDy * AXIS_LOCK_RATIO -> PlayerGestureMode.Seek
-        absDy >= absDx * AXIS_LOCK_RATIO && isPlayerBrightnessGestureStart(startX, width) -> PlayerGestureMode.Brightness
-        absDy >= absDx * AXIS_LOCK_RATIO && isPlayerVolumeGestureStart(startX, width) -> PlayerGestureMode.Volume
+        absDy >= absDx * AXIS_LOCK_RATIO -> resolvePlayerSideGestureMode(startX, width, sideGestureLayout)
         else -> PlayerGestureMode.None
     }
 }
@@ -705,6 +705,7 @@ fun resolvePlayerSurfaceDragDecision(
     totalDx: Float,
     totalDy: Float,
     locked: Boolean = false,
+    sideGestureLayout: PlayerSideGestureLayout = PlayerSideGestureLayout.default,
 ): PlayerSurfaceDragDecision {
     val presentationGestureMode = classifyPlayerPresentationDrag(
         presentationMode = presentationMode,
@@ -725,6 +726,7 @@ fun resolvePlayerSurfaceDragDecision(
                 width = width,
                 totalDx = totalDx,
                 totalDy = totalDy,
+                sideGestureLayout = sideGestureLayout,
             )
             if (playbackMode == PlayerGestureMode.None) {
                 PlayerSurfaceDragDecision.None
@@ -738,6 +740,7 @@ fun resolvePlayerSurfaceDragDecision(
                 width = width,
                 totalDx = totalDx,
                 totalDy = totalDy,
+                sideGestureLayout = sideGestureLayout,
             )
             when {
                 playbackMode == PlayerGestureMode.None -> PlayerSurfaceDragDecision.None
@@ -777,6 +780,22 @@ private fun isPlayerBrightnessGestureStart(startX: Float, width: Float): Boolean
 private fun isPlayerVolumeGestureStart(startX: Float, width: Float): Boolean {
     if (width <= 0f) return false
     return startX >= width * (1f - PLAYER_VERTICAL_SIDE_CONTROL_FRACTION)
+}
+
+private fun resolvePlayerSideGestureMode(
+    startX: Float,
+    width: Float,
+    sideGestureLayout: PlayerSideGestureLayout,
+): PlayerGestureMode = when {
+    isPlayerBrightnessGestureStart(startX, width) -> when (sideGestureLayout) {
+        PlayerSideGestureLayout.Default -> PlayerGestureMode.Brightness
+        PlayerSideGestureLayout.Reversed -> PlayerGestureMode.Volume
+    }
+    isPlayerVolumeGestureStart(startX, width) -> when (sideGestureLayout) {
+        PlayerSideGestureLayout.Default -> PlayerGestureMode.Volume
+        PlayerSideGestureLayout.Reversed -> PlayerGestureMode.Brightness
+    }
+    else -> PlayerGestureMode.None
 }
 
 private fun isPlayerSideControlGestureStart(startX: Float, width: Float): Boolean =

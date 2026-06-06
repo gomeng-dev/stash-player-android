@@ -4,6 +4,7 @@ import android.content.Context
 import gomeng.dev.stashplayer.core.player.FastPlaybackHoldSpeedPreference
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
 import gomeng.dev.stashplayer.core.player.PlaybackEndAction
+import gomeng.dev.stashplayer.core.player.PlayerSideGestureLayout
 import gomeng.dev.stashplayer.core.player.SUBTITLE_FONT_SCALE_DEFAULT
 import gomeng.dev.stashplayer.core.player.SubtitleLanguagePreference
 import gomeng.dev.stashplayer.core.player.SubtitlePosition
@@ -113,6 +114,10 @@ class StashSettingsRepository(private val context: Context) {
 
     val playbackOrientationMode: Flow<PlaybackOrientationMode> = context.stashSettingsDataStore.data.map { prefs ->
         playbackOrientationModeFromPersistedValue(prefs[Keys.PlaybackOrientationMode])
+    }
+
+    val playerSideGestureLayout: Flow<PlayerSideGestureLayout> = context.stashSettingsDataStore.data.map { prefs ->
+        playerSideGestureLayoutFromPersistedValue(prefs[Keys.PlayerSideGestureLayout])
     }
 
     val subtitleLanguage: Flow<SubtitleLanguagePreference> = context.stashSettingsDataStore.data.map { prefs ->
@@ -270,6 +275,12 @@ class StashSettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setPlayerSideGestureLayout(layout: PlayerSideGestureLayout) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.PlayerSideGestureLayout] = persistPlayerSideGestureLayoutValue(layout)
+        }
+    }
+
     suspend fun setSubtitleLanguage(language: SubtitleLanguagePreference) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.SubtitleLanguage] = persistSubtitleLanguageValue(language)
@@ -360,6 +371,7 @@ class StashSettingsRepository(private val context: Context) {
         val PictureInPictureEnabled = booleanPreferencesKey("picture_in_picture_enabled")
         val ShortsMaxDurationSeconds = intPreferencesKey("shorts_max_duration_seconds")
         val PlaybackOrientationMode = stringPreferencesKey("playback_orientation_mode")
+        val PlayerSideGestureLayout = stringPreferencesKey("player_side_gesture_layout")
         val SubtitleLanguage = stringPreferencesKey("subtitle_language")
         val SubtitleFontScale = floatPreferencesKey("subtitle_font_scale")
         val SubtitlePosition = stringPreferencesKey("subtitle_position")
@@ -391,6 +403,7 @@ class StashSettingsRepository(private val context: Context) {
         const val DEFAULT_PICTURE_IN_PICTURE_ENABLED = false
         const val DEFAULT_SHORTS_MAX_DURATION_SECONDS = STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
         val DEFAULT_PLAYBACK_ORIENTATION_MODE: PlaybackOrientationMode = PlaybackOrientationMode.default
+        val DEFAULT_PLAYER_SIDE_GESTURE_LAYOUT: PlayerSideGestureLayout = PlayerSideGestureLayout.default
         val DEFAULT_SUBTITLE_LANGUAGE: SubtitleLanguagePreference = SubtitleLanguagePreference.default
         const val DEFAULT_SUBTITLE_FONT_SCALE: Float = SUBTITLE_FONT_SCALE_DEFAULT
         val DEFAULT_SUBTITLE_POSITION: SubtitlePosition = SubtitlePosition.default
@@ -448,6 +461,11 @@ class StashSettingsRepository(private val context: Context) {
 
         fun playbackOrientationModeFromPersistedValue(value: String?): PlaybackOrientationMode =
             PlaybackOrientationMode.fromPersistedValue(value)
+
+        fun persistPlayerSideGestureLayoutValue(layout: PlayerSideGestureLayout): String = layout.persistedValue
+
+        fun playerSideGestureLayoutFromPersistedValue(value: String?): PlayerSideGestureLayout =
+            PlayerSideGestureLayout.fromPersistedValue(value)
 
         fun persistSubtitleLanguageValue(language: SubtitleLanguagePreference): String = language.persistedValue
 

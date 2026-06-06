@@ -248,6 +248,12 @@
     <string name="settings_fast_playback_hold_speed_175_description">더 빠르게 건너보되 2배속보다는 여유를 둡니다.</string>
     <string name="settings_fast_playback_hold_speed_200_label">2.0x</string>
     <string name="settings_fast_playback_hold_speed_200_description">길게 누르는 동안 2배속으로 재생합니다.</string>
+    <string name="settings_player_side_gesture_layout_title">밝기/음량 제스처 위치</string>
+    <string name="settings_player_side_gesture_layout_description">영상 화면 좌우 가장자리 세로 드래그의 밝기와 음량 위치를 선택합니다.</string>
+    <string name="settings_player_side_gesture_layout_default_label">기본 (왼쪽 밝기 · 오른쪽 음량)</string>
+    <string name="settings_player_side_gesture_layout_default_description">기존 MX Player 스타일 위치를 유지합니다.</string>
+    <string name="settings_player_side_gesture_layout_reversed_label">반전 (왼쪽 음량 · 오른쪽 밝기)</string>
+    <string name="settings_player_side_gesture_layout_reversed_description">왼쪽에서는 음량, 오른쪽에서는 밝기를 조절합니다.</string>
     <string name="player_fast_playback_hold_hud_text">%1$s 빠른 재생</string>
     <string name="settings_background_playback_title">백그라운드 재생</string>
     <string name="settings_background_playback_description">앱이 백그라운드로 이동해도 현재 영상을 계속 재생합니다.</string>

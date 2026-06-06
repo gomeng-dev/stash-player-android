@@ -12,6 +12,18 @@ enum class PlaybackOrientationMode(val persistedValue: String) {
     }
 }
 
+enum class PlayerSideGestureLayout(val persistedValue: String) {
+    Default("default"),
+    Reversed("reversed");
+
+    companion object {
+        val default: PlayerSideGestureLayout = Default
+
+        fun fromPersistedValue(value: String?): PlayerSideGestureLayout =
+            entries.firstOrNull { it.persistedValue == value?.trim()?.lowercase() } ?: default
+    }
+}
+
 enum class FastPlaybackHoldSpeedPreference(
     val persistedValue: String,
     val playbackSpeed: Float?,

@@ -25,6 +25,7 @@ import gomeng.dev.stashplayer.core.player.PlayerPresentationGestureMode
 import gomeng.dev.stashplayer.core.player.PlayerPresentationGestureStartArea
 import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.player.PlayerSeekDragState
+import gomeng.dev.stashplayer.core.player.PlayerSideGestureLayout
 import gomeng.dev.stashplayer.core.player.calculateVerticalSideControlGestureFraction
 import gomeng.dev.stashplayer.core.player.classifyDoubleTapRegion
 import gomeng.dev.stashplayer.core.player.buildPlayerPresentationDragUpdate
@@ -57,6 +58,7 @@ fun PlayerGestureLayer(
     onVolumeFraction: (Float) -> String,
     onHudText: (String?) -> Unit,
     onSeekPreview: (PlayerSeekPreview?) -> Unit,
+    sideGestureLayout: PlayerSideGestureLayout = PlayerSideGestureLayout.default,
     fastPlaybackHoldEnabled: Boolean = true,
     onFastPlaybackHoldStart: () -> Unit,
     onFastPlaybackHoldEnd: () -> Unit,
@@ -81,6 +83,7 @@ fun PlayerGestureLayer(
     val latestOnVolumeFraction by rememberUpdatedState(onVolumeFraction)
     val latestOnHudText by rememberUpdatedState(onHudText)
     val latestOnSeekPreview by rememberUpdatedState(onSeekPreview)
+    val latestSideGestureLayout by rememberUpdatedState(sideGestureLayout)
     val latestFastPlaybackHoldEnabled by rememberUpdatedState(fastPlaybackHoldEnabled)
     val latestOnFastPlaybackHoldStart by rememberUpdatedState(onFastPlaybackHoldStart)
     val latestOnFastPlaybackHoldEnd by rememberUpdatedState(onFastPlaybackHoldEnd)
@@ -120,6 +123,7 @@ fun PlayerGestureLayer(
                             onVolumeFraction = latestOnVolumeFraction,
                             onHudText = latestOnHudText,
                             onSeekPreview = latestOnSeekPreview,
+                            sideGestureLayout = { latestSideGestureLayout },
                             fastPlaybackHoldEnabled = latestFastPlaybackHoldEnabled,
                             onFastPlaybackHoldStart = latestOnFastPlaybackHoldStart,
                             onFastPlaybackHoldEnd = latestOnFastPlaybackHoldEnd,
@@ -161,6 +165,7 @@ fun PlayerGestureLayer(
                                         onVolumeFraction = latestOnVolumeFraction,
                                         onHudText = latestOnHudText,
                                         onSeekPreview = latestOnSeekPreview,
+                                        sideGestureLayout = { latestSideGestureLayout },
                                         fastPlaybackHoldEnabled = latestFastPlaybackHoldEnabled,
                                         onFastPlaybackHoldStart = latestOnFastPlaybackHoldStart,
                                         onFastPlaybackHoldEnd = latestOnFastPlaybackHoldEnd,
@@ -218,6 +223,7 @@ private suspend fun AwaitPointerEventScope.awaitTapOrHandleDrag(
     onVolumeFraction: (Float) -> String,
     onHudText: (String?) -> Unit,
     onSeekPreview: (PlayerSeekPreview?) -> Unit,
+    sideGestureLayout: () -> PlayerSideGestureLayout,
     fastPlaybackHoldEnabled: Boolean = true,
     onFastPlaybackHoldStart: () -> Unit,
     onFastPlaybackHoldEnd: () -> Unit,
@@ -375,6 +381,7 @@ private suspend fun AwaitPointerEventScope.awaitTapOrHandleDrag(
                     width = size.width.toFloat(),
                     totalDx = totalDrag.x,
                     totalDy = totalDrag.y,
+                    sideGestureLayout = sideGestureLayout(),
                 )
                 val currentPresentationMode = presentationMode()
                 dragMode = when {
