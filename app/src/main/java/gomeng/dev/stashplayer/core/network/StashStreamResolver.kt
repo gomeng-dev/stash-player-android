@@ -38,6 +38,8 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.util.Base64
+import java.util.Locale
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
@@ -148,46 +150,6 @@ class StashGraphQlClient(
             execute(
                 METADATA_SCAN_MUTATION,
                 buildMetadataScanVariables(),
-            ),
-        )
-    }
-
-    suspend fun findSceneTaggerSources(): List<StashSceneTaggerSource> {
-        return parseSceneTaggerSourcesResponse(execute(SCENE_TAGGER_SOURCES_QUERY))
-    }
-
-    suspend fun scanSceneTags(
-        source: StashSceneTaggerSource,
-        sceneId: String,
-    ): StashSceneTagScanResult {
-        return parseScrapeSingleSceneTagsResponse(
-            source = source,
-            json = execute(
-                SCRAPE_SINGLE_SCENE_TAGS_QUERY,
-                buildScrapeSingleSceneTagsVariables(
-                    source = source,
-                    sceneId = sceneId,
-                ),
-            ),
-        )
-    }
-
-    suspend fun applySceneTagScan(
-        sceneId: String,
-        existingTagIds: List<String>,
-        selectedTags: List<StashSceneTagCandidate>,
-    ): Boolean {
-        val selectedTagIds = selectedTags.map { candidate ->
-            candidate.storedId?.trim()?.takeIf { it.isNotBlank() }
-                ?: parseTagCreateResponse(execute(TAG_CREATE_MUTATION, buildTagCreateVariables(candidate.name))).id
-        }
-        return parseSceneTagsUpdateResponse(
-            execute(
-                SCENE_TAGS_UPDATE_MUTATION,
-                buildSceneTagsReplaceVariables(
-                    sceneId = sceneId,
-                    tagIds = existingTagIds + selectedTagIds,
-                ),
             ),
         )
     }
@@ -413,6 +375,54 @@ class StashGraphQlClient(
         return parseFindSceneResponse(execute(FIND_SCENE_QUERY, mapOf("id" to sceneId)))
     }
 
+    suspend fun suggestStashTagsForScene(
+        sceneId: String,
+        tagApiUrl: String = defaultStashTagApiUrl(profile),
+    ): StashTagSuggestionResult {
+        val scene = findScene(sceneId) ?: error("Scene $sceneId not found")
+        val spriteUrl = scene.spriteImageUrl?.trim()?.takeIf { it.isNotBlank() }
+            ?: error("No sprite found. Generate Stash sprites first.")
+        val imageDataUrl = fetchDataUrl(spriteUrl, fallbackMimeType = "image/jpeg")
+        val vttDataUrl = fetchDataUrl(deriveStashTagThumbsVttUrl(spriteUrl), fallbackMimeType = "text/vtt")
+        val response = postStashTagPredict(
+            tagApiUrl = tagApiUrl,
+            payload = buildStashTagPredictPayload(imageDataUrl, vttDataUrl),
+        )
+        return StashTagSuggestionResult(
+            spriteUrl = spriteUrl,
+            tagApiUrl = tagApiUrl,
+            predictions = parseStashTagPredictResponse(response),
+        )
+    }
+
+    suspend fun applyStashTagPredictions(
+        sceneId: String,
+        predictions: List<StashTagPrediction>,
+    ): StashTagApplyResult {
+        val selectedNames = predictions.map { it.name.trim() }.filter { it.isNotBlank() }.distinct()
+        if (selectedNames.isEmpty()) return StashTagApplyResult(emptyList(), emptyList())
+        val scene = findScene(sceneId) ?: error("Scene $sceneId not found")
+        val knownTags = parseAllTagsResponse(execute(ALL_TAGS_QUERY))
+        val tagIdByNameOrAlias = knownTags.flatMap { tag ->
+            (listOf(tag.name) + tag.aliases).map { key -> key.lowercase(Locale.ROOT) to tag.id }
+        }.toMap().toMutableMap()
+        val createdNames = mutableListOf<String>()
+        val selectedIds = selectedNames.map { name ->
+            val key = name.lowercase(Locale.ROOT)
+            tagIdByNameOrAlias[key] ?: parseTagCreateResponse(execute(TAG_CREATE_MUTATION, buildTagCreateVariables(name))).also { tag ->
+                createdNames += tag.label
+                tagIdByNameOrAlias[key] = tag.id
+            }.id
+        }
+        val existingIds = scene.tags.map { it.id }.filter { it.isNotBlank() }
+        val finalTagIds = (existingIds + selectedIds).distinct()
+        if (finalTagIds != existingIds) {
+            parseSceneTagsUpdateResponse(execute(SCENE_TAGS_UPDATE_MUTATION, buildSceneTagsReplaceVariables(sceneId, finalTagIds)))
+        }
+        val addedNames = selectedNames.filterIndexed { index, _ -> selectedIds[index] !in existingIds }
+        return StashTagApplyResult(addedTagNames = addedNames, createdTagNames = createdNames.distinct())
+    }
+
     suspend fun findTags(
         perPage: Int = 50,
         page: Int = 1,
@@ -487,6 +497,39 @@ class StashGraphQlClient(
             throw IOException("Stash VTT HTTP ${response.code}: ${responseBody.take(240)}")
         }
         parseStashSpriteVtt(authenticatedVttUrl, responseBody)
+    }
+
+    private suspend fun fetchDataUrl(url: String, fallbackMimeType: String): String = withContext(Dispatchers.IO) {
+        val authenticatedUrl = profile.authenticatedUrl(url)
+        val requestBuilder = Request.Builder().url(authenticatedUrl)
+        profile.authHeadersFor(authenticatedUrl).forEach { (name, value) ->
+            requestBuilder.header(name, value)
+        }
+        val response = okHttpClient.newCall(requestBuilder.build()).execute()
+        val bytes = response.body?.bytes() ?: ByteArray(0)
+        if (!response.isSuccessful) {
+            throw IOException(redactStashCredentialText("Stash asset HTTP ${response.code}: ${String(bytes, Charsets.UTF_8).take(240)}"))
+        }
+        val contentType = response.header("Content-Type")
+            ?.substringBefore(';')
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+            ?: fallbackMimeType
+        "data:$contentType;base64,${Base64.getEncoder().encodeToString(bytes)}"
+    }
+
+    private suspend fun postStashTagPredict(tagApiUrl: String, payload: String): String = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(tagApiUrl)
+            .post(payload.toRequestBody(JSON_MEDIA_TYPE))
+            .header("Content-Type", "application/json; charset=utf-8")
+            .build()
+        val response = okHttpClient.newCall(request).execute()
+        val responseBody = response.body?.string().orEmpty()
+        if (!response.isSuccessful) {
+            throw IOException(redactStashCredentialText("StashTag API HTTP ${response.code}: ${responseBody.take(240)}"))
+        }
+        responseBody
     }
 
     suspend fun saveActivity(sceneId: String, resumeTimeSeconds: Double, playDurationSeconds: Double? = null) {
@@ -616,30 +659,6 @@ class StashGraphQlClient(
         val METADATA_SCAN_MUTATION = """
             mutation MetadataScan(${'$'}input: ScanMetadataInput!) {
               metadataScan(input: ${'$'}input)
-            }
-        """
-
-        val SCENE_TAGGER_SOURCES_QUERY = """
-            query SceneTaggerSources {
-              configuration {
-                general {
-                  stashBoxes { endpoint name }
-                }
-              }
-              listScrapers(types: [SCENE]) {
-                id
-                name
-                scene { supported_scrapes }
-              }
-            }
-        """
-
-        val SCRAPE_SINGLE_SCENE_TAGS_QUERY = """
-            query ScrapeSingleSceneTags(${'$'}source: ScraperSourceInput!, ${'$'}input: ScrapeSingleSceneInput!) {
-              scrapeSingleScene(source: ${'$'}source, input: ${'$'}input) {
-                title
-                tags { stored_id name }
-              }
             }
         """
 
@@ -824,6 +843,16 @@ class StashGraphQlClient(
             }
         """
 
+        val ALL_TAGS_QUERY = """
+            query AllTags {
+              allTags {
+                id
+                name
+                aliases
+              }
+            }
+        """
+
         val TAG_CREATE_MUTATION = """
             mutation TagCreate(${'$'}input: TagCreateInput!) {
               tagCreate(input: ${'$'}input) { id name }
@@ -942,14 +971,6 @@ internal fun buildConfigureCreateGalleriesFromFoldersVariables(enabled: Boolean)
 
 internal fun buildMetadataScanVariables(): Map<String, Any?> = mapOf(
     "input" to emptyMap<String, Any?>(),
-)
-
-internal fun buildScrapeSingleSceneTagsVariables(
-    source: StashSceneTaggerSource,
-    sceneId: String,
-): Map<String, Any?> = mapOf(
-    "source" to source.sourceInput,
-    "input" to mapOf("scene_id" to sceneId.trim()),
 )
 
 internal fun buildFindScenesVariables(
@@ -1302,9 +1323,7 @@ internal fun configureGeneralMutationForTesting(): String = StashGraphQlClient.C
 
 internal fun metadataScanMutationForTesting(): String = StashGraphQlClient.METADATA_SCAN_MUTATION
 
-internal fun sceneTaggerSourcesQueryForTesting(): String = StashGraphQlClient.SCENE_TAGGER_SOURCES_QUERY
-
-internal fun scrapeSingleSceneTagsQueryForTesting(): String = StashGraphQlClient.SCRAPE_SINGLE_SCENE_TAGS_QUERY
+internal fun allTagsQueryForTesting(): String = StashGraphQlClient.ALL_TAGS_QUERY
 
 internal fun imageUpdateMutationForTesting(): String = StashGraphQlClient.IMAGE_UPDATE_MUTATION
 

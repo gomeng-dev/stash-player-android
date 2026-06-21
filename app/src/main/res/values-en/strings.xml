@@ -1023,27 +1023,6 @@
     <string name="auto_kr_0536" formatted="false">Test connection and save</string>
     <string name="auto_kr_0537" formatted="false">Save without testing</string>
     <string name="auto_kr_0538" formatted="false">Save with automatic name</string>
-    <string name="player_tag_scan_label" formatted="false">Scan tags</string>
-    <string name="player_tag_scan_content_description" formatted="false">Open Stash tag scan</string>
-    <string name="player_tag_scan_running_content_description" formatted="false">Stash tag scan is running</string>
-    <string name="player_tag_scan_sheet_title" formatted="false">Scan tags</string>
-    <string name="player_tag_scan_sheet_subtitle" formatted="false">Stash Tagger · Scan for tags</string>
-    <string name="player_tag_scan_sheet_message" formatted="false">Like the web Tagger Scan for tags action, scan the current scene with the selected StashBox/scraper source, review found tags, then apply them.</string>
-    <string name="player_tag_scan_source_title" formatted="false">Source</string>
-    <string name="player_tag_scan_run" formatted="false">Run scan</string>
-    <string name="player_tag_scan_apply" formatted="false">Apply selected tags</string>
-    <string name="player_tag_scan_close" formatted="false">Close</string>
-    <string name="player_tag_scan_loading_sources" formatted="false">Loading tag scan sources…</string>
-    <string name="player_tag_scan_no_sources" formatted="false">No available StashBox or fragment-capable scene scraper was found.</string>
-    <string name="player_tag_scan_ready" formatted="false">Choose a source, then run the scan.</string>
-    <string name="player_tag_scan_scanning" formatted="false">Scanning for tags…</string>
-    <string name="player_tag_scan_no_results" formatted="false">No applicable tag candidates were found.</string>
-    <string name="player_tag_scan_result_count">Found %2$d tag candidates from %1$d results.</string>
-    <string name="player_tag_scan_new_tag" formatted="false">Create new local tag</string>
-    <string name="player_tag_scan_applying" formatted="false">Applying tags…</string>
-    <string name="player_tag_scan_success">Applied %1$d tags and refreshed the scene.</string>
-    <string name="player_tag_scan_failed">Tag scan failed: %1$s</string>
-    <string name="player_tag_scan_apply_failed">Tag apply failed: %1$s</string>
     <string name="player_o_counter_label" formatted="false">O-count</string>
     <string name="player_o_counter_value_label">%1$d times</string>
     <string name="player_o_counter_add_content_description">Add O-count, current %1$s</string>
@@ -1096,4 +1075,21 @@
     <string name="scene_filter_o_count_chip">O-Count %1$s %2$d</string>
     <string name="scene_filter_o_count_placeholder" formatted="false">Example: 0</string>
     <string name="scene_filter_o_count_clear" formatted="false">Clear O-Count</string>
+    <string name="player_stash_tag_action_label" formatted="false">Stash Tag</string>
+    <string name="player_stash_tag_action_content_description" formatted="false">Analyze the sprite atlas and suggest tags</string>
+    <string name="player_stash_tag_loading_message" formatted="false">Analyzing the sprite atlas...</string>
+    <string name="player_stash_tag_error_title" formatted="false">Stash Tag failed</string>
+    <string name="player_stash_tag_generic_error" formatted="false">Could not analyze tags.</string>
+    <string name="player_stash_tag_review_message" formatted="false">Review the sprite analysis results and adjust the threshold.</string>
+    <string name="player_stash_tag_threshold_label">Threshold %1$d%%</string>
+    <string name="player_stash_tag_no_predictions" formatted="false">No tags were predicted.</string>
+    <string name="player_stash_tag_none_at_threshold" formatted="false">No tags meet the current threshold.</string>
+    <string name="player_stash_tag_ok_button" formatted="false">OK</string>
+    <string name="player_stash_tag_dismiss_button" formatted="false">Close</string>
+    <string name="player_stash_tag_remove_candidate_button" formatted="false">Remove</string>
+    <string name="player_stash_tag_candidate_label">%1$s %2$d%%</string>
+    <string name="player_stash_tag_apply_button" formatted="false">Apply selected tags</string>
+    <string name="player_stash_tag_applying_button" formatted="false">Applying...</string>
+    <string name="player_stash_tag_already_applied" formatted="false">Tags already applied</string>
+    <string name="player_stash_tag_applied_count">Applied %1$d tag(s)</string>
 </resources>

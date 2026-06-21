@@ -1024,27 +1024,6 @@
     <string name="auto_kr_0536" formatted="false">연결 테스트 후 저장</string>
     <string name="auto_kr_0537" formatted="false">테스트 생략하고 저장</string>
     <string name="auto_kr_0538" formatted="false">자동 이름으로 저장</string>
-    <string name="player_tag_scan_label" formatted="false">태그 스캔</string>
-    <string name="player_tag_scan_content_description" formatted="false">Stash 태그 스캔 열기</string>
-    <string name="player_tag_scan_running_content_description" formatted="false">Stash 태그 스캔 실행 중</string>
-    <string name="player_tag_scan_sheet_title" formatted="false">태그 스캔</string>
-    <string name="player_tag_scan_sheet_subtitle" formatted="false">Stash Tagger · Scan for tags</string>
-    <string name="player_tag_scan_sheet_message" formatted="false">웹 Tagger의 Scan for tags처럼 현재 영상을 선택한 StashBox/스크레이퍼 소스로 스캔하고, 찾은 태그를 확인한 뒤 적용합니다.</string>
-    <string name="player_tag_scan_source_title" formatted="false">소스</string>
-    <string name="player_tag_scan_run" formatted="false">스캔 실행</string>
-    <string name="player_tag_scan_apply" formatted="false">선택 태그 적용</string>
-    <string name="player_tag_scan_close" formatted="false">닫기</string>
-    <string name="player_tag_scan_loading_sources" formatted="false">태그 스캔 소스를 불러오는 중…</string>
-    <string name="player_tag_scan_no_sources" formatted="false">사용 가능한 StashBox 또는 fragment 지원 scene scraper가 없습니다.</string>
-    <string name="player_tag_scan_ready" formatted="false">소스를 선택하고 스캔을 실행하세요.</string>
-    <string name="player_tag_scan_scanning" formatted="false">태그를 스캔하는 중…</string>
-    <string name="player_tag_scan_no_results" formatted="false">적용할 수 있는 태그 후보를 찾지 못했습니다.</string>
-    <string name="player_tag_scan_result_count">결과 %1$d개에서 태그 후보 %2$d개를 찾았습니다.</string>
-    <string name="player_tag_scan_new_tag" formatted="false">새 로컬 태그 생성</string>
-    <string name="player_tag_scan_applying" formatted="false">태그를 적용하는 중…</string>
-    <string name="player_tag_scan_success">태그 %1$d개를 적용하고 새로고침했습니다.</string>
-    <string name="player_tag_scan_failed">태그 스캔 실패: %1$s</string>
-    <string name="player_tag_scan_apply_failed">태그 적용 실패: %1$s</string>
     <string name="player_o_counter_label" formatted="false">싼 횟수</string>
     <string name="player_o_counter_value_label">%1$d회</string>
     <string name="player_o_counter_add_content_description">싼 횟수 추가, 현재 %1$s</string>
@@ -1097,5 +1076,22 @@
     <string name="scene_filter_o_count_chip">O-Count %1$s %2$d</string>
     <string name="scene_filter_o_count_placeholder" formatted="false">예: 0</string>
     <string name="scene_filter_o_count_clear" formatted="false">O-Count 해제</string>
+    <string name="player_stash_tag_action_label" formatted="false">Stash Tag</string>
+    <string name="player_stash_tag_action_content_description" formatted="false">스프라이트를 분석해 태그를 제안합니다</string>
+    <string name="player_stash_tag_loading_message" formatted="false">스프라이트 아틀라스를 분석하는 중...</string>
+    <string name="player_stash_tag_error_title" formatted="false">Stash Tag 실패</string>
+    <string name="player_stash_tag_generic_error" formatted="false">태그 분석에 실패했습니다.</string>
+    <string name="player_stash_tag_review_message" formatted="false">스프라이트 분석 결과를 확인하고 적용할 threshold를 조절하세요.</string>
+    <string name="player_stash_tag_threshold_label">Threshold %1$d%%</string>
+    <string name="player_stash_tag_no_predictions" formatted="false">예측된 태그가 없습니다.</string>
+    <string name="player_stash_tag_none_at_threshold" formatted="false">현재 threshold 이상으로 적용할 태그가 없습니다.</string>
+    <string name="player_stash_tag_ok_button" formatted="false">확인</string>
+    <string name="player_stash_tag_dismiss_button" formatted="false">닫기</string>
+    <string name="player_stash_tag_remove_candidate_button" formatted="false">제외</string>
+    <string name="player_stash_tag_candidate_label">%1$s %2$d%%</string>
+    <string name="player_stash_tag_apply_button" formatted="false">선택 태그 적용</string>
+    <string name="player_stash_tag_applying_button" formatted="false">적용 중...</string>
+    <string name="player_stash_tag_already_applied" formatted="false">이미 적용된 태그입니다</string>
+    <string name="player_stash_tag_applied_count">태그 %1$d개 적용 완료</string>
 </resources>
 

@@ -6,23 +6,39 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
-## [1.9.0] - 2026-06-21
-
 ### English
 
-- Replaced the Watch Page Auto Tag job action with a Stash Tagger-style Scan tags flow that uses `scrapeSingleScene`, lets users review tag candidates, and applies selected tags to the current scene.
+Nothing yet.
 
 ### 한국어
 
-- Watch Page의 잘못된 Auto Tag 작업 액션을 Stash Tagger 스타일 태그 스캔 흐름으로 교체해, `scrapeSingleScene`으로 후보 태그를 확인하고 선택한 태그를 현재 영상에 적용할 수 있게 했습니다.
+아직 없습니다.
 
 ### 简体中文
 
-- 将 Watch Page 中错误的 Auto Tag 作业操作替换为 Stash Tagger 风格的扫描标签流程，使用 `scrapeSingleScene` 查看候选标签，并将所选标签应用到当前场景。
+暂无。
 
 ### 繁體中文
 
-- 將 Watch Page 中錯誤的 Auto Tag 工作操作替換為 Stash Tagger 風格的掃描標籤流程，使用 `scrapeSingleScene` 檢視候選標籤，並將所選標籤套用到目前場景。
+暫無。
+
+## [1.9.1] - 2026-06-21
+
+### English
+
+- Added a Watch Page Stash Tag action that analyzes the current scene sprite/VTT with the local stashai service, lets users review thresholded tag suggestions, remove false positives, and apply selected tags back to Stash.
+
+### 한국어
+
+- Watch Page에 현재 영상의 sprite/VTT를 로컬 stashai 서비스로 분석하고, threshold 기반 태그 후보를 검토·제외한 뒤 선택 태그를 Stash에 적용하는 Stash Tag 액션을 추가했습니다.
+
+### 简体中文
+
+- 在 Watch Page 新增 Stash Tag 操作，可使用本地 stashai 服务分析当前场景的 sprite/VTT，按 threshold 查看标签建议、移除误报，并将选中的标签应用回 Stash。
+
+### 繁體中文
+
+- 在 Watch Page 新增 Stash Tag 操作，可使用本機 stashai 服務分析目前場景的 sprite/VTT，依 threshold 檢視標籤建議、移除誤判，並將選取的標籤套用回 Stash。
 
 ## [1.8.0] - 2026-06-06
 

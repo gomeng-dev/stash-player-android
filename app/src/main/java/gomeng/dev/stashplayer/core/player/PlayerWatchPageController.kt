@@ -257,8 +257,6 @@ object PlayerWatchPageController {
         oCounter: Int? = null,
         oCounterUpdating: Boolean = false,
         ratingMessage: String? = null,
-        tagScanAvailable: Boolean = true,
-        tagScanRunning: Boolean = false,
     ): List<PlayerExpandedStashActionRowItem> {
         val localItems = buildPlayerExpandedStashActionRowItems(
             ratingStep = ratingStep,
@@ -271,9 +269,9 @@ object PlayerWatchPageController {
             item.action == PlayerExpandedStashAction.Rating || item.action == PlayerExpandedStashAction.MoreDetails
         }
         return localItems + listOfNotNull(
-            buildPlayerTagScanActionRowItem(
-                enabled = tagScanAvailable,
-                running = tagScanRunning,
+            buildPlayerStashTagActionRowItem(
+                enabled = true,
+                loading = false,
             ),
             oCounter?.let { count ->
                 buildPlayerOCounterActionRowItem(
@@ -283,6 +281,23 @@ object PlayerWatchPageController {
             },
         )
     }
+
+    fun buildPlayerStashTagActionRowItem(
+        enabled: Boolean,
+        loading: Boolean,
+    ): PlayerExpandedStashActionRowItem = PlayerExpandedStashActionRowItem(
+        action = PlayerExpandedStashAction.StashTag,
+        label = stashString(R.string.player_stash_tag_action_label),
+        contentDescription = stashString(R.string.player_stash_tag_action_content_description),
+        visualState = when {
+            loading -> PlayerExpandedStashActionVisualState.Loading
+            enabled -> PlayerExpandedStashActionVisualState.Inactive
+            else -> PlayerExpandedStashActionVisualState.Disabled
+        },
+        enabled = enabled && !loading,
+    )
+
+    fun isStashTagRequestCurrent(requestSerial: Int, activeSerial: Int): Boolean = requestSerial == activeSerial
 
     fun buildSceneWatchPageDebugEntry(enabled: Boolean): PlayerExpandedStashActionRowItem =
         PlayerExpandedStashActionRowItem(

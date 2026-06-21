@@ -19,11 +19,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -65,10 +68,13 @@ import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.GraphQlStashStreamResolver
 import gomeng.dev.stashplayer.core.network.ResolvedStashStreamCandidate
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
-import gomeng.dev.stashplayer.core.network.StashSceneTagCandidate
-import gomeng.dev.stashplayer.core.network.StashSceneTaggerSource
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashStreamPreference
+import gomeng.dev.stashplayer.core.network.StashTagPrediction
+import gomeng.dev.stashplayer.core.network.StashTagSuggestionResult
+import gomeng.dev.stashplayer.core.network.STASH_TAG_DEFAULT_REVIEW_THRESHOLD
+import gomeng.dev.stashplayer.core.network.excludeStashTagPrediction
+import gomeng.dev.stashplayer.core.network.selectStashTagPredictionsForReview
 import gomeng.dev.stashplayer.core.network.StashStreamSourceCategory
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.StashStream
@@ -174,11 +180,25 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
 private val RESUME_PROMPT_TIMEOUT_MS = 4_000L
 private val PLAYER_PLAYLIST_TRAILING_ITEM_COUNT = 30
+
+private sealed interface StashTagDialogState {
+    data object Hidden : StashTagDialogState
+    data object Loading : StashTagDialogState
+    data class Review(
+        val result: StashTagSuggestionResult,
+        val threshold: Float = STASH_TAG_DEFAULT_REVIEW_THRESHOLD,
+        val excludedTagNames: Set<String> = emptySet(),
+        val applying: Boolean = false,
+        val errorMessage: String? = null,
+    ) : StashTagDialogState
+    data class Error(val message: String) : StashTagDialogState
+}
 private val PLAYER_PRESENTATION_MOTION_DURATION_MS = 240
 private val PLAYER_SIDE_CONTROL_OVERLAY_AUTO_HIDE_MS = 2_000L
 private val PLAYER_SIDE_CONTROL_OVERLAY_FADE_MS = 220
@@ -310,7 +330,7 @@ fun PlayerRoute(
         stream == null -> PlayerLoadingMessage(stashString(R.string.auto_kr_0472))
         else -> RealPlayerRoute(
             sceneId = sceneId,
-            initialStream = stream!!,
+            stream = stream!!,
             profile = activeProfile,
             playerDebugOverlayEnabled = playerDebugOverlayEnabled,
             defaultStreamPreference = defaultStreamPreference,
@@ -333,6 +353,7 @@ fun PlayerRoute(
             onOpenScene = onOpenScene,
             onOpenSettings = onOpenSettings,
             onExitPlayer = onExitPlayer,
+            onRefreshStream = { streamLoadRetryKey += 1L },
             onPlaylistDrawerOpen = onPlaylistDrawerOpen,
         )
     }
@@ -341,7 +362,7 @@ fun PlayerRoute(
 @Composable
 private fun RealPlayerRoute(
     sceneId: String,
-    initialStream: StashStream,
+    stream: StashStream,
     profile: StashServerProfile,
     playerDebugOverlayEnabled: Boolean,
     defaultStreamPreference: StashStreamPreference,
@@ -364,15 +385,11 @@ private fun RealPlayerRoute(
     onOpenScene: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onExitPlayer: () -> Unit,
+    onRefreshStream: () -> Unit,
     onPlaylistDrawerOpen: suspend (String, Int) -> Unit,
 ) {
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
-    var stream by remember(initialStream.sceneId, profile) { mutableStateOf(initialStream) }
-    LaunchedEffect(initialStream) {
-        stream = initialStream
-    }
-    val streamResolver = remember(client, profile) { GraphQlStashStreamResolver(client, profile) }
     val localView = LocalView.current
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -565,16 +582,12 @@ private fun RealPlayerRoute(
         mutableIntStateOf((stream.oCounter ?: 0).coerceAtLeast(0))
     }
     var oCounterUpdating by remember(stream.sceneId) { mutableStateOf(false) }
-    var tagScanSheetOpen by remember(stream.sceneId) { mutableStateOf(false) }
-    var tagScanSources by remember(stream.sceneId) { mutableStateOf<List<StashSceneTaggerSource>>(emptyList()) }
-    var selectedTagScanSourceId by remember(stream.sceneId) { mutableStateOf<String?>(null) }
-    var tagScanCandidates by remember(stream.sceneId) { mutableStateOf<List<StashSceneTagCandidate>>(emptyList()) }
-    var selectedTagScanCandidateKeys by remember(stream.sceneId) { mutableStateOf<Set<String>>(emptySet()) }
-    var tagScanLoadingSources by remember(stream.sceneId) { mutableStateOf(false) }
-    var tagScanScanning by remember(stream.sceneId) { mutableStateOf(false) }
-    var tagScanApplying by remember(stream.sceneId) { mutableStateOf(false) }
-    var tagScanStatusText by remember(stream.sceneId) { mutableStateOf<String?>(null) }
-    var tagScanErrorText by remember(stream.sceneId) { mutableStateOf<String?>(null) }
+    var stashTagDialogState by remember(stream.sceneId) { mutableStateOf<StashTagDialogState>(StashTagDialogState.Hidden) }
+    var stashTagRequestSerial by remember(stream.sceneId) { mutableIntStateOf(0) }
+    val dismissStashTagDialog: () -> Unit = {
+        stashTagRequestSerial += 1
+        stashTagDialogState = StashTagDialogState.Hidden
+    }
     val favoriteSceneIds by localRepository.favoriteSceneIds.collectAsState(initial = emptySet())
     val watchLaterSceneIds by localRepository.watchLaterSceneIds.collectAsState(initial = emptySet())
     val queueSceneIds by localRepository.queueSceneIds.collectAsState(initial = emptySet())
@@ -590,34 +603,6 @@ private fun RealPlayerRoute(
     }
     LaunchedEffect(stream.sceneId) {
         localRepository.recordPlaybackHistory(currentSceneCard)
-    }
-    LaunchedEffect(tagScanSheetOpen, stream.sceneId) {
-        if (!tagScanSheetOpen || tagScanSources.isNotEmpty() || tagScanLoadingSources) return@LaunchedEffect
-        tagScanLoadingSources = true
-        tagScanStatusText = stashString(R.string.player_tag_scan_loading_sources)
-        tagScanErrorText = null
-        try {
-            runCatching { client.findSceneTaggerSources() }
-                .onSuccess { sources ->
-                    tagScanSources = sources
-                    selectedTagScanSourceId = selectedTagScanSourceId ?: sources.firstOrNull()?.id
-                    tagScanStatusText = if (sources.isEmpty()) {
-                        stashString(R.string.player_tag_scan_no_sources)
-                    } else {
-                        stashString(R.string.player_tag_scan_ready)
-                    }
-                }
-                .onFailure { throwable ->
-                    if (throwable is CancellationException) throw throwable
-                    tagScanErrorText = stashString(
-                        R.string.player_tag_scan_failed,
-                        redactStashCredentialText(throwable.message ?: throwable::class.simpleName),
-                    )
-                    tagScanStatusText = null
-                }
-        } finally {
-            tagScanLoadingSources = false
-        }
     }
     val quickActions = buildPlayerOverlayQuickActionStates(
         isQueued = sceneId in queueSceneIds,
@@ -654,93 +639,32 @@ private fun RealPlayerRoute(
             hudText = if (shouldEnable) stashString(R.string.auto_kr_0486) else stashString(R.string.auto_kr_0487)
         }
     }
-    val openTagScanSheet: () -> Unit = {
-        markPlayerInteraction()
-        controlsVisible = true
-        tagScanSheetOpen = true
-    }
-    val selectTagScanSource: (String) -> Unit = { sourceId ->
-        selectedTagScanSourceId = sourceId
-        tagScanCandidates = emptyList()
-        selectedTagScanCandidateKeys = emptySet()
-        tagScanStatusText = stashString(R.string.player_tag_scan_ready)
-        tagScanErrorText = null
-    }
-    val toggleTagScanCandidate: (String) -> Unit = { candidateKey ->
-        selectedTagScanCandidateKeys = if (candidateKey in selectedTagScanCandidateKeys) {
-            selectedTagScanCandidateKeys - candidateKey
-        } else {
-            selectedTagScanCandidateKeys + candidateKey
-        }
-    }
-    fun runSelectedTagScan() {
-        val source = tagScanSources.firstOrNull { it.id == selectedTagScanSourceId } ?: return
-        if (tagScanScanning || tagScanApplying) return
-        tagScanScanning = true
-        tagScanStatusText = stashString(R.string.player_tag_scan_scanning)
-        tagScanErrorText = null
-        tagScanCandidates = emptyList()
-        selectedTagScanCandidateKeys = emptySet()
-        scope.launch {
-            try {
-                runCatching { client.scanSceneTags(source = source, sceneId = stream.sceneId) }
-                    .onSuccess { result ->
-                        tagScanCandidates = result.candidates
-                        selectedTagScanCandidateKeys = result.candidates.map { it.key }.toSet()
-                        tagScanStatusText = if (result.candidates.isEmpty()) {
-                            stashString(R.string.player_tag_scan_no_results)
-                        } else {
-                            stashString(R.string.player_tag_scan_result_count, result.resultCount, result.candidates.size)
-                        }
-                    }
-                    .onFailure { throwable ->
-                        if (throwable is CancellationException) throw throwable
-                        tagScanErrorText = stashString(
-                            R.string.player_tag_scan_failed,
-                            redactStashCredentialText(throwable.message ?: throwable::class.simpleName),
-                        )
-                        tagScanStatusText = null
-                    }
-            } finally {
-                tagScanScanning = false
-            }
-        }
-    }
-    fun applySelectedTagScanCandidates() {
-        if (tagScanScanning || tagScanApplying) return
-        val selectedCandidates = tagScanCandidates.filter { it.key in selectedTagScanCandidateKeys }
-        if (selectedCandidates.isEmpty()) return
-        tagScanApplying = true
-        tagScanStatusText = stashString(R.string.player_tag_scan_applying)
-        tagScanErrorText = null
-        scope.launch {
-            try {
-                runCatching {
-                    client.applySceneTagScan(
-                        sceneId = stream.sceneId,
-                        existingTagIds = stream.tags.map { it.id },
-                        selectedTags = selectedCandidates,
-                    )
-                    stream = streamResolver.resolve(stream.sceneId)
-                }.onSuccess {
-                    tagScanStatusText = stashString(R.string.player_tag_scan_success, selectedCandidates.size)
-                }.onFailure { throwable ->
-                    if (throwable is CancellationException) throw throwable
-                    tagScanErrorText = stashString(
-                        R.string.player_tag_scan_apply_failed,
-                        redactStashCredentialText(throwable.message ?: throwable::class.simpleName),
-                    )
-                    tagScanStatusText = null
-                }
-            } finally {
-                tagScanApplying = false
-            }
-        }
-    }
     val retrySimilarRecommendations: () -> Unit = {
         markPlayerInteraction()
         controlsVisible = true
         similarRecommendationsRetryKey += 1L
+    }
+    val openStashTag: () -> Unit = {
+        markPlayerInteraction()
+        controlsVisible = true
+        stashTagRequestSerial += 1
+        val requestSerial = stashTagRequestSerial
+        stashTagDialogState = StashTagDialogState.Loading
+        scope.launch {
+            runCatching { client.suggestStashTagsForScene(sceneId) }
+                .onSuccess { result ->
+                    if (PlayerWatchPageController.isStashTagRequestCurrent(requestSerial, stashTagRequestSerial)) {
+                        stashTagDialogState = StashTagDialogState.Review(result = result)
+                    }
+                }
+                .onFailure { throwable ->
+                    if (PlayerWatchPageController.isStashTagRequestCurrent(requestSerial, stashTagRequestSerial)) {
+                        stashTagDialogState = StashTagDialogState.Error(
+                            message = redactStashCredentialText(throwable.message ?: throwable::class.simpleName.orEmpty()),
+                        )
+                    }
+                }
+        }
     }
     var playCountSynced by remember(sceneId) { mutableStateOf(false) }
     var accumulatedPlaySeconds by remember(sceneId) { mutableFloatStateOf(0f) }
@@ -1684,9 +1608,16 @@ private fun RealPlayerRoute(
         oCounter = oCounter,
         oCounterUpdating = oCounterUpdating,
         ratingMessage = ratingState.message,
-        tagScanAvailable = !tagScanScanning && !tagScanApplying,
-        tagScanRunning = tagScanScanning || tagScanApplying,
-    )
+    ).map { item ->
+        if (item.action == gomeng.dev.stashplayer.core.player.PlayerExpandedStashAction.StashTag) {
+            PlayerWatchPageController.buildPlayerStashTagActionRowItem(
+                enabled = true,
+                loading = stashTagDialogState is StashTagDialogState.Loading,
+            )
+        } else {
+            item
+        }
+    }
     val watchPageDebugEntry = PlayerWatchPageController.buildSceneWatchPageDebugEntry(enabled = true)
     val pictureInPictureSupported = StashPictureInPictureController.isSupported(activity)
     val canEnterPictureInPicture = shouldExposePictureInPictureButton(
@@ -2142,9 +2073,9 @@ private fun RealPlayerRoute(
             onSelectRatingStep = selectRatingStep,
             onAddCurrentSceneToQueue = addCurrentSceneToQueue,
             onIncrementOCounter = incrementOCounter,
+            onOpenStashTag = openStashTag,
             onToggleFavorite = toggleFavorite,
             onToggleWatchLater = toggleWatchLater,
-            onRequestTagScan = openTagScanSheet,
             onPlaySimilarScene = playSimilarScene,
             onAddSimilarSceneToQueue = addSimilarSceneToQueue,
             onRetrySimilarRecommendations = retrySimilarRecommendations,
@@ -2169,24 +2100,6 @@ private fun RealPlayerRoute(
         }
         }
         }
-        if (!pictureInPictureActive && tagScanSheetOpen) {
-            PlayerSceneTagScanSheet(
-                sources = tagScanSources,
-                selectedSourceId = selectedTagScanSourceId,
-                candidates = tagScanCandidates,
-                selectedCandidateKeys = selectedTagScanCandidateKeys,
-                loadingSources = tagScanLoadingSources,
-                scanning = tagScanScanning,
-                applying = tagScanApplying,
-                statusText = tagScanStatusText,
-                errorText = tagScanErrorText,
-                onSelectSource = selectTagScanSource,
-                onRunScan = ::runSelectedTagScan,
-                onToggleCandidate = toggleTagScanCandidate,
-                onApplySelected = ::applySelectedTagScanCandidates,
-                onDismiss = { tagScanSheetOpen = false },
-            )
-        }
         if (
             !pictureInPictureActive &&
             playlistDrawerOpen &&
@@ -2208,6 +2121,169 @@ private fun RealPlayerRoute(
                     controlsVisible = true
                     pendingPlaylistDeleteSceneIds = listOf(item.sceneId)
                     playlistDeleteConfirmation = SceneBulkDeleteConfirmationState.open(1)
+                },
+            )
+        }
+        StashTagDialog(
+            state = stashTagDialogState,
+            onDismiss = dismissStashTagDialog,
+            onThresholdChange = { threshold ->
+                val current = stashTagDialogState
+                if (current is StashTagDialogState.Review) {
+                    stashTagDialogState = current.copy(threshold = threshold, errorMessage = null)
+                }
+            },
+            onRemovePrediction = { tagName ->
+                val current = stashTagDialogState
+                if (current is StashTagDialogState.Review && !current.applying) {
+                    stashTagDialogState = current.copy(
+                        excludedTagNames = excludeStashTagPrediction(current.excludedTagNames, tagName),
+                        errorMessage = null,
+                    )
+                }
+            },
+            onApply = { predictions ->
+                val current = stashTagDialogState
+                if (current is StashTagDialogState.Review && !current.applying) {
+                    stashTagDialogState = current.copy(applying = true, errorMessage = null)
+                    scope.launch {
+                        runCatching { client.applyStashTagPredictions(sceneId, predictions) }
+                            .onSuccess { result ->
+                                hudText = if (result.addedTagNames.isEmpty()) {
+                                    stashString(R.string.player_stash_tag_already_applied)
+                                } else {
+                                    stashString(R.string.player_stash_tag_applied_count, result.addedTagNames.size)
+                                }
+                                stashTagDialogState = StashTagDialogState.Hidden
+                                onRefreshStream()
+                            }
+                            .onFailure { throwable ->
+                                stashTagDialogState = current.copy(
+                                    applying = false,
+                                    errorMessage = redactStashCredentialText(throwable.message ?: throwable::class.simpleName.orEmpty()),
+                                )
+                            }
+                    }
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun StashTagDialog(
+    state: StashTagDialogState,
+    onDismiss: () -> Unit,
+    onThresholdChange: (Float) -> Unit,
+    onRemovePrediction: (String) -> Unit,
+    onApply: (List<StashTagPrediction>) -> Unit,
+) {
+    when (state) {
+        StashTagDialogState.Hidden -> Unit
+        StashTagDialogState.Loading -> AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stashString(R.string.player_stash_tag_action_label)) },
+            text = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CircularProgressIndicator()
+                    Text(stashString(R.string.player_stash_tag_loading_message))
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text(stashString(R.string.player_stash_tag_dismiss_button)) }
+            },
+        )
+        is StashTagDialogState.Error -> AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stashString(R.string.player_stash_tag_error_title)) },
+            text = { Text(state.message.ifBlank { stashString(R.string.player_stash_tag_generic_error) }) },
+            confirmButton = {
+                TextButton(onClick = onDismiss) { Text(stashString(R.string.player_stash_tag_ok_button)) }
+            },
+        )
+        is StashTagDialogState.Review -> {
+            val selectedPredictions = selectStashTagPredictionsForReview(
+                predictions = state.result.predictions,
+                threshold = state.threshold,
+                excludedTagNames = state.excludedTagNames,
+            )
+            AlertDialog(
+                onDismissRequest = { if (!state.applying) onDismiss() },
+                title = { Text(stashString(R.string.player_stash_tag_action_label)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(stashString(R.string.player_stash_tag_review_message))
+                        Text(stashString(R.string.player_stash_tag_threshold_label, (state.threshold * 100).roundToInt()))
+                        Slider(
+                            value = state.threshold,
+                            onValueChange = { value ->
+                                onThresholdChange(((value * 10f).roundToInt() / 10f).coerceIn(0.4f, 0.9f))
+                            },
+                            valueRange = 0.4f..0.9f,
+                            steps = 4,
+                            enabled = !state.applying,
+                        )
+                        if (state.result.predictions.isEmpty()) {
+                            Text(stashString(R.string.player_stash_tag_no_predictions))
+                        } else if (selectedPredictions.isEmpty()) {
+                            Text(stashString(R.string.player_stash_tag_none_at_threshold))
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                selectedPredictions.forEach { prediction ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(
+                                            text = stashString(
+                                                R.string.player_stash_tag_candidate_label,
+                                                prediction.name,
+                                                (prediction.probability * 100).roundToInt(),
+                                            ),
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        TextButton(
+                                            enabled = !state.applying,
+                                            onClick = { onRemovePrediction(prediction.name) },
+                                        ) {
+                                            Text(stashString(R.string.player_stash_tag_remove_candidate_button))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        state.errorMessage?.takeIf { it.isNotBlank() }?.let { message ->
+                            Text(
+                                text = message,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        enabled = !state.applying && selectedPredictions.isNotEmpty(),
+                        onClick = { onApply(selectedPredictions) },
+                    ) {
+                        Text(
+                            if (state.applying) {
+                                stashString(R.string.player_stash_tag_applying_button)
+                            } else {
+                                stashString(R.string.player_stash_tag_apply_button)
+                            },
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(enabled = !state.applying, onClick = onDismiss) {
+                        Text(stashString(R.string.settings_server_metadata_scan_cancel_button))
+                    }
                 },
             )
         }

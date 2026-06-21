@@ -32,8 +32,8 @@ import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PictureInPictureAlt
@@ -422,7 +422,7 @@ private fun PlayerExpandedStashActionRow(
                         PlayerExpandedStashAction.Favorite -> onToggleFavorite
                         PlayerExpandedStashAction.WatchLater -> onToggleWatchLater
                         PlayerExpandedStashAction.Queue -> onAddCurrentSceneToQueue
-                        PlayerExpandedStashAction.TagScan -> ({})
+                        PlayerExpandedStashAction.StashTag -> ({})
                         PlayerExpandedStashAction.OCounter -> ({})
                         PlayerExpandedStashAction.MoreDetails -> onOpenDetails
                         PlayerExpandedStashAction.Rating -> ({})
@@ -443,7 +443,7 @@ private fun PlayerExpandedStashActionChip(
         PlayerExpandedStashAction.Queue -> StashColors.QueueAction
         PlayerExpandedStashAction.Favorite -> StashColors.FavoriteAction
         PlayerExpandedStashAction.WatchLater -> StashColors.WatchLaterAction
-        PlayerExpandedStashAction.TagScan -> StashColors.Primary
+        PlayerExpandedStashAction.StashTag -> StashColors.Primary
         PlayerExpandedStashAction.OCounter -> StashColors.Warning
         PlayerExpandedStashAction.MoreDetails -> StashColors.TextPrimary
         PlayerExpandedStashAction.Rating -> StashColors.Warning
@@ -485,7 +485,7 @@ private fun PlayerExpandedStashActionChip(
                     Icons.Outlined.FavoriteBorder
                 }
                 PlayerExpandedStashAction.WatchLater -> Icons.Outlined.Bookmarks
-                PlayerExpandedStashAction.TagScan -> Icons.Outlined.LocalOffer
+                PlayerExpandedStashAction.StashTag -> Icons.Outlined.LocalOffer
                 PlayerExpandedStashAction.OCounter -> Icons.Outlined.Star
                 PlayerExpandedStashAction.MoreDetails -> Icons.Outlined.MoreHoriz
                 PlayerExpandedStashAction.Rating -> Icons.Outlined.Star

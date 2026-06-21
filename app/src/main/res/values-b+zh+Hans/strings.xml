@@ -1022,27 +1022,6 @@
     <string name="auto_kr_0536" formatted="false">测试连接并保存</string>
     <string name="auto_kr_0537" formatted="false">保存而不测试</string>
     <string name="auto_kr_0538" formatted="false">使用自动名称保存</string>
-    <string name="player_tag_scan_label" formatted="false">扫描标签</string>
-    <string name="player_tag_scan_content_description" formatted="false">打开 Stash 标签扫描</string>
-    <string name="player_tag_scan_running_content_description" formatted="false">Stash 标签扫描正在运行</string>
-    <string name="player_tag_scan_sheet_title" formatted="false">扫描标签</string>
-    <string name="player_tag_scan_sheet_subtitle" formatted="false">Stash Tagger · Scan for tags</string>
-    <string name="player_tag_scan_sheet_message" formatted="false">像网页 Tagger 的 Scan for tags 一样，使用所选 StashBox/刮削器来源扫描当前场景，确认找到的标签后再应用。</string>
-    <string name="player_tag_scan_source_title" formatted="false">来源</string>
-    <string name="player_tag_scan_run" formatted="false">运行扫描</string>
-    <string name="player_tag_scan_apply" formatted="false">应用所选标签</string>
-    <string name="player_tag_scan_close" formatted="false">关闭</string>
-    <string name="player_tag_scan_loading_sources" formatted="false">正在加载标签扫描来源…</string>
-    <string name="player_tag_scan_no_sources" formatted="false">未找到可用的 StashBox 或支持片段的场景刮削器。</string>
-    <string name="player_tag_scan_ready" formatted="false">选择来源后运行扫描。</string>
-    <string name="player_tag_scan_scanning" formatted="false">正在扫描标签…</string>
-    <string name="player_tag_scan_no_results" formatted="false">未找到可应用的标签候选。</string>
-    <string name="player_tag_scan_result_count">从 %1$d 个结果中找到 %2$d 个标签候选。</string>
-    <string name="player_tag_scan_new_tag" formatted="false">创建新的本地标签</string>
-    <string name="player_tag_scan_applying" formatted="false">正在应用标签…</string>
-    <string name="player_tag_scan_success">已应用 %1$d 个标签并刷新场景。</string>
-    <string name="player_tag_scan_failed">标签扫描失败：%1$s</string>
-    <string name="player_tag_scan_apply_failed">标签应用失败：%1$s</string>
     <string name="player_o_counter_label" formatted="false">O计数</string>
     <string name="player_o_counter_value_label">%1$d次</string>
     <string name="player_o_counter_add_content_description">添加 O 计数，当前 %1$s</string>
@@ -1095,4 +1074,21 @@
     <string name="scene_filter_o_count_chip">O-Count %1$s %2$d</string>
     <string name="scene_filter_o_count_placeholder" formatted="false">示例：0</string>
     <string name="scene_filter_o_count_clear" formatted="false">清除 O-Count</string>
+    <string name="player_stash_tag_action_label" formatted="false">Stash Tag</string>
+    <string name="player_stash_tag_action_content_description" formatted="false">分析精灵图集并建议标签</string>
+    <string name="player_stash_tag_loading_message" formatted="false">正在分析精灵图集...</string>
+    <string name="player_stash_tag_error_title" formatted="false">Stash Tag 失败</string>
+    <string name="player_stash_tag_generic_error" formatted="false">无法分析标签。</string>
+    <string name="player_stash_tag_review_message" formatted="false">查看精灵图分析结果并调整 threshold。</string>
+    <string name="player_stash_tag_threshold_label">Threshold %1$d%%</string>
+    <string name="player_stash_tag_no_predictions" formatted="false">没有预测到标签。</string>
+    <string name="player_stash_tag_none_at_threshold" formatted="false">没有标签达到当前 threshold。</string>
+    <string name="player_stash_tag_ok_button" formatted="false">确定</string>
+    <string name="player_stash_tag_dismiss_button" formatted="false">关闭</string>
+    <string name="player_stash_tag_remove_candidate_button" formatted="false">移除</string>
+    <string name="player_stash_tag_candidate_label">%1$s %2$d%%</string>
+    <string name="player_stash_tag_apply_button" formatted="false">应用所选标签</string>
+    <string name="player_stash_tag_applying_button" formatted="false">正在应用...</string>
+    <string name="player_stash_tag_already_applied" formatted="false">标签已应用</string>
+    <string name="player_stash_tag_applied_count">已应用 %1$d 个标签</string>
 </resources>
