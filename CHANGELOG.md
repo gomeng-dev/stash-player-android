@@ -22,6 +22,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - 暫無。
 
+## [1.9.3] - 2026-06-21
+
+### English
+
+- Lowered the Stash Tag review slider minimum to 0% and requests stashai predictions with a 0% query threshold so low-confidence candidates can be reviewed when needed.
+
+### 한국어
+
+- Stash Tag 검토 슬라이더 하한을 0%로 낮추고 stashai 예측 요청도 0% 임계값으로 보내 낮은 신뢰도의 후보까지 필요 시 검토할 수 있도록 했습니다.
+
+### 简体中文
+
+- 将 Stash Tag 审核滑块的最低值降至 0%，并以 0% 查询阈值请求 stashai 预测，以便在需要时查看低置信度候选项。
+
+### 繁體中文
+
+- 將 Stash Tag 審核滑桿的最低值降至 0%，並以 0% 查詢閾值請求 stashai 預測，以便在需要時檢視低信心候選項。
+
 ## [1.9.2] - 2026-06-21
 
 ### English

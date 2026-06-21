@@ -5,12 +5,16 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.IOException
 import java.net.URI
 import java.util.Locale
+import kotlin.math.roundToInt
 
 const val STASH_TAG_API_PORT = 7861
 const val STASH_TAG_API_PATH = "/api/predict"
-const val STASH_TAG_API_QUERY_THRESHOLD = 0.2f
+const val STASH_TAG_API_QUERY_THRESHOLD = 0.0f
+const val STASH_TAG_MIN_REVIEW_THRESHOLD = 0.0f
+const val STASH_TAG_MAX_REVIEW_THRESHOLD = 0.9f
+const val STASH_TAG_REVIEW_THRESHOLD_STEP = 0.1f
 const val STASH_TAG_DEFAULT_REVIEW_THRESHOLD = 0.4f
-const val STASH_TAG_DEFAULT_FLOOR_THRESHOLD = 0.2f
+const val STASH_TAG_DEFAULT_FLOOR_THRESHOLD = 0.0f
 
 private val STASH_TAG_API_TAG_NAME_ORDER = listOf(
     "Anal",
@@ -152,6 +156,17 @@ fun parseStashTagPredictResponse(json: String): List<StashTagPrediction> {
     }.sortedWith(compareBy<StashTagPrediction> { prediction ->
         STASH_TAG_API_TAG_NAME_ORDER.indexOf(prediction.name).takeIf { it >= 0 } ?: Int.MAX_VALUE
     }.thenBy { it.frame ?: Float.MAX_VALUE }.thenBy { it.name.lowercase(Locale.ROOT) }).toList()
+}
+
+fun normalizeStashTagReviewThreshold(
+    value: Float,
+    min: Float = STASH_TAG_MIN_REVIEW_THRESHOLD,
+    max: Float = STASH_TAG_MAX_REVIEW_THRESHOLD,
+    step: Float = STASH_TAG_REVIEW_THRESHOLD_STEP,
+): Float {
+    val normalizedStep = step.takeIf { it > 0f } ?: STASH_TAG_REVIEW_THRESHOLD_STEP
+    val rounded = (value / normalizedStep).roundToInt() * normalizedStep
+    return rounded.coerceIn(min.coerceIn(0f, 1f), max.coerceIn(0f, 1f))
 }
 
 fun filterStashTagPredictions(

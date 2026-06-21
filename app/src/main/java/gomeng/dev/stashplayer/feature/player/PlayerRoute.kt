@@ -75,6 +75,9 @@ import gomeng.dev.stashplayer.core.network.StashTagFailureGuidance
 import gomeng.dev.stashplayer.core.network.StashTagPrediction
 import gomeng.dev.stashplayer.core.network.StashTagSuggestionResult
 import gomeng.dev.stashplayer.core.network.STASH_TAG_DEFAULT_REVIEW_THRESHOLD
+import gomeng.dev.stashplayer.core.network.STASH_TAG_MAX_REVIEW_THRESHOLD
+import gomeng.dev.stashplayer.core.network.STASH_TAG_MIN_REVIEW_THRESHOLD
+import gomeng.dev.stashplayer.core.network.normalizeStashTagReviewThreshold
 import gomeng.dev.stashplayer.core.network.classifyStashTagFailureForGuidance
 import gomeng.dev.stashplayer.core.network.excludeStashTagPrediction
 import gomeng.dev.stashplayer.core.network.selectStashTagPredictionsForReview
@@ -2359,10 +2362,10 @@ private fun StashTagDialog(
                         Slider(
                             value = state.threshold,
                             onValueChange = { value ->
-                                onThresholdChange(((value * 10f).roundToInt() / 10f).coerceIn(0.4f, 0.9f))
+                                onThresholdChange(normalizeStashTagReviewThreshold(value))
                             },
-                            valueRange = 0.4f..0.9f,
-                            steps = 4,
+                            valueRange = STASH_TAG_MIN_REVIEW_THRESHOLD..STASH_TAG_MAX_REVIEW_THRESHOLD,
+                            steps = 8,
                             enabled = !state.applying,
                         )
                         if (state.result.predictions.isEmpty()) {
