@@ -1022,6 +1022,27 @@
     <string name="auto_kr_0536" formatted="false">測試連接並保存</string>
     <string name="auto_kr_0537" formatted="false">保存而不測試</string>
     <string name="auto_kr_0538" formatted="false">使用自動名稱儲存</string>
+    <string name="player_tag_scan_label" formatted="false">掃描標籤</string>
+    <string name="player_tag_scan_content_description" formatted="false">開啟 Stash 標籤掃描</string>
+    <string name="player_tag_scan_running_content_description" formatted="false">Stash 標籤掃描正在執行</string>
+    <string name="player_tag_scan_sheet_title" formatted="false">掃描標籤</string>
+    <string name="player_tag_scan_sheet_subtitle" formatted="false">Stash Tagger · Scan for tags</string>
+    <string name="player_tag_scan_sheet_message" formatted="false">像網頁 Tagger 的 Scan for tags 一樣，使用所選 StashBox/刮削器來源掃描目前場景，確認找到的標籤後再套用。</string>
+    <string name="player_tag_scan_source_title" formatted="false">來源</string>
+    <string name="player_tag_scan_run" formatted="false">執行掃描</string>
+    <string name="player_tag_scan_apply" formatted="false">套用所選標籤</string>
+    <string name="player_tag_scan_close" formatted="false">關閉</string>
+    <string name="player_tag_scan_loading_sources" formatted="false">正在載入標籤掃描來源…</string>
+    <string name="player_tag_scan_no_sources" formatted="false">未找到可用的 StashBox 或支援片段的場景刮削器。</string>
+    <string name="player_tag_scan_ready" formatted="false">選擇來源後執行掃描。</string>
+    <string name="player_tag_scan_scanning" formatted="false">正在掃描標籤…</string>
+    <string name="player_tag_scan_no_results" formatted="false">未找到可套用的標籤候選。</string>
+    <string name="player_tag_scan_result_count">從 %1$d 個結果中找到 %2$d 個標籤候選。</string>
+    <string name="player_tag_scan_new_tag" formatted="false">建立新的本機標籤</string>
+    <string name="player_tag_scan_applying" formatted="false">正在套用標籤…</string>
+    <string name="player_tag_scan_success">已套用 %1$d 個標籤並重新整理場景。</string>
+    <string name="player_tag_scan_failed">標籤掃描失敗：%1$s</string>
+    <string name="player_tag_scan_apply_failed">標籤套用失敗：%1$s</string>
     <string name="player_o_counter_label" formatted="false">O計數</string>
     <string name="player_o_counter_value_label">%1$d次</string>
     <string name="player_o_counter_add_content_description">新增O計數，目前%1$s</string>

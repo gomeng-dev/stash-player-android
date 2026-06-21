@@ -87,6 +87,7 @@ enum class PlayerExpandedStashAction {
     Favorite,
     WatchLater,
     Queue,
+    TagScan,
     OCounter,
     MoreDetails,
 }
@@ -532,6 +533,26 @@ fun buildPlayerExpandedStashActionRowItems(
             contentDescription = stashString(R.string.auto_kr_0242),
             visualState = PlayerExpandedStashActionVisualState.Inactive,
         ),
+    )
+}
+
+fun buildPlayerTagScanActionRowItem(
+    enabled: Boolean,
+    running: Boolean,
+): PlayerExpandedStashActionRowItem {
+    return PlayerExpandedStashActionRowItem(
+        action = PlayerExpandedStashAction.TagScan,
+        label = stashString(R.string.player_tag_scan_label),
+        contentDescription = when {
+            running -> stashString(R.string.player_tag_scan_running_content_description)
+            else -> stashString(R.string.player_tag_scan_content_description)
+        },
+        visualState = when {
+            running -> PlayerExpandedStashActionVisualState.Loading
+            !enabled -> PlayerExpandedStashActionVisualState.Disabled
+            else -> PlayerExpandedStashActionVisualState.Inactive
+        },
+        enabled = enabled && !running,
     )
 }
 

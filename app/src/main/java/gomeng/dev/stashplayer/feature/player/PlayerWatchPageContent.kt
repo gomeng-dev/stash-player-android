@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.AlertDialog
@@ -112,6 +113,7 @@ fun PlayerWatchPageContent(
     onIncrementOCounter: () -> Unit,
     onToggleFavorite: () -> Unit,
     onToggleWatchLater: () -> Unit,
+    onRequestTagScan: () -> Unit,
     onPlaySimilarScene: (String) -> Unit,
     onAddSimilarSceneToQueue: (String) -> Unit,
     onRetrySimilarRecommendations: () -> Unit,
@@ -175,6 +177,7 @@ fun PlayerWatchPageContent(
                             onIncrementOCounter = onIncrementOCounter,
                             onToggleFavorite = onToggleFavorite,
                             onToggleWatchLater = onToggleWatchLater,
+                            onRequestTagScan = onRequestTagScan,
                             onOpenDetails = { detailsDialogOpen = true },
                         )
                     }
@@ -344,6 +347,7 @@ private fun PlayerWatchPageActionRow(
     onIncrementOCounter: () -> Unit,
     onToggleFavorite: () -> Unit,
     onToggleWatchLater: () -> Unit,
+    onRequestTagScan: () -> Unit,
     onOpenDetails: () -> Unit,
 ) {
     Row(
@@ -360,6 +364,7 @@ private fun PlayerWatchPageActionRow(
                     PlayerExpandedStashAction.Favorite -> onToggleFavorite
                     PlayerExpandedStashAction.WatchLater -> onToggleWatchLater
                     PlayerExpandedStashAction.Queue -> onAddCurrentSceneToQueue
+                    PlayerExpandedStashAction.TagScan -> onRequestTagScan
                     PlayerExpandedStashAction.OCounter -> onIncrementOCounter
                     PlayerExpandedStashAction.MoreDetails -> onOpenDetails
                     PlayerExpandedStashAction.Rating -> ({})
@@ -378,6 +383,7 @@ private fun PlayerWatchPageActionChip(
         PlayerExpandedStashAction.Queue -> StashColors.QueueAction
         PlayerExpandedStashAction.Favorite -> StashColors.FavoriteAction
         PlayerExpandedStashAction.WatchLater -> StashColors.WatchLaterAction
+        PlayerExpandedStashAction.TagScan -> StashColors.Primary
         PlayerExpandedStashAction.OCounter -> StashColors.Warning
         PlayerExpandedStashAction.MoreDetails -> StashColors.TextSecondary
         PlayerExpandedStashAction.Rating -> StashColors.Warning
@@ -390,6 +396,7 @@ private fun PlayerWatchPageActionChip(
         PlayerExpandedStashActionVisualState.Error -> StashColors.Error.copy(alpha = 0.18f)
         PlayerExpandedStashActionVisualState.Inactive -> when (item.action) {
             PlayerExpandedStashAction.MoreDetails -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.74f)
+            PlayerExpandedStashAction.TagScan -> StashColors.Primary.copy(alpha = 0.16f)
             PlayerExpandedStashAction.OCounter -> StashColors.Warning.copy(alpha = 0.16f)
             else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.82f)
         }
@@ -446,6 +453,7 @@ private fun PlayerExpandedStashAction.watchPageIcon(
         Icons.Outlined.FavoriteBorder
     }
     PlayerExpandedStashAction.WatchLater -> Icons.Outlined.Bookmarks
+    PlayerExpandedStashAction.TagScan -> Icons.Outlined.LocalOffer
     PlayerExpandedStashAction.OCounter -> Icons.Outlined.Whatshot
     PlayerExpandedStashAction.MoreDetails -> Icons.Outlined.Info
     PlayerExpandedStashAction.Rating -> Icons.Outlined.Star

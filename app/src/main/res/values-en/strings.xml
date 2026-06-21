@@ -1023,6 +1023,27 @@
     <string name="auto_kr_0536" formatted="false">Test connection and save</string>
     <string name="auto_kr_0537" formatted="false">Save without testing</string>
     <string name="auto_kr_0538" formatted="false">Save with automatic name</string>
+    <string name="player_tag_scan_label" formatted="false">Scan tags</string>
+    <string name="player_tag_scan_content_description" formatted="false">Open Stash tag scan</string>
+    <string name="player_tag_scan_running_content_description" formatted="false">Stash tag scan is running</string>
+    <string name="player_tag_scan_sheet_title" formatted="false">Scan tags</string>
+    <string name="player_tag_scan_sheet_subtitle" formatted="false">Stash Tagger · Scan for tags</string>
+    <string name="player_tag_scan_sheet_message" formatted="false">Like the web Tagger Scan for tags action, scan the current scene with the selected StashBox/scraper source, review found tags, then apply them.</string>
+    <string name="player_tag_scan_source_title" formatted="false">Source</string>
+    <string name="player_tag_scan_run" formatted="false">Run scan</string>
+    <string name="player_tag_scan_apply" formatted="false">Apply selected tags</string>
+    <string name="player_tag_scan_close" formatted="false">Close</string>
+    <string name="player_tag_scan_loading_sources" formatted="false">Loading tag scan sources…</string>
+    <string name="player_tag_scan_no_sources" formatted="false">No available StashBox or fragment-capable scene scraper was found.</string>
+    <string name="player_tag_scan_ready" formatted="false">Choose a source, then run the scan.</string>
+    <string name="player_tag_scan_scanning" formatted="false">Scanning for tags…</string>
+    <string name="player_tag_scan_no_results" formatted="false">No applicable tag candidates were found.</string>
+    <string name="player_tag_scan_result_count">Found %2$d tag candidates from %1$d results.</string>
+    <string name="player_tag_scan_new_tag" formatted="false">Create new local tag</string>
+    <string name="player_tag_scan_applying" formatted="false">Applying tags…</string>
+    <string name="player_tag_scan_success">Applied %1$d tags and refreshed the scene.</string>
+    <string name="player_tag_scan_failed">Tag scan failed: %1$s</string>
+    <string name="player_tag_scan_apply_failed">Tag apply failed: %1$s</string>
     <string name="player_o_counter_label" formatted="false">O-count</string>
     <string name="player_o_counter_value_label">%1$d times</string>
     <string name="player_o_counter_add_content_description">Add O-count, current %1$s</string>

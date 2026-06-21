@@ -65,6 +65,8 @@ import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.GraphQlStashStreamResolver
 import gomeng.dev.stashplayer.core.network.ResolvedStashStreamCandidate
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
+import gomeng.dev.stashplayer.core.network.StashSceneTagCandidate
+import gomeng.dev.stashplayer.core.network.StashSceneTaggerSource
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashStreamPreference
 import gomeng.dev.stashplayer.core.network.StashStreamSourceCategory
@@ -308,7 +310,7 @@ fun PlayerRoute(
         stream == null -> PlayerLoadingMessage(stashString(R.string.auto_kr_0472))
         else -> RealPlayerRoute(
             sceneId = sceneId,
-            stream = stream!!,
+            initialStream = stream!!,
             profile = activeProfile,
             playerDebugOverlayEnabled = playerDebugOverlayEnabled,
             defaultStreamPreference = defaultStreamPreference,
@@ -339,7 +341,7 @@ fun PlayerRoute(
 @Composable
 private fun RealPlayerRoute(
     sceneId: String,
-    stream: StashStream,
+    initialStream: StashStream,
     profile: StashServerProfile,
     playerDebugOverlayEnabled: Boolean,
     defaultStreamPreference: StashStreamPreference,
@@ -366,6 +368,11 @@ private fun RealPlayerRoute(
 ) {
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
+    var stream by remember(initialStream.sceneId, profile) { mutableStateOf(initialStream) }
+    LaunchedEffect(initialStream) {
+        stream = initialStream
+    }
+    val streamResolver = remember(client, profile) { GraphQlStashStreamResolver(client, profile) }
     val localView = LocalView.current
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -558,6 +565,16 @@ private fun RealPlayerRoute(
         mutableIntStateOf((stream.oCounter ?: 0).coerceAtLeast(0))
     }
     var oCounterUpdating by remember(stream.sceneId) { mutableStateOf(false) }
+    var tagScanSheetOpen by remember(stream.sceneId) { mutableStateOf(false) }
+    var tagScanSources by remember(stream.sceneId) { mutableStateOf<List<StashSceneTaggerSource>>(emptyList()) }
+    var selectedTagScanSourceId by remember(stream.sceneId) { mutableStateOf<String?>(null) }
+    var tagScanCandidates by remember(stream.sceneId) { mutableStateOf<List<StashSceneTagCandidate>>(emptyList()) }
+    var selectedTagScanCandidateKeys by remember(stream.sceneId) { mutableStateOf<Set<String>>(emptySet()) }
+    var tagScanLoadingSources by remember(stream.sceneId) { mutableStateOf(false) }
+    var tagScanScanning by remember(stream.sceneId) { mutableStateOf(false) }
+    var tagScanApplying by remember(stream.sceneId) { mutableStateOf(false) }
+    var tagScanStatusText by remember(stream.sceneId) { mutableStateOf<String?>(null) }
+    var tagScanErrorText by remember(stream.sceneId) { mutableStateOf<String?>(null) }
     val favoriteSceneIds by localRepository.favoriteSceneIds.collectAsState(initial = emptySet())
     val watchLaterSceneIds by localRepository.watchLaterSceneIds.collectAsState(initial = emptySet())
     val queueSceneIds by localRepository.queueSceneIds.collectAsState(initial = emptySet())
@@ -573,6 +590,34 @@ private fun RealPlayerRoute(
     }
     LaunchedEffect(stream.sceneId) {
         localRepository.recordPlaybackHistory(currentSceneCard)
+    }
+    LaunchedEffect(tagScanSheetOpen, stream.sceneId) {
+        if (!tagScanSheetOpen || tagScanSources.isNotEmpty() || tagScanLoadingSources) return@LaunchedEffect
+        tagScanLoadingSources = true
+        tagScanStatusText = stashString(R.string.player_tag_scan_loading_sources)
+        tagScanErrorText = null
+        try {
+            runCatching { client.findSceneTaggerSources() }
+                .onSuccess { sources ->
+                    tagScanSources = sources
+                    selectedTagScanSourceId = selectedTagScanSourceId ?: sources.firstOrNull()?.id
+                    tagScanStatusText = if (sources.isEmpty()) {
+                        stashString(R.string.player_tag_scan_no_sources)
+                    } else {
+                        stashString(R.string.player_tag_scan_ready)
+                    }
+                }
+                .onFailure { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    tagScanErrorText = stashString(
+                        R.string.player_tag_scan_failed,
+                        redactStashCredentialText(throwable.message ?: throwable::class.simpleName),
+                    )
+                    tagScanStatusText = null
+                }
+        } finally {
+            tagScanLoadingSources = false
+        }
     }
     val quickActions = buildPlayerOverlayQuickActionStates(
         isQueued = sceneId in queueSceneIds,
@@ -607,6 +652,89 @@ private fun RealPlayerRoute(
         scope.launch {
             localRepository.setWatchLater(currentSceneCard, shouldEnable)
             hudText = if (shouldEnable) stashString(R.string.auto_kr_0486) else stashString(R.string.auto_kr_0487)
+        }
+    }
+    val openTagScanSheet: () -> Unit = {
+        markPlayerInteraction()
+        controlsVisible = true
+        tagScanSheetOpen = true
+    }
+    val selectTagScanSource: (String) -> Unit = { sourceId ->
+        selectedTagScanSourceId = sourceId
+        tagScanCandidates = emptyList()
+        selectedTagScanCandidateKeys = emptySet()
+        tagScanStatusText = stashString(R.string.player_tag_scan_ready)
+        tagScanErrorText = null
+    }
+    val toggleTagScanCandidate: (String) -> Unit = { candidateKey ->
+        selectedTagScanCandidateKeys = if (candidateKey in selectedTagScanCandidateKeys) {
+            selectedTagScanCandidateKeys - candidateKey
+        } else {
+            selectedTagScanCandidateKeys + candidateKey
+        }
+    }
+    fun runSelectedTagScan() {
+        val source = tagScanSources.firstOrNull { it.id == selectedTagScanSourceId } ?: return
+        if (tagScanScanning || tagScanApplying) return
+        tagScanScanning = true
+        tagScanStatusText = stashString(R.string.player_tag_scan_scanning)
+        tagScanErrorText = null
+        tagScanCandidates = emptyList()
+        selectedTagScanCandidateKeys = emptySet()
+        scope.launch {
+            try {
+                runCatching { client.scanSceneTags(source = source, sceneId = stream.sceneId) }
+                    .onSuccess { result ->
+                        tagScanCandidates = result.candidates
+                        selectedTagScanCandidateKeys = result.candidates.map { it.key }.toSet()
+                        tagScanStatusText = if (result.candidates.isEmpty()) {
+                            stashString(R.string.player_tag_scan_no_results)
+                        } else {
+                            stashString(R.string.player_tag_scan_result_count, result.resultCount, result.candidates.size)
+                        }
+                    }
+                    .onFailure { throwable ->
+                        if (throwable is CancellationException) throw throwable
+                        tagScanErrorText = stashString(
+                            R.string.player_tag_scan_failed,
+                            redactStashCredentialText(throwable.message ?: throwable::class.simpleName),
+                        )
+                        tagScanStatusText = null
+                    }
+            } finally {
+                tagScanScanning = false
+            }
+        }
+    }
+    fun applySelectedTagScanCandidates() {
+        if (tagScanScanning || tagScanApplying) return
+        val selectedCandidates = tagScanCandidates.filter { it.key in selectedTagScanCandidateKeys }
+        if (selectedCandidates.isEmpty()) return
+        tagScanApplying = true
+        tagScanStatusText = stashString(R.string.player_tag_scan_applying)
+        tagScanErrorText = null
+        scope.launch {
+            try {
+                runCatching {
+                    client.applySceneTagScan(
+                        sceneId = stream.sceneId,
+                        existingTagIds = stream.tags.map { it.id },
+                        selectedTags = selectedCandidates,
+                    )
+                    stream = streamResolver.resolve(stream.sceneId)
+                }.onSuccess {
+                    tagScanStatusText = stashString(R.string.player_tag_scan_success, selectedCandidates.size)
+                }.onFailure { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    tagScanErrorText = stashString(
+                        R.string.player_tag_scan_apply_failed,
+                        redactStashCredentialText(throwable.message ?: throwable::class.simpleName),
+                    )
+                    tagScanStatusText = null
+                }
+            } finally {
+                tagScanApplying = false
+            }
         }
     }
     val retrySimilarRecommendations: () -> Unit = {
@@ -1556,6 +1684,8 @@ private fun RealPlayerRoute(
         oCounter = oCounter,
         oCounterUpdating = oCounterUpdating,
         ratingMessage = ratingState.message,
+        tagScanAvailable = !tagScanScanning && !tagScanApplying,
+        tagScanRunning = tagScanScanning || tagScanApplying,
     )
     val watchPageDebugEntry = PlayerWatchPageController.buildSceneWatchPageDebugEntry(enabled = true)
     val pictureInPictureSupported = StashPictureInPictureController.isSupported(activity)
@@ -2014,6 +2144,7 @@ private fun RealPlayerRoute(
             onIncrementOCounter = incrementOCounter,
             onToggleFavorite = toggleFavorite,
             onToggleWatchLater = toggleWatchLater,
+            onRequestTagScan = openTagScanSheet,
             onPlaySimilarScene = playSimilarScene,
             onAddSimilarSceneToQueue = addSimilarSceneToQueue,
             onRetrySimilarRecommendations = retrySimilarRecommendations,
@@ -2037,6 +2168,24 @@ private fun RealPlayerRoute(
             )
         }
         }
+        }
+        if (!pictureInPictureActive && tagScanSheetOpen) {
+            PlayerSceneTagScanSheet(
+                sources = tagScanSources,
+                selectedSourceId = selectedTagScanSourceId,
+                candidates = tagScanCandidates,
+                selectedCandidateKeys = selectedTagScanCandidateKeys,
+                loadingSources = tagScanLoadingSources,
+                scanning = tagScanScanning,
+                applying = tagScanApplying,
+                statusText = tagScanStatusText,
+                errorText = tagScanErrorText,
+                onSelectSource = selectTagScanSource,
+                onRunScan = ::runSelectedTagScan,
+                onToggleCandidate = toggleTagScanCandidate,
+                onApplySelected = ::applySelectedTagScanCandidates,
+                onDismiss = { tagScanSheetOpen = false },
+            )
         }
         if (
             !pictureInPictureActive &&

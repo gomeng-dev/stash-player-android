@@ -152,6 +152,46 @@ class StashGraphQlClient(
         )
     }
 
+    suspend fun findSceneTaggerSources(): List<StashSceneTaggerSource> {
+        return parseSceneTaggerSourcesResponse(execute(SCENE_TAGGER_SOURCES_QUERY))
+    }
+
+    suspend fun scanSceneTags(
+        source: StashSceneTaggerSource,
+        sceneId: String,
+    ): StashSceneTagScanResult {
+        return parseScrapeSingleSceneTagsResponse(
+            source = source,
+            json = execute(
+                SCRAPE_SINGLE_SCENE_TAGS_QUERY,
+                buildScrapeSingleSceneTagsVariables(
+                    source = source,
+                    sceneId = sceneId,
+                ),
+            ),
+        )
+    }
+
+    suspend fun applySceneTagScan(
+        sceneId: String,
+        existingTagIds: List<String>,
+        selectedTags: List<StashSceneTagCandidate>,
+    ): Boolean {
+        val selectedTagIds = selectedTags.map { candidate ->
+            candidate.storedId?.trim()?.takeIf { it.isNotBlank() }
+                ?: parseTagCreateResponse(execute(TAG_CREATE_MUTATION, buildTagCreateVariables(candidate.name))).id
+        }
+        return parseSceneTagsUpdateResponse(
+            execute(
+                SCENE_TAGS_UPDATE_MUTATION,
+                buildSceneTagsReplaceVariables(
+                    sceneId = sceneId,
+                    tagIds = existingTagIds + selectedTagIds,
+                ),
+            ),
+        )
+    }
+
     suspend fun findScenes(
         perPage: Int = 25,
         page: Int = 1,
@@ -579,6 +619,30 @@ class StashGraphQlClient(
             }
         """
 
+        val SCENE_TAGGER_SOURCES_QUERY = """
+            query SceneTaggerSources {
+              configuration {
+                general {
+                  stashBoxes { endpoint name }
+                }
+              }
+              listScrapers(types: [SCENE]) {
+                id
+                name
+                scene { supported_scrapes }
+              }
+            }
+        """
+
+        val SCRAPE_SINGLE_SCENE_TAGS_QUERY = """
+            query ScrapeSingleSceneTags(${'$'}source: ScraperSourceInput!, ${'$'}input: ScrapeSingleSceneInput!) {
+              scrapeSingleScene(source: ${'$'}source, input: ${'$'}input) {
+                title
+                tags { stored_id name }
+              }
+            }
+        """
+
         val FIND_SCENES_QUERY = """
             query FindScenes(${'$'}perPage: Int!, ${'$'}page: Int!, ${'$'}q: String, ${'$'}sort: String!, ${'$'}direction: SortDirectionEnum!, ${'$'}sceneFilter: SceneFilterType) {
               findScenes(filter: { per_page: ${'$'}perPage, page: ${'$'}page, sort: ${'$'}sort, direction: ${'$'}direction, q: ${'$'}q }, scene_filter: ${'$'}sceneFilter) {
@@ -854,10 +918,18 @@ internal fun buildSceneTagUpdateVariables(
     sceneId: String,
     existingTagIds: List<String>,
     shortsTagId: String,
+): Map<String, Any?> = buildSceneTagsReplaceVariables(
+    sceneId = sceneId,
+    tagIds = existingTagIds + shortsTagId,
+)
+
+internal fun buildSceneTagsReplaceVariables(
+    sceneId: String,
+    tagIds: List<String>,
 ): Map<String, Any?> = mapOf(
     "input" to mapOf(
         "id" to sceneId,
-        "tag_ids" to (existingTagIds + shortsTagId)
+        "tag_ids" to tagIds
             .map { it.trim() }
             .filter { it.isNotBlank() }
             .distinct(),
@@ -870,6 +942,14 @@ internal fun buildConfigureCreateGalleriesFromFoldersVariables(enabled: Boolean)
 
 internal fun buildMetadataScanVariables(): Map<String, Any?> = mapOf(
     "input" to emptyMap<String, Any?>(),
+)
+
+internal fun buildScrapeSingleSceneTagsVariables(
+    source: StashSceneTaggerSource,
+    sceneId: String,
+): Map<String, Any?> = mapOf(
+    "source" to source.sourceInput,
+    "input" to mapOf("scene_id" to sceneId.trim()),
 )
 
 internal fun buildFindScenesVariables(
@@ -1221,6 +1301,10 @@ internal fun serverLibrarySettingsQueryForTesting(): String = StashGraphQlClient
 internal fun configureGeneralMutationForTesting(): String = StashGraphQlClient.CONFIGURE_GENERAL_MUTATION
 
 internal fun metadataScanMutationForTesting(): String = StashGraphQlClient.METADATA_SCAN_MUTATION
+
+internal fun sceneTaggerSourcesQueryForTesting(): String = StashGraphQlClient.SCENE_TAGGER_SOURCES_QUERY
+
+internal fun scrapeSingleSceneTagsQueryForTesting(): String = StashGraphQlClient.SCRAPE_SINGLE_SCENE_TAGS_QUERY
 
 internal fun imageUpdateMutationForTesting(): String = StashGraphQlClient.IMAGE_UPDATE_MUTATION
 

@@ -25,6 +25,9 @@ fun redactStashCredentialText(message: String?): String = message
     ?.replace(Regex("(?i)(apikey=)([^&\\s]+)")) { match ->
         "${match.groupValues[1]}[REDACTED]"
     }
+    ?.replace(Regex("(?i)(api_key=)([^&\\s]+)")) { match ->
+        "${match.groupValues[1]}[REDACTED]"
+    }
     ?.replace(Regex("(?i)(\\bApiKey\\s*:\\s*)([^\\s,;]+)")) { match ->
         "${match.groupValues[1]}[REDACTED]"
     }

@@ -191,6 +191,58 @@ fun parseMetadataScanResponse(json: String): String {
         ?: error("Stash metadataScan returned no job ID")
 }
 
+data class StashSceneTaggerSource(
+    val id: String,
+    val displayName: String,
+    val sourceInput: Map<String, Any?>,
+)
+
+data class StashSceneTagCandidate(
+    val storedId: String?,
+    val name: String,
+    val sourceTitle: String? = null,
+) {
+    val key: String
+        get() = storedId?.trim()?.takeIf { it.isNotBlank() } ?: "name:${name.trim().lowercase()}"
+
+    val createsLocalTag: Boolean
+        get() = storedId.isNullOrBlank()
+}
+
+data class StashSceneTagScanResult(
+    val source: StashSceneTaggerSource,
+    val candidates: List<StashSceneTagCandidate>,
+    val resultCount: Int,
+)
+
+fun parseSceneTaggerSourcesResponse(json: String): List<StashSceneTaggerSource> {
+    val envelope = parseJson<SceneTaggerSourcesEnvelope>(json)
+    envelope.throwIfErrors()
+    val stashBoxSources = envelope.data?.configuration?.general?.stashBoxes.orEmpty()
+        .mapIndexedNotNull { index, stashBox -> stashBox.toTaggerSourceOrNull(index) }
+    val scraperSources = envelope.data?.listScrapers.orEmpty()
+        .mapNotNull { scraper -> scraper.toTaggerSourceOrNull() }
+    return (stashBoxSources + scraperSources).distinctBy { it.id }
+}
+
+fun parseScrapeSingleSceneTagsResponse(
+    source: StashSceneTaggerSource,
+    json: String,
+): StashSceneTagScanResult {
+    val envelope = parseJson<ScrapeSingleSceneTagsEnvelope>(json)
+    envelope.throwIfErrors()
+    val results = envelope.data?.scrapeSingleScene.orEmpty()
+    val candidates = results.flatMap { scene ->
+        scene.tags.orEmpty().mapNotNull { tag -> tag.toCandidateOrNull(scene.title) }
+    }.distinctBy { candidate -> candidate.key }
+        .sortedWith(compareBy<StashSceneTagCandidate> { it.createsLocalTag }.thenBy { it.name.lowercase() })
+    return StashSceneTagScanResult(
+        source = source,
+        candidates = candidates,
+        resultCount = results.size,
+    )
+}
+
 fun buildStashStream(profile: StashServerProfile, scene: StashScene): StashStream {
     val selectedStream = scene.preferredStream ?: error("Scene ${scene.id} has no playable stream URL")
     val resolvedCandidates = scene.streamCandidates.map { candidate ->
@@ -310,6 +362,81 @@ private data class MetadataScanEnvelope(
 ) : GraphQlEnvelope
 
 private data class MetadataScanData(val metadataScan: String? = null)
+
+private data class SceneTaggerSourcesEnvelope(
+    val data: SceneTaggerSourcesData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class SceneTaggerSourcesData(
+    val configuration: SceneTaggerConfiguration? = null,
+    val listScrapers: List<ApiSceneScraper> = emptyList(),
+)
+
+private data class SceneTaggerConfiguration(val general: SceneTaggerGeneral? = null)
+private data class SceneTaggerGeneral(val stashBoxes: List<ApiStashBox> = emptyList())
+
+private data class ApiStashBox(
+    val endpoint: String? = null,
+    val name: String? = null,
+) {
+    fun toTaggerSourceOrNull(index: Int): StashSceneTaggerSource? {
+        val normalizedEndpoint = endpoint?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val normalizedName = name?.trim()?.takeIf { it.isNotBlank() } ?: "#${index + 1}"
+        return StashSceneTaggerSource(
+            id = "stashbox:$normalizedEndpoint",
+            displayName = "stash-box: $normalizedName",
+            sourceInput = mapOf("stash_box_endpoint" to normalizedEndpoint),
+        )
+    }
+}
+
+private data class ApiSceneScraper(
+    val id: String? = null,
+    val name: String? = null,
+    val scene: ApiScraperSpec? = null,
+) {
+    fun toTaggerSourceOrNull(): StashSceneTaggerSource? {
+        val normalizedId = id?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val supportsFragment = scene?.supportedScrapes.orEmpty().any { scrape -> scrape.equals("FRAGMENT", ignoreCase = true) }
+        if (!supportsFragment) return null
+        return StashSceneTaggerSource(
+            id = "scraper:$normalizedId",
+            displayName = name?.trim()?.takeIf { it.isNotBlank() } ?: normalizedId,
+            sourceInput = mapOf("scraper_id" to normalizedId),
+        )
+    }
+}
+
+private data class ApiScraperSpec(
+    @Json(name = "supported_scrapes") val supportedScrapes: List<String> = emptyList(),
+)
+
+private data class ScrapeSingleSceneTagsEnvelope(
+    val data: ScrapeSingleSceneTagsData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class ScrapeSingleSceneTagsData(val scrapeSingleScene: List<ApiScrapedScene> = emptyList())
+
+private data class ApiScrapedScene(
+    val title: String? = null,
+    val tags: List<ApiScrapedTag>? = null,
+)
+
+private data class ApiScrapedTag(
+    @Json(name = "stored_id") val storedId: String? = null,
+    val name: String? = null,
+) {
+    fun toCandidateOrNull(sourceTitle: String?): StashSceneTagCandidate? {
+        val normalizedName = normalizeStashVideoFilterText(name.orEmpty()).takeIf { it.isNotBlank() } ?: return null
+        return StashSceneTagCandidate(
+            storedId = storedId?.trim()?.takeIf { it.isNotBlank() },
+            name = normalizedName,
+            sourceTitle = sourceTitle?.trim()?.takeIf { it.isNotBlank() },
+        )
+    }
+}
 
 private data class ApiConfigGeneral(
     val createGalleriesFromFolders: Boolean? = null,

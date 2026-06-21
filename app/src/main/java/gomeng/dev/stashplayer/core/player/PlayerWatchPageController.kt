@@ -257,6 +257,8 @@ object PlayerWatchPageController {
         oCounter: Int? = null,
         oCounterUpdating: Boolean = false,
         ratingMessage: String? = null,
+        tagScanAvailable: Boolean = true,
+        tagScanRunning: Boolean = false,
     ): List<PlayerExpandedStashActionRowItem> {
         val localItems = buildPlayerExpandedStashActionRowItems(
             ratingStep = ratingStep,
@@ -269,6 +271,10 @@ object PlayerWatchPageController {
             item.action == PlayerExpandedStashAction.Rating || item.action == PlayerExpandedStashAction.MoreDetails
         }
         return localItems + listOfNotNull(
+            buildPlayerTagScanActionRowItem(
+                enabled = tagScanAvailable,
+                running = tagScanRunning,
+            ),
             oCounter?.let { count ->
                 buildPlayerOCounterActionRowItem(
                     oCounter = count,

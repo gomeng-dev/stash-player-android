@@ -6,21 +6,23 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-06-21
+
 ### English
 
-Nothing yet.
+- Replaced the Watch Page Auto Tag job action with a Stash Tagger-style Scan tags flow that uses `scrapeSingleScene`, lets users review tag candidates, and applies selected tags to the current scene.
 
 ### 한국어
 
-아직 없습니다.
+- Watch Page의 잘못된 Auto Tag 작업 액션을 Stash Tagger 스타일 태그 스캔 흐름으로 교체해, `scrapeSingleScene`으로 후보 태그를 확인하고 선택한 태그를 현재 영상에 적용할 수 있게 했습니다.
 
 ### 简体中文
 
-暂无。
+- 将 Watch Page 中错误的 Auto Tag 作业操作替换为 Stash Tagger 风格的扫描标签流程，使用 `scrapeSingleScene` 查看候选标签，并将所选标签应用到当前场景。
 
 ### 繁體中文
 
-暫無。
+- 將 Watch Page 中錯誤的 Auto Tag 工作操作替換為 Stash Tagger 風格的掃描標籤流程，使用 `scrapeSingleScene` 檢視候選標籤，並將所選標籤套用到目前場景。
 
 ## [1.8.0] - 2026-06-06
 
