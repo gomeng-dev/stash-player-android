@@ -68,11 +68,14 @@ import gomeng.dev.stashplayer.core.model.SimilarVideosRecommendationSource
 import gomeng.dev.stashplayer.core.network.GraphQlStashStreamResolver
 import gomeng.dev.stashplayer.core.network.ResolvedStashStreamCandidate
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
+import gomeng.dev.stashplayer.core.network.StashJobStatus
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashStreamPreference
+import gomeng.dev.stashplayer.core.network.StashTagFailureGuidance
 import gomeng.dev.stashplayer.core.network.StashTagPrediction
 import gomeng.dev.stashplayer.core.network.StashTagSuggestionResult
 import gomeng.dev.stashplayer.core.network.STASH_TAG_DEFAULT_REVIEW_THRESHOLD
+import gomeng.dev.stashplayer.core.network.classifyStashTagFailureForGuidance
 import gomeng.dev.stashplayer.core.network.excludeStashTagPrediction
 import gomeng.dev.stashplayer.core.network.selectStashTagPredictionsForReview
 import gomeng.dev.stashplayer.core.network.StashStreamSourceCategory
@@ -154,6 +157,7 @@ import gomeng.dev.stashplayer.core.player.reorderPlayerPlaylistItem
 import gomeng.dev.stashplayer.core.player.selectSimilarSceneForPlayback
 import gomeng.dev.stashplayer.core.player.PlayerTransportController
 import gomeng.dev.stashplayer.core.player.PlayerWatchPageController
+import gomeng.dev.stashplayer.core.player.StashTagResourceGenerationTerminalAction
 import gomeng.dev.stashplayer.core.player.resolvePlayerPlaylistDrawerPresentationPolicy
 import gomeng.dev.stashplayer.core.player.resolvePlayerPresentationOverlayAlpha
 import gomeng.dev.stashplayer.core.player.resolvePlayerResumeStartPositionMs
@@ -197,11 +201,23 @@ private sealed interface StashTagDialogState {
         val applying: Boolean = false,
         val errorMessage: String? = null,
     ) : StashTagDialogState
-    data class Error(val message: String) : StashTagDialogState
+    data class Error(
+        val guidance: StashTagFailureGuidance,
+        val message: String,
+        val resourceGenerationState: StashTagResourceGenerationState = StashTagResourceGenerationState.Idle,
+    ) : StashTagDialogState
+}
+
+private enum class StashTagResourceGenerationState {
+    Idle,
+    Running,
+    Failed,
 }
 private val PLAYER_PRESENTATION_MOTION_DURATION_MS = 240
 private val PLAYER_SIDE_CONTROL_OVERLAY_AUTO_HIDE_MS = 2_000L
 private val PLAYER_SIDE_CONTROL_OVERLAY_FADE_MS = 220
+private const val STASH_TAG_RESOURCE_GENERATION_POLL_INTERVAL_MS = 2_000L
+private const val STASH_TAG_RESOURCE_GENERATION_MAX_POLLS = 90
 
 private object PlayerSceneAddPlaySessionGuard {
     private var state = PlayerSceneAddPlaySyncState()
@@ -584,6 +600,7 @@ private fun RealPlayerRoute(
     var oCounterUpdating by remember(stream.sceneId) { mutableStateOf(false) }
     var stashTagDialogState by remember(stream.sceneId) { mutableStateOf<StashTagDialogState>(StashTagDialogState.Hidden) }
     var stashTagRequestSerial by remember(stream.sceneId) { mutableIntStateOf(0) }
+    var stashTagResourceGenerationInFlight by remember(stream.sceneId) { mutableStateOf(false) }
     val dismissStashTagDialog: () -> Unit = {
         stashTagRequestSerial += 1
         stashTagDialogState = StashTagDialogState.Hidden
@@ -660,10 +677,51 @@ private fun RealPlayerRoute(
                 .onFailure { throwable ->
                     if (PlayerWatchPageController.isStashTagRequestCurrent(requestSerial, stashTagRequestSerial)) {
                         stashTagDialogState = StashTagDialogState.Error(
+                            guidance = classifyStashTagFailureForGuidance(throwable),
                             message = redactStashCredentialText(throwable.message ?: throwable::class.simpleName.orEmpty()),
                         )
                     }
                 }
+        }
+    }
+    val generateStashTagResourcesAndRetry: () -> Unit = generate@{
+        if (stashTagResourceGenerationInFlight) return@generate
+        markPlayerInteraction()
+        controlsVisible = true
+        stashTagRequestSerial += 1
+        val requestSerial = stashTagRequestSerial
+        stashTagResourceGenerationInFlight = true
+        stashTagDialogState = StashTagDialogState.Error(
+            guidance = StashTagFailureGuidance.MissingGeneratedResources,
+            message = "",
+            resourceGenerationState = StashTagResourceGenerationState.Running,
+        )
+        scope.launch {
+            try {
+                runCatching {
+                    val jobId = client.generateStashTagResourcesForScene(sceneId)
+                    val terminalStatus = waitForStashTagResourceGeneration(client, jobId)
+                    val terminalAction = PlayerWatchPageController.resolveStashTagResourceGenerationTerminalAction(terminalStatus)
+                    if (terminalAction != StashTagResourceGenerationTerminalAction.RetryPrediction) {
+                        error("Stash metadata generation job ended with $terminalStatus")
+                    }
+                    client.suggestStashTagsForScene(sceneId)
+                }.onSuccess { result ->
+                    if (PlayerWatchPageController.isStashTagRequestCurrent(requestSerial, stashTagRequestSerial)) {
+                        stashTagDialogState = StashTagDialogState.Review(result = result)
+                    }
+                }.onFailure { throwable ->
+                    if (PlayerWatchPageController.isStashTagRequestCurrent(requestSerial, stashTagRequestSerial)) {
+                        stashTagDialogState = StashTagDialogState.Error(
+                            guidance = StashTagFailureGuidance.MissingGeneratedResources,
+                            message = redactStashCredentialText(throwable.message ?: throwable::class.simpleName.orEmpty()),
+                            resourceGenerationState = StashTagResourceGenerationState.Failed,
+                        )
+                    }
+                }
+            } finally {
+                stashTagResourceGenerationInFlight = false
+            }
         }
     }
     var playCountSynced by remember(sceneId) { mutableStateOf(false) }
@@ -1599,6 +1657,10 @@ private fun RealPlayerRoute(
             errorMessage = similarRecommendationsError,
         ),
     )
+    val stashTagPredictionRunning = stashTagDialogState is StashTagDialogState.Loading
+    val stashTagResourceGenerationRunning = stashTagResourceGenerationInFlight ||
+        (stashTagDialogState as? StashTagDialogState.Error)
+            ?.resourceGenerationState == StashTagResourceGenerationState.Running
     val watchPageActionItems = PlayerWatchPageController.buildSceneWatchPageActionRowItems(
         ratingStep = ratingState.ratingStep,
         ratingUpdating = ratingState.isUpdating,
@@ -1611,8 +1673,11 @@ private fun RealPlayerRoute(
     ).map { item ->
         if (item.action == gomeng.dev.stashplayer.core.player.PlayerExpandedStashAction.StashTag) {
             PlayerWatchPageController.buildPlayerStashTagActionRowItem(
-                enabled = true,
-                loading = stashTagDialogState is StashTagDialogState.Loading,
+                enabled = PlayerWatchPageController.isStashTagActionEnabled(
+                    predictionRunning = stashTagPredictionRunning,
+                    resourceGenerationRunning = stashTagResourceGenerationRunning,
+                ),
+                loading = stashTagPredictionRunning || stashTagResourceGenerationRunning,
             )
         } else {
             item
@@ -2127,6 +2192,7 @@ private fun RealPlayerRoute(
         StashTagDialog(
             state = stashTagDialogState,
             onDismiss = dismissStashTagDialog,
+            onGenerateResourcesAndRetry = generateStashTagResourcesAndRetry,
             onThresholdChange = { threshold ->
                 val current = stashTagDialogState
                 if (current is StashTagDialogState.Review) {
@@ -2170,12 +2236,28 @@ private fun RealPlayerRoute(
     }
 }
 
+private suspend fun waitForStashTagResourceGeneration(
+    client: StashGraphQlClient,
+    jobId: String,
+): StashJobStatus {
+    repeat(STASH_TAG_RESOURCE_GENERATION_MAX_POLLS) { attempt ->
+        val status = client.findJobStatus(jobId)
+        val action = PlayerWatchPageController.resolveStashTagResourceGenerationTerminalAction(status)
+        if (action != StashTagResourceGenerationTerminalAction.KeepPolling) return status
+        if (attempt < STASH_TAG_RESOURCE_GENERATION_MAX_POLLS - 1) {
+            delay(STASH_TAG_RESOURCE_GENERATION_POLL_INTERVAL_MS)
+        }
+    }
+    error("Stash metadata generation job timed out")
+}
+
 @Composable
 private fun StashTagDialog(
     state: StashTagDialogState,
     onDismiss: () -> Unit,
     onThresholdChange: (Float) -> Unit,
     onRemovePrediction: (String) -> Unit,
+    onGenerateResourcesAndRetry: () -> Unit,
     onApply: (List<StashTagPrediction>) -> Unit,
 ) {
     when (state) {
@@ -2197,14 +2279,70 @@ private fun StashTagDialog(
                 TextButton(onClick = onDismiss) { Text(stashString(R.string.player_stash_tag_dismiss_button)) }
             },
         )
-        is StashTagDialogState.Error -> AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(stashString(R.string.player_stash_tag_error_title)) },
-            text = { Text(state.message.ifBlank { stashString(R.string.player_stash_tag_generic_error) }) },
-            confirmButton = {
-                TextButton(onClick = onDismiss) { Text(stashString(R.string.player_stash_tag_ok_button)) }
-            },
-        )
+        is StashTagDialogState.Error -> {
+            val isMissingResources = state.guidance == StashTagFailureGuidance.MissingGeneratedResources
+            val generationRunning = state.resourceGenerationState == StashTagResourceGenerationState.Running
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = {
+                    Text(
+                        stashString(
+                            if (isMissingResources) {
+                                R.string.player_stash_tag_missing_resources_title
+                            } else {
+                                R.string.player_stash_tag_error_title
+                            },
+                        ),
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            if (isMissingResources) {
+                                stashString(R.string.player_stash_tag_missing_resources_message)
+                            } else {
+                                state.message.ifBlank { stashString(R.string.player_stash_tag_generic_error) }
+                            },
+                        )
+                        if (generationRunning) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                CircularProgressIndicator()
+                                Text(stashString(R.string.player_stash_tag_generating_resources_message))
+                            }
+                        } else if (state.resourceGenerationState == StashTagResourceGenerationState.Failed) {
+                            Text(
+                                stashString(
+                                    R.string.player_stash_tag_generate_resources_failed_message,
+                                    state.message.ifBlank { stashString(R.string.player_stash_tag_generic_error) },
+                                ),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    if (isMissingResources) {
+                        TextButton(
+                            enabled = !generationRunning,
+                            onClick = onGenerateResourcesAndRetry,
+                        ) { Text(stashString(R.string.player_stash_tag_generate_resources_button)) }
+                    } else {
+                        TextButton(onClick = onDismiss) { Text(stashString(R.string.player_stash_tag_ok_button)) }
+                    }
+                },
+                dismissButton = {
+                    if (isMissingResources) {
+                        TextButton(
+                            enabled = !generationRunning,
+                            onClick = onDismiss,
+                        ) { Text(stashString(R.string.player_stash_tag_dismiss_button)) }
+                    }
+                },
+            )
+        }
         is StashTagDialogState.Review -> {
             val selectedPredictions = selectStashTagPredictionsForReview(
                 predictions = state.result.predictions,

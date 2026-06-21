@@ -154,6 +154,24 @@ class StashGraphQlClient(
         )
     }
 
+    suspend fun generateStashTagResourcesForScene(sceneId: String): String {
+        return parseMetadataGenerateResponse(
+            execute(
+                STASH_TAG_METADATA_GENERATE_MUTATION,
+                buildStashTagMetadataGenerateVariables(sceneId),
+            ),
+        )
+    }
+
+    suspend fun findJobStatus(jobId: String): StashJobStatus {
+        return parseFindJobResponse(
+            execute(
+                FIND_JOB_QUERY,
+                buildFindJobVariables(jobId),
+            ),
+        )
+    }
+
     suspend fun findScenes(
         perPage: Int = 25,
         page: Int = 1,
@@ -381,7 +399,7 @@ class StashGraphQlClient(
     ): StashTagSuggestionResult {
         val scene = findScene(sceneId) ?: error("Scene $sceneId not found")
         val spriteUrl = scene.spriteImageUrl?.trim()?.takeIf { it.isNotBlank() }
-            ?: error("No sprite found. Generate Stash sprites first.")
+            ?: throw StashTagMissingGeneratedResourceException()
         val imageDataUrl = fetchDataUrl(spriteUrl, fallbackMimeType = "image/jpeg")
         val vttDataUrl = fetchDataUrl(deriveStashTagThumbsVttUrl(spriteUrl), fallbackMimeType = "text/vtt")
         val response = postStashTagPredict(
@@ -508,7 +526,11 @@ class StashGraphQlClient(
         val response = okHttpClient.newCall(requestBuilder.build()).execute()
         val bytes = response.body?.bytes() ?: ByteArray(0)
         if (!response.isSuccessful) {
-            throw IOException(redactStashCredentialText("Stash asset HTTP ${response.code}: ${String(bytes, Charsets.UTF_8).take(240)}"))
+            val redactedMessage = redactStashCredentialText("Stash asset HTTP ${response.code}: ${String(bytes, Charsets.UTF_8).take(240)}")
+            if (response.code == 404) {
+                throw StashTagMissingGeneratedResourceException(redactedMessage)
+            }
+            throw IOException(redactedMessage)
         }
         val contentType = response.header("Content-Type")
             ?.substringBefore(';')
@@ -659,6 +681,21 @@ class StashGraphQlClient(
         val METADATA_SCAN_MUTATION = """
             mutation MetadataScan(${'$'}input: ScanMetadataInput!) {
               metadataScan(input: ${'$'}input)
+            }
+        """
+
+        val STASH_TAG_METADATA_GENERATE_MUTATION = """
+            mutation MetadataGenerate(${'$'}input: GenerateMetadataInput!) {
+              metadataGenerate(input: ${'$'}input)
+            }
+        """
+
+        val FIND_JOB_QUERY = """
+            query FindJob(${'$'}input: FindJobInput!) {
+              findJob(input: ${'$'}input) {
+                id
+                status
+              }
             }
         """
 
@@ -971,6 +1008,18 @@ internal fun buildConfigureCreateGalleriesFromFoldersVariables(enabled: Boolean)
 
 internal fun buildMetadataScanVariables(): Map<String, Any?> = mapOf(
     "input" to emptyMap<String, Any?>(),
+)
+
+internal fun buildStashTagMetadataGenerateVariables(sceneId: String): Map<String, Any?> = mapOf(
+    "input" to mapOf(
+        "sprites" to true,
+        "sceneIDs" to listOf(sceneId.trim()),
+        "overwrite" to true,
+    ),
+)
+
+internal fun buildFindJobVariables(jobId: String): Map<String, Any?> = mapOf(
+    "input" to mapOf("id" to jobId.trim()),
 )
 
 internal fun buildFindScenesVariables(
@@ -1322,6 +1371,10 @@ internal fun serverLibrarySettingsQueryForTesting(): String = StashGraphQlClient
 internal fun configureGeneralMutationForTesting(): String = StashGraphQlClient.CONFIGURE_GENERAL_MUTATION
 
 internal fun metadataScanMutationForTesting(): String = StashGraphQlClient.METADATA_SCAN_MUTATION
+
+internal fun stashTagMetadataGenerateMutationForTesting(): String = StashGraphQlClient.STASH_TAG_METADATA_GENERATE_MUTATION
+
+internal fun findJobQueryForTesting(): String = StashGraphQlClient.FIND_JOB_QUERY
 
 internal fun allTagsQueryForTesting(): String = StashGraphQlClient.ALL_TAGS_QUERY
 

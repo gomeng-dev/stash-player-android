@@ -1079,6 +1079,11 @@
     <string name="player_stash_tag_loading_message" formatted="false">正在分析精灵图集...</string>
     <string name="player_stash_tag_error_title" formatted="false">Stash Tag 失败</string>
     <string name="player_stash_tag_generic_error" formatted="false">无法分析标签。</string>
+    <string name="player_stash_tag_missing_resources_title" formatted="false">缺少 Stash Tag 所需资源</string>
+    <string name="player_stash_tag_missing_resources_message" formatted="false">当前场景似乎缺少生成的精灵图、缩略图或 VTT 资源，或者这些资源已经过期。请在 Stash 中生成或刷新该场景的生成文件（sprite/thumbs/VTT），然后再次尝试 Stash Tag。</string>
+    <string name="player_stash_tag_generate_resources_button" formatted="false">生成资源后重试</string>
+    <string name="player_stash_tag_generating_resources_message" formatted="false">正在 Stash 中为当前场景生成 sprite/thumbs/VTT 资源，可能需要一点时间...</string>
+    <string name="player_stash_tag_generate_resources_failed_message">资源生成或重试失败：%1$s</string>
     <string name="player_stash_tag_review_message" formatted="false">查看精灵图分析结果并调整 threshold。</string>
     <string name="player_stash_tag_threshold_label">Threshold %1$d%%</string>
     <string name="player_stash_tag_no_predictions" formatted="false">没有预测到标签。</string>

@@ -2,6 +2,7 @@ package gomeng.dev.stashplayer.core.player
 
 import gomeng.dev.stashplayer.core.model.SceneCardTagChip
 import gomeng.dev.stashplayer.R
+import gomeng.dev.stashplayer.core.network.StashJobStatus
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 import kotlin.math.roundToInt
 
@@ -39,6 +40,12 @@ enum class SceneWatchPageSection {
     MetadataBadges,
     Tags,
     SimilarScenes,
+}
+
+enum class StashTagResourceGenerationTerminalAction {
+    KeepPolling,
+    RetryPrediction,
+    ShowFailure,
 }
 
 data class PlayerFullscreenChromePolicy(
@@ -296,6 +303,21 @@ object PlayerWatchPageController {
         },
         enabled = enabled && !loading,
     )
+
+    fun isStashTagActionEnabled(
+        predictionRunning: Boolean,
+        resourceGenerationRunning: Boolean,
+    ): Boolean = !predictionRunning && !resourceGenerationRunning
+
+    fun resolveStashTagResourceGenerationTerminalAction(status: StashJobStatus): StashTagResourceGenerationTerminalAction =
+        when (status) {
+            StashJobStatus.Running -> StashTagResourceGenerationTerminalAction.KeepPolling
+            StashJobStatus.Finished -> StashTagResourceGenerationTerminalAction.RetryPrediction
+            StashJobStatus.Failed,
+            StashJobStatus.Cancelled,
+            StashJobStatus.Missing,
+            -> StashTagResourceGenerationTerminalAction.ShowFailure
+        }
 
     fun isStashTagRequestCurrent(requestSerial: Int, activeSerial: Int): Boolean = requestSerial == activeSerial
 

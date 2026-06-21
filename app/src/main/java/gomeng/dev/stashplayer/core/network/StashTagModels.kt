@@ -2,6 +2,7 @@ package gomeng.dev.stashplayer.core.network
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.io.IOException
 import java.net.URI
 import java.util.Locale
 
@@ -65,6 +66,37 @@ data class StashKnownTag(
     val name: String,
     val aliases: List<String> = emptyList(),
 )
+
+class StashTagMissingGeneratedResourceException(
+    message: String = "Stash Tag generated resources are missing or stale",
+    cause: Throwable? = null,
+) : IOException(message, cause)
+
+enum class StashTagFailureGuidance {
+    MissingGeneratedResources,
+    Generic,
+}
+
+fun classifyStashTagFailureForGuidance(throwable: Throwable): StashTagFailureGuidance =
+    if (throwable.isMissingGeneratedResourceFailure()) {
+        StashTagFailureGuidance.MissingGeneratedResources
+    } else {
+        StashTagFailureGuidance.Generic
+    }
+
+private fun Throwable.isMissingGeneratedResourceFailure(): Boolean {
+    if (this is StashTagMissingGeneratedResourceException) return true
+    val text = buildString {
+        append(message.orEmpty())
+        cause?.message?.takeIf { it.isNotBlank() }?.let { causeMessage ->
+            append('\n')
+            append(causeMessage)
+        }
+    }.lowercase(Locale.ROOT)
+    return "stash asset http 404" in text ||
+        "no sprite found" in text ||
+        "generate stash sprites first" in text
+}
 
 fun defaultStashTagApiUrl(profile: StashServerProfile): String {
     val base = runCatching { URI(profile.normalizedBaseUrl()) }.getOrNull()

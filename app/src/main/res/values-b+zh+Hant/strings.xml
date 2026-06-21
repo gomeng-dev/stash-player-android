@@ -1074,4 +1074,26 @@
     <string name="scene_filter_o_count_chip">O-Count %1$s %2$d</string>
     <string name="scene_filter_o_count_placeholder" formatted="false">範例：0</string>
     <string name="scene_filter_o_count_clear" formatted="false">清除 O-Count</string>
+    <string name="player_stash_tag_action_label" formatted="false">Stash Tag</string>
+    <string name="player_stash_tag_action_content_description" formatted="false">分析精靈圖集並建議標籤</string>
+    <string name="player_stash_tag_loading_message" formatted="false">正在分析精靈圖集...</string>
+    <string name="player_stash_tag_error_title" formatted="false">Stash Tag 失敗</string>
+    <string name="player_stash_tag_generic_error" formatted="false">無法分析標籤。</string>
+    <string name="player_stash_tag_missing_resources_title" formatted="false">缺少 Stash Tag 所需資源</string>
+    <string name="player_stash_tag_missing_resources_message" formatted="false">目前場景似乎缺少產生的精靈圖、縮圖或 VTT 資源，或這些資源已過期。請在 Stash 中產生或重新整理此場景的產生檔案（sprite/thumbs/VTT），然後再試一次 Stash Tag。</string>
+    <string name="player_stash_tag_generate_resources_button" formatted="false">產生資源後重試</string>
+    <string name="player_stash_tag_generating_resources_message" formatted="false">正在 Stash 中為目前場景產生 sprite/thumbs/VTT 資源，可能需要一點時間...</string>
+    <string name="player_stash_tag_generate_resources_failed_message">資源產生或重試失敗：%1$s</string>
+    <string name="player_stash_tag_review_message" formatted="false">檢視精靈圖分析結果並調整 threshold。</string>
+    <string name="player_stash_tag_threshold_label">Threshold %1$d%%</string>
+    <string name="player_stash_tag_no_predictions" formatted="false">沒有預測到標籤。</string>
+    <string name="player_stash_tag_none_at_threshold" formatted="false">沒有標籤達到目前 threshold。</string>
+    <string name="player_stash_tag_ok_button" formatted="false">確定</string>
+    <string name="player_stash_tag_dismiss_button" formatted="false">關閉</string>
+    <string name="player_stash_tag_remove_candidate_button" formatted="false">移除</string>
+    <string name="player_stash_tag_candidate_label">%1$s %2$d%%</string>
+    <string name="player_stash_tag_apply_button" formatted="false">套用選取標籤</string>
+    <string name="player_stash_tag_applying_button" formatted="false">正在套用...</string>
+    <string name="player_stash_tag_already_applied" formatted="false">標籤已套用</string>
+    <string name="player_stash_tag_applied_count">已套用 %1$d 個標籤</string>
 </resources>

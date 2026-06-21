@@ -1080,6 +1080,11 @@
     <string name="player_stash_tag_loading_message" formatted="false">Analyzing the sprite atlas...</string>
     <string name="player_stash_tag_error_title" formatted="false">Stash Tag failed</string>
     <string name="player_stash_tag_generic_error" formatted="false">Could not analyze tags.</string>
+    <string name="player_stash_tag_missing_resources_title" formatted="false">Stash Tag resources are missing</string>
+    <string name="player_stash_tag_missing_resources_message" formatted="false">This scene appears to be missing generated sprite, thumbnail, or VTT resources, or they are stale. Generate or refresh the generated files for this scene (sprite/thumbs/VTT) in Stash, then try Stash Tag again.</string>
+    <string name="player_stash_tag_generate_resources_button" formatted="false">Generate resources and retry</string>
+    <string name="player_stash_tag_generating_resources_message" formatted="false">Generating sprite/thumbs/VTT resources for this scene in Stash. This may take a little while...</string>
+    <string name="player_stash_tag_generate_resources_failed_message">Resource generation or retry failed: %1$s</string>
     <string name="player_stash_tag_review_message" formatted="false">Review the sprite analysis results and adjust the threshold.</string>
     <string name="player_stash_tag_threshold_label">Threshold %1$d%%</string>
     <string name="player_stash_tag_no_predictions" formatted="false">No tags were predicted.</string>

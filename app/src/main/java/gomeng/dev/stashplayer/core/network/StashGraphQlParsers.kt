@@ -25,6 +25,7 @@ import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 import java.net.URLDecoder
 import java.net.URLEncoder
+import java.util.Locale
 
 private val stashMoshi: Moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -89,6 +90,14 @@ data class StashSceneCardPage(
 data class StashServerLibrarySettings(
     val createGalleriesFromFolders: Boolean,
 )
+
+enum class StashJobStatus {
+    Running,
+    Finished,
+    Failed,
+    Cancelled,
+    Missing,
+}
 
 fun parseFindScenesResponse(json: String): List<SceneCardModel> {
     return parseFindScenesPageResponse(json).scenes
@@ -195,6 +204,25 @@ fun parseMetadataScanResponse(json: String): String {
     envelope.throwIfErrors()
     return envelope.data?.metadataScan?.trim()?.takeIf { it.isNotBlank() }
         ?: error("Stash metadataScan returned no job ID")
+}
+
+fun parseMetadataGenerateResponse(json: String): String {
+    val envelope = parseJson<MetadataGenerateEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.metadataGenerate?.trim()?.takeIf { it.isNotBlank() }
+        ?: error("Stash metadataGenerate returned no job ID")
+}
+
+fun parseFindJobResponse(json: String): StashJobStatus {
+    val envelope = parseJson<FindJobEnvelope>(json)
+    envelope.throwIfErrors()
+    val status = envelope.data?.findJob?.status?.trim()?.uppercase(Locale.ROOT) ?: return StashJobStatus.Missing
+    return when (status) {
+        "FINISHED" -> StashJobStatus.Finished
+        "FAILED" -> StashJobStatus.Failed
+        "CANCELLED", "CANCELED" -> StashJobStatus.Cancelled
+        else -> StashJobStatus.Running
+    }
 }
 
 fun buildStashStream(profile: StashServerProfile, scene: StashScene): StashStream {
@@ -316,6 +344,24 @@ private data class MetadataScanEnvelope(
 ) : GraphQlEnvelope
 
 private data class MetadataScanData(val metadataScan: String? = null)
+
+private data class MetadataGenerateEnvelope(
+    val data: MetadataGenerateData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class MetadataGenerateData(val metadataGenerate: String? = null)
+
+private data class FindJobEnvelope(
+    val data: FindJobData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class FindJobData(val findJob: ApiJob? = null)
+private data class ApiJob(
+    val id: String? = null,
+    val status: String? = null,
+)
 
 private data class ApiConfigGeneral(
     val createGalleriesFromFolders: Boolean? = null,

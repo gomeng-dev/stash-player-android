@@ -8,19 +8,41 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ### English
 
-Nothing yet.
+- Nothing yet.
 
 ### 한국어
 
-아직 없습니다.
+- 아직 없습니다.
 
 ### 简体中文
 
-暂无。
+- 暂无。
 
 ### 繁體中文
 
-暫無。
+- 暫無。
+
+## [1.9.2] - 2026-06-21
+
+### English
+
+- Added a Stash Tag guidance dialog for missing or stale generated sprite/thumbs/VTT resources instead of showing a raw asset HTTP 404 error.
+- Added a Stash Tag dialog action that generates the current scene's sprite/thumbs/VTT resources in Stash, waits for the job to finish, and retries analysis automatically.
+
+### 한국어
+
+- Stash Tag에서 생성된 sprite/thumbs/VTT 리소스가 없거나 오래된 경우 원시 asset HTTP 404 대신 안내 팝업을 표시하도록 개선했습니다.
+- Stash Tag 안내 팝업에서 현재 영상의 sprite/thumbs/VTT 리소스를 Stash에서 생성하고, 작업 완료 후 분석을 자동 재시도하는 액션을 추가했습니다.
+
+### 简体中文
+
+- 当 Stash Tag 缺少或遇到过期的 sprite/thumbs/VTT 生成资源时，改为显示指导弹窗，而不是原始 asset HTTP 404 错误。
+- 在 Stash Tag 指导弹窗中新增操作，可在 Stash 中生成当前场景的 sprite/thumbs/VTT 资源，等待任务完成后自动重试分析。
+
+### 繁體中文
+
+- 當 Stash Tag 缺少或遇到過期的 sprite/thumbs/VTT 產生資源時，改為顯示指引彈窗，而不是原始 asset HTTP 404 錯誤。
+- 在 Stash Tag 指引彈窗中新增操作，可在 Stash 中產生目前場景的 sprite/thumbs/VTT 資源，等待工作完成後自動重試分析。
 
 ## [1.9.1] - 2026-06-21
 
