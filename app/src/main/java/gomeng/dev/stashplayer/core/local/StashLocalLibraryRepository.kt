@@ -44,6 +44,7 @@ import gomeng.dev.stashplayer.core.model.toRecentGalleryFilterSnapshot
 import gomeng.dev.stashplayer.core.model.toRecentImageFilterSnapshot
 import gomeng.dev.stashplayer.core.model.withSavedFilterReference
 import gomeng.dev.stashplayer.core.model.withGeneratedStashRandomShuffleSeedIfNeeded
+import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import gomeng.dev.stashplayer.R
@@ -385,6 +386,9 @@ class StashLocalLibraryRepository(context: Context) {
             }
         }
     }
+    val persistedPlaybackQueue: Flow<PlayerPlaybackQueue?> = appContext.stashLocalFilterDataStore.data.map { prefs ->
+        deserializePlayerPlaybackQueue(prefs[LocalFilterKeys.PlaybackQueue].orEmpty())
+    }
     val recentBrowseVideoFilters: Flow<List<StashVideoFilterState>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
         prefs[LocalFilterKeys.RecentBrowse]
             .orEmpty()
@@ -609,6 +613,17 @@ class StashLocalLibraryRepository(context: Context) {
         dao.clearShortsInteractions()
     }
 
+    suspend fun savePlaybackQueue(queue: PlayerPlaybackQueue) {
+        appContext.stashLocalFilterDataStore.edit { prefs ->
+            val serialized = serializePlayerPlaybackQueue(queue)
+            if (serialized.isBlank()) {
+                prefs.remove(LocalFilterKeys.PlaybackQueue)
+            } else {
+                prefs[LocalFilterKeys.PlaybackQueue] = serialized
+            }
+        }
+    }
+
     suspend fun saveBrowseFilterState(state: StashPersistedBrowseFilterState) {
         appContext.stashLocalFilterDataStore.edit { prefs ->
             prefs[LocalFilterKeys.Browse] = state.serializeForStorage()
@@ -689,6 +704,7 @@ class StashLocalLibraryRepository(context: Context) {
         val RecentExplore = stringPreferencesKey("recent_explore_filter_state")
         val RecentGallery = stringPreferencesKey("recent_gallery_filter_state")
         val RecentImage = stringPreferencesKey("recent_image_filter_state")
+        val PlaybackQueue = stringPreferencesKey("player_playback_queue")
     }
 }
 

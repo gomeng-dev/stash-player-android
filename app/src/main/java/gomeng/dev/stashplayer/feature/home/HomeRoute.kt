@@ -69,6 +69,7 @@ import gomeng.dev.stashplayer.core.ui.i18n.stashString
 fun HomeRoute(
     isFoldLikeLayout: Boolean,
     onOpenScene: (String, List<SceneCardModel>, Boolean) -> Unit,
+    onResumeScene: (String, List<SceneCardModel>) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenQueue: () -> Unit,
     onOpenFavorites: () -> Unit,
@@ -176,6 +177,7 @@ fun HomeRoute(
         error = error,
         onRefresh = { reloadToken++ },
         onOpenScene = onOpenScene,
+        onResumeScene = onResumeScene,
         onOpenSettings = onOpenSettings,
         onOpenQueue = onOpenQueue,
         onOpenFavorites = onOpenFavorites,
@@ -203,6 +205,7 @@ private fun HomeHubContent(
     error: String?,
     onRefresh: () -> Unit,
     onOpenScene: (String, List<SceneCardModel>, Boolean) -> Unit,
+    onResumeScene: (String, List<SceneCardModel>) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenQueue: () -> Unit,
     onOpenFavorites: () -> Unit,
@@ -269,7 +272,14 @@ private fun HomeHubContent(
                         scene = heroScene,
                         serverProfile = serverProfile,
                         modifier = Modifier.padding(horizontal = horizontalPadding),
-                        onPlay = { onOpenScene(heroScene.id, heroScenes.ifEmpty { listOf(heroScene) }, false) },
+                        onPlay = {
+                            val scenes = heroScenes.ifEmpty { listOf(heroScene) }
+                            if (heroSelection.resumesPlaybackQueue) {
+                                onResumeScene(heroScene.id, scenes)
+                            } else {
+                                onOpenScene(heroScene.id, scenes, false)
+                            }
+                        },
                     )
                 }
             }
@@ -401,7 +411,13 @@ private fun HomeHubContent(
                     items(section.scenes, key = { it.id }) { scene ->
                         SceneCard(
                             scene = scene,
-                            onClick = { onOpenScene(scene.id, section.scenes, false) },
+                            onClick = {
+                                if (section.spec.onlyResumable) {
+                                    onResumeScene(scene.id, section.scenes)
+                                } else {
+                                    onOpenScene(scene.id, section.scenes, false)
+                                }
+                            },
                             modifier = Modifier.width(cardWidth),
                             thumbnailHeight = thumbnailHeight,
                             thumbnailModel = rememberStashThumbnailModel(scene.thumbnailUrl, serverProfile),

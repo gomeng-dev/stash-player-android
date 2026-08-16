@@ -68,6 +68,7 @@ import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueueContinuation
 import gomeng.dev.stashplayer.core.player.PlayerPresentationMode
 import gomeng.dev.stashplayer.core.player.appendLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.afterLoadedPage
+import gomeng.dev.stashplayer.core.player.handOffHomeResumePlaybackQueue
 import gomeng.dev.stashplayer.core.player.handOffLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.shouldLoadMorePlayerPlaylistItems
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
@@ -93,6 +94,7 @@ import gomeng.dev.stashplayer.feature.settings.SettingsDetailRoute
 import gomeng.dev.stashplayer.feature.settings.SettingsRoute
 import gomeng.dev.stashplayer.feature.settings.SettingsSection
 import gomeng.dev.stashplayer.feature.setup.ServerSetupRoute
+import kotlinx.coroutines.flow.first
 
 private enum class TopLevelDestination(
     val route: String,
@@ -148,6 +150,7 @@ fun StashNavHost(
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route
     var playbackQueue by remember { mutableStateOf(PlayerPlaybackQueue.Empty) }
+    var playbackQueueRestored by remember { mutableStateOf(false) }
     var playbackQueueContinuation by remember { mutableStateOf<PlayerPlaybackQueueContinuation?>(null) }
     var playerPresentationMode by remember { mutableStateOf(PlayerPresentationMode.WatchPage) }
     var refreshedPasswordSessionKey by remember { mutableStateOf<String?>(null) }
@@ -166,6 +169,23 @@ fun StashNavHost(
             playbackOrientationMode = playbackOrientationMode,
         ),
     )
+
+    LaunchedEffect(Unit) {
+        val restoredQueue = runCatching { localRepository.persistedPlaybackQueue.first() }.getOrNull()
+        if (!playbackQueueRestored) {
+            playbackQueue = restoredQueue ?: PlayerPlaybackQueue.Empty
+            playbackQueueRestored = true
+        }
+    }
+
+    LaunchedEffect(playbackQueue, playbackQueueRestored) {
+        if (playbackQueueRestored) localRepository.savePlaybackQueue(playbackQueue)
+    }
+
+    fun updatePlaybackQueue(queue: PlayerPlaybackQueue) {
+        playbackQueueRestored = true
+        playbackQueue = queue
+    }
 
     LaunchedEffect(savedProfile, currentRoute) {
         if (shouldRedirectSetupWithSavedProfile(savedProfile != null, currentRoute)) {
@@ -223,13 +243,19 @@ fun StashNavHost(
         scenes: List<SceneCardModel>,
         randomShuffle: Boolean = false,
         continuation: PlayerPlaybackQueueContinuation? = null,
+        resumeExisting: Boolean = false,
     ) {
-        playbackQueue = handOffLoadedResultPlaybackQueue(
-            currentQueue = playbackQueue,
-            scenes = scenes,
-            selectedSceneId = sceneId,
-            randomShuffle = randomShuffle,
-        )
+        val nextQueue = if (resumeExisting) {
+            handOffHomeResumePlaybackQueue(playbackQueue, scenes, sceneId)
+        } else {
+            handOffLoadedResultPlaybackQueue(
+                currentQueue = playbackQueue,
+                scenes = scenes,
+                selectedSceneId = sceneId,
+                randomShuffle = randomShuffle,
+            )
+        }
+        updatePlaybackQueue(nextQueue)
         playerPresentationMode = resolvePlayerPresentationModeForOpenedScene(
             openedFromActivePlayer = isPlayerRoute(currentRoute),
             currentMode = playerPresentationMode,
@@ -288,7 +314,7 @@ fun StashNavHost(
             )
             continuation = continuation.afterLoadedPage(pageToLoad, result.totalCount)
             queue = appendLoadedResultPlaybackQueue(queue, scenes)
-            playbackQueue = queue
+            updatePlaybackQueue(queue)
             playbackQueueContinuation = continuation
         }
     }
@@ -456,6 +482,13 @@ fun StashNavHost(
                                     randomShuffle = randomShuffle,
                                 )
                             },
+                            onResumeScene = { sceneId, scenes ->
+                                openPlaybackQueueScene(
+                                    sceneId = sceneId,
+                                    scenes = scenes,
+                                    resumeExisting = true,
+                                )
+                            },
                             onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
                             onOpenQueue = { navigateTopLevel(TopLevelDestination.Queue) },
                             onOpenFavorites = { navigateTopLevel(TopLevelDestination.Queue) },
@@ -565,7 +598,7 @@ fun StashNavHost(
                             isFoldLikeLayout = isFoldLikeLayout,
                             playbackQueue = playbackQueue,
                             initialPresentationMode = playerPresentationMode,
-                            onPlaybackQueueChange = { playbackQueue = it },
+                            onPlaybackQueueChange = ::updatePlaybackQueue,
                             onPresentationModeChange = { playerPresentationMode = it },
                             onOpenScene = { sceneId -> replaceCurrentPlayerScene(sceneId) },
                             onOpenSettings = { navController.navigate(TopLevelDestination.Settings.route) },

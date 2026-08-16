@@ -209,6 +209,20 @@ fun handOffLoadedResultPlaybackQueue(
     }
 }
 
+fun resumePersistedPlaybackQueue(
+    queue: PlayerPlaybackQueue,
+    selectedSceneId: String,
+): PlayerPlaybackQueue? = queue.takeIf {
+    it.currentSceneId == selectedSceneId && it.items.any { item -> item.sceneId == selectedSceneId }
+}
+
+fun handOffHomeResumePlaybackQueue(
+    currentQueue: PlayerPlaybackQueue,
+    scenes: List<SceneCardModel>,
+    selectedSceneId: String,
+): PlayerPlaybackQueue = resumePersistedPlaybackQueue(currentQueue, selectedSceneId)
+    ?: buildLoadedResultPlaybackQueue(scenes, selectedSceneId, randomShuffle = false)
+
 fun appendLoadedResultPlaybackQueue(
     queue: PlayerPlaybackQueue,
     scenes: List<SceneCardModel>,

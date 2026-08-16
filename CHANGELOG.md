@@ -22,6 +22,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 - 暫無。
 
+## [1.10.0] - 2026-08-16
+
+### English
+
+- Home Continue Watching now restores the complete active playback queue and current item after an app restart, keeping both previously viewed and remaining items while resuming the saved playback position.
+
+### 한국어
+
+- 앱을 다시 시작한 뒤 홈의 이어보기를 선택하면 마지막 재생 위치와 함께 활성 재생목록 전체와 현재 항목을 복원하여, 이미 본 항목과 남은 항목을 모두 유지합니다.
+
+### 简体中文
+
+- 重新启动应用后，从主页选择继续观看时会恢复完整的当前播放列表和正在播放的项目，并在续播已保存进度的同时保留已观看及剩余的所有项目。
+
+### 繁體中文
+
+- 重新啟動應用程式後，從首頁選擇繼續觀看時會還原完整的目前播放清單和正在播放的項目，並在續播已儲存進度的同時保留已觀看及剩餘的所有項目。
+
 ## [1.9.3] - 2026-06-21
 
 ### English

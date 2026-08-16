@@ -76,6 +76,7 @@ data class HomeQuickActionModel(
 data class HomeHeroSelection(
     val scene: SceneCardModel,
     val playbackScenes: List<SceneCardModel>,
+    val resumesPlaybackQueue: Boolean,
 )
 
 data class HomeRecommendationAnchor(
@@ -92,14 +93,18 @@ fun selectHomeHeroScene(
     favoriteScenes: List<SceneCardModel>,
 ): HomeHeroSelection? {
     val orderedBuckets = listOf(
-        playbackHistoryScenes,
-        queueScenes,
-        watchLaterScenes,
-        serverScenes,
-        favoriteScenes,
+        playbackHistoryScenes to true,
+        queueScenes to false,
+        watchLaterScenes to false,
+        serverScenes to false,
+        favoriteScenes to false,
     )
-    val scenes = orderedBuckets.firstOrNull { it.isNotEmpty() } ?: return null
-    return HomeHeroSelection(scene = scenes.first(), playbackScenes = scenes)
+    val (scenes, resumesPlaybackQueue) = orderedBuckets.firstOrNull { it.first.isNotEmpty() } ?: return null
+    return HomeHeroSelection(
+        scene = scenes.first(),
+        playbackScenes = scenes,
+        resumesPlaybackQueue = resumesPlaybackQueue,
+    )
 }
 
 fun buildHomeDashboardStats(
