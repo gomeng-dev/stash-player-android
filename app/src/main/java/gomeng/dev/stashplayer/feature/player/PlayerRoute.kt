@@ -254,8 +254,10 @@ fun PlayerRoute(
     isFoldLikeLayout: Boolean,
     playbackQueue: PlayerPlaybackQueue = buildSingleScenePlaybackQueue(sceneId),
     initialPresentationMode: PlayerPresentationMode = PlayerPresentationMode.WatchPage,
+    initialPlaybackSpeed: Float = 1f,
     onPlaybackQueueChange: (PlayerPlaybackQueue) -> Unit = {},
     onPresentationModeChange: (PlayerPresentationMode) -> Unit = {},
+    onPlaybackSpeedChange: (Float) -> Unit = {},
     onOpenScene: (String) -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onExitPlayer: () -> Unit = {},
@@ -367,8 +369,10 @@ fun PlayerRoute(
             isFoldLikeLayout = isFoldLikeLayout,
             playbackQueue = playbackQueue.withCurrent(sceneId),
             initialPresentationMode = initialPresentationMode,
+            initialPlaybackSpeed = initialPlaybackSpeed,
             onPlaybackQueueChange = onPlaybackQueueChange,
             onPresentationModeChange = onPresentationModeChange,
+            onPlaybackSpeedChange = onPlaybackSpeedChange,
             onOpenScene = onOpenScene,
             onOpenSettings = onOpenSettings,
             onExitPlayer = onExitPlayer,
@@ -399,8 +403,10 @@ private fun RealPlayerRoute(
     isFoldLikeLayout: Boolean,
     playbackQueue: PlayerPlaybackQueue,
     initialPresentationMode: PlayerPresentationMode,
+    initialPlaybackSpeed: Float,
     onPlaybackQueueChange: (PlayerPlaybackQueue) -> Unit,
     onPresentationModeChange: (PlayerPresentationMode) -> Unit,
+    onPlaybackSpeedChange: (Float) -> Unit,
     onOpenScene: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onExitPlayer: () -> Unit,
@@ -446,6 +452,9 @@ private fun RealPlayerRoute(
             context = context,
             requestHeaders = stream.requestHeaders,
         )
+    }
+    LaunchedEffect(controller) {
+        controller.setPlaybackSpeed(initialPlaybackSpeed)
     }
     val mediaSession = remember(controller) {
         MediaSession.Builder(context, controller.player)
@@ -592,7 +601,7 @@ private fun RealPlayerRoute(
         return volumeController.label(value)
     }
 
-    var playbackSpeed by remember { mutableFloatStateOf(1f) }
+    var playbackSpeed by remember(stream.sceneId) { mutableFloatStateOf(initialPlaybackSpeed) }
     var fastPlaybackHoldState by remember { mutableStateOf(PlayerFastPlaybackHoldState.Idle) }
     var aspectRatioMode by remember { mutableStateOf(AspectRatioMode.Fit) }
     var ratingState by remember(stream.sceneId, stream.rating100) { mutableStateOf(PlayerRatingState(stream.rating100)) }
@@ -1842,6 +1851,7 @@ private fun RealPlayerRoute(
                 else -> 0.5f
             }
             controller.setPlaybackSpeed(playbackSpeed)
+            onPlaybackSpeedChange(playbackSpeed)
             hudText = playerPlaybackSpeedHudText(playbackSpeed)
         },
         onTogglePlaybackOrientationMode = {
@@ -1864,6 +1874,7 @@ private fun RealPlayerRoute(
             controlsVisible = true
             playbackSpeed = speed
             controller.setPlaybackSpeed(speed)
+            onPlaybackSpeedChange(speed)
             hudText = playerPlaybackSpeedHudText(speed)
         },
         onSelectAspectRatioMode = { mode ->

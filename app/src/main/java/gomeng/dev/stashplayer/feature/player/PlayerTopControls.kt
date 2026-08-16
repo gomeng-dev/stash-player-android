@@ -39,6 +39,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -186,9 +187,16 @@ fun PlayerTopControls(
                         )
                     }
                     DropdownMenuItem(
-                        text = { Text(playerPlaybackModeLabel(shuffleEnabled)) },
+                        text = { Text(playerPlaybackModeLabel(shuffleEnabled = true)) },
                         enabled = playbackModeToggleTarget != null,
                         leadingIcon = { Icon(Icons.Outlined.Shuffle, contentDescription = null) },
+                        trailingIcon = {
+                            Switch(
+                                checked = shuffleEnabled,
+                                onCheckedChange = null,
+                                enabled = playbackModeToggleTarget != null,
+                            )
+                        },
                         onClick = {
                             overflowExpanded = false
                             playbackModeToggleTarget?.let(onTogglePlaybackMode)

@@ -6,21 +6,27 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-08-16
+
 ### English
 
-- Nothing yet.
+- Fixed randomized Browse/Explore playback queues being shuffled a second time instead of preserving the randomized result order.
+- Added a visible shuffle switch to the player overflow menu, kept manually selected speed across videos, and made long-press speed multiply the current speed.
 
 ### 한국어
 
-- 아직 없습니다.
+- 탐색의 무작위 결과를 재생목록으로 만들 때 다시 섞이던 문제를 수정하여 화면에 표시된 무작위 순서를 유지합니다.
+- 플레이어 점 3개 메뉴에 무작위 재생 스위치를 표시하고, 영상 전환 시 설정한 배속을 유지하며, 롱프레스 배속이 현재 배속에 곱해지도록 변경했습니다.
 
 ### 简体中文
 
-- 暂无。
+- 修复了浏览/探索的随机结果在生成播放列表时被再次打乱的问题，现在会保留界面显示的随机顺序。
+- 在播放器三点菜单中加入可见的随机播放开关，切换视频时保留手动设置的倍速，并让长按倍速与当前倍速相乘。
 
 ### 繁體中文
 
-- 暫無。
+- 修正了瀏覽/探索的隨機結果在建立播放清單時被再次打亂的問題，現在會保留介面顯示的隨機順序。
+- 在播放器三點選單中加入可見的隨機播放開關，切換影片時保留手動設定的倍速，並讓長按倍速與目前倍速相乘。
 
 ## [1.10.0] - 2026-08-16
 

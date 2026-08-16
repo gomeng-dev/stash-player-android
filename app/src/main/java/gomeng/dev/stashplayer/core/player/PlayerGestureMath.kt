@@ -151,8 +151,8 @@ data class PlayerPresentationMotionState(
 
 val PLAYER_FAST_PLAYBACK_HOLD_SPEED = FastPlaybackHoldSpeedPreference.default.playbackSpeed ?: 1.5f
 
-fun playerFastPlaybackHoldHudText(speedPreference: FastPlaybackHoldSpeedPreference): String? =
-    speedPreference.playbackSpeed?.let { stashString(R.string.player_fast_playback_hold_hud_text, speedPreference.displayLabel) }
+fun playerFastPlaybackHoldHudText(playbackSpeed: Float): String =
+    stashString(R.string.player_fast_playback_hold_hud_text, playerPlaybackSpeedLabel(playbackSpeed))
 
 data class PlayerFastPlaybackHoldUpdate(
     val state: PlayerFastPlaybackHoldState,
@@ -191,18 +191,19 @@ data class PlayerFastPlaybackHoldState(
                 hudText = playerLockedTouchHint(),
             )
         }
-        val speed = speedPreference.playbackSpeed ?: return PlayerFastPlaybackHoldUpdate(
+        val speedMultiplier = speedPreference.playbackSpeed ?: return PlayerFastPlaybackHoldUpdate(
             state = Idle,
             playbackSpeed = null,
             hudText = null,
         )
+        val speed = currentSpeed * speedMultiplier
         return PlayerFastPlaybackHoldUpdate(
             state = PlayerFastPlaybackHoldState(
                 active = true,
                 restoreSpeed = currentSpeed,
             ),
             playbackSpeed = speed,
-            hudText = playerFastPlaybackHoldHudText(speedPreference),
+            hudText = playerFastPlaybackHoldHudText(speed),
         )
     }
 

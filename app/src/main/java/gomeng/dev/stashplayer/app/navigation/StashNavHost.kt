@@ -40,6 +40,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -70,6 +71,7 @@ import gomeng.dev.stashplayer.core.player.appendLoadedResultPlaybackQueue
 import gomeng.dev.stashplayer.core.player.afterLoadedPage
 import gomeng.dev.stashplayer.core.player.handOffHomeResumePlaybackQueue
 import gomeng.dev.stashplayer.core.player.handOffLoadedResultPlaybackQueue
+import gomeng.dev.stashplayer.core.player.shouldApplyPlayerShuffle
 import gomeng.dev.stashplayer.core.player.shouldLoadMorePlayerPlaylistItems
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.AppUpdateChecker
@@ -153,6 +155,7 @@ fun StashNavHost(
     var playbackQueueRestored by remember { mutableStateOf(false) }
     var playbackQueueContinuation by remember { mutableStateOf<PlayerPlaybackQueueContinuation?>(null) }
     var playerPresentationMode by remember { mutableStateOf(PlayerPresentationMode.WatchPage) }
+    var playerPlaybackSpeed by remember { mutableFloatStateOf(1f) }
     var refreshedPasswordSessionKey by remember { mutableStateOf<String?>(null) }
     var availableUpdateNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
     var updateChangelogNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
@@ -252,7 +255,7 @@ fun StashNavHost(
                 currentQueue = playbackQueue,
                 scenes = scenes,
                 selectedSceneId = sceneId,
-                randomShuffle = randomShuffle,
+                randomShuffle = shouldApplyPlayerShuffle(randomShuffle, continuation),
             )
         }
         updatePlaybackQueue(nextQueue)
@@ -598,8 +601,10 @@ fun StashNavHost(
                             isFoldLikeLayout = isFoldLikeLayout,
                             playbackQueue = playbackQueue,
                             initialPresentationMode = playerPresentationMode,
+                            initialPlaybackSpeed = playerPlaybackSpeed,
                             onPlaybackQueueChange = ::updatePlaybackQueue,
                             onPresentationModeChange = { playerPresentationMode = it },
+                            onPlaybackSpeedChange = { playerPlaybackSpeed = it },
                             onOpenScene = { sceneId -> replaceCurrentPlayerScene(sceneId) },
                             onOpenSettings = { navController.navigate(TopLevelDestination.Settings.route) },
                             onExitPlayer = ::exitPlayer,

@@ -157,6 +157,11 @@ data class PlayerPlaybackQueue(
     }
 }
 
+fun shouldApplyPlayerShuffle(
+    randomShuffle: Boolean,
+    continuation: PlayerPlaybackQueueContinuation?,
+): Boolean = randomShuffle && continuation == null
+
 fun buildPlayerPlaybackQueue(
     scenes: List<SceneCardModel>,
     selectedSceneId: String,
