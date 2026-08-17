@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.2] - 2026-08-16
+
+### English
+
+- Fixed long-press playback multipliers above 3x being silently capped, so 2x playback with a 2x hold now reaches 4x.
+
+### 한국어
+
+- 3배속을 넘는 롱프레스 배율이 자동 제한되던 문제를 수정하여 2배속 재생 중 2배속 롱프레스가 실제 4배속으로 적용됩니다.
+
+### 简体中文
+
+- 修复了长按倍速超过 3 倍时被静默限制的问题，现在 2 倍播放配合 2 倍长按可实际达到 4 倍速。
+
+### 繁體中文
+
+- 修正了長按倍速超過 3 倍時被靜默限制的問題，現在 2 倍播放配合 2 倍長按可實際達到 4 倍速。
+
 ## [1.10.1] - 2026-08-16
 
 ### English

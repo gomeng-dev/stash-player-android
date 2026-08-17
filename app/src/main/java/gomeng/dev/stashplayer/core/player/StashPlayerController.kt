@@ -134,7 +134,7 @@ class StashPlayerController(
     }
 
     fun setPlaybackSpeed(speed: Float) {
-        player.playbackParameters = PlaybackParameters(speed.coerceIn(0.25f, 3f))
+        player.playbackParameters = PlaybackParameters(coercePlayerPlaybackSpeed(speed))
     }
 
     private fun StashCaptionTrack.toSubtitleConfigurationOrNull(): MediaItem.SubtitleConfiguration? {
@@ -162,6 +162,8 @@ class StashPlayerController(
         player.release()
     }
 }
+
+fun coercePlayerPlaybackSpeed(speed: Float): Float = speed.coerceIn(0.25f, 4f)
 
 fun stashCaptionMimeType(captionType: String?): String? = when (captionType?.trim()?.lowercase()) {
     "vtt" -> MimeTypes.TEXT_VTT
