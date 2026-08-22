@@ -1214,7 +1214,10 @@ private fun StashVideoFilterState.toGraphQlSceneFilterOrNull(): Map<String, Any?
     playbackState?.let { state ->
         when (state) {
             StashPlaybackState.Watched -> put("play_count", mapOf("value" to 0, "modifier" to "GREATER_THAN"))
-            StashPlaybackState.Unwatched -> put("play_count", mapOf("value" to 0, "modifier" to "EQUALS"))
+            StashPlaybackState.Unwatched -> {
+                put("play_count", mapOf("value" to 0, "modifier" to "EQUALS"))
+                put("resume_time", mapOf("value" to 0, "modifier" to "EQUALS"))
+            }
             StashPlaybackState.Resumable -> put("resume_time", mapOf("value" to 0, "modifier" to "GREATER_THAN"))
         }
     }

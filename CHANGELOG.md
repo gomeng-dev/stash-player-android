@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.3] - 2026-08-17
+
+### English
+
+- Fixed the Unwatched discovery filter including partially watched videos that had resume progress but no completed play count.
+
+### 한국어
+
+- 미시청 탐색 필터에 재생 횟수는 없지만 이어보기 기록이 있는 일부 시청 영상이 포함되던 문제를 수정했습니다.
+
+### 简体中文
+
+- 修复了未观看筛选仍会显示已有续播进度但播放次数为零的部分观看视频的问题。
+
+### 繁體中文
+
+- 修正了未觀看篩選仍會顯示已有續播進度但播放次數為零的部分觀看影片的問題。
+
 ## [1.10.2] - 2026-08-16
 
 ### English
