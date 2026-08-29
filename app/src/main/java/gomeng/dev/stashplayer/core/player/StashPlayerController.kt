@@ -56,9 +56,15 @@ class StashPlayerController(
     var lastError: PlaybackException? = null
         private set
 
+    private var resumePlaybackWhenReady = false
+
     private val listener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             lastError = error
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            resumeDeferredSeekPlaybackIfReady(playbackState)
         }
     }
 
@@ -76,6 +82,7 @@ class StashPlayerController(
         captionTracks: List<StashCaptionTrack> = emptyList(),
     ) {
         lastError = null
+        resumePlaybackWhenReady = false
         httpDataSourceFactory.setDefaultRequestProperties(requestHeaders)
         val item = MediaItem.Builder()
             .setUri(uri)
@@ -95,7 +102,18 @@ class StashPlayerController(
     }
 
     fun playPause() {
-        if (player.isPlaying) player.pause() else player.play()
+        if (player.isPlaying) {
+            pause()
+        } else {
+            resumePlaybackWhenReady = false
+            player.play()
+        }
+    }
+
+    fun pause() {
+        resumePlaybackWhenReady = false
+        player.pause()
+        player.playWhenReady = false
     }
 
     fun seekBy(deltaMs: Long) {
@@ -111,22 +129,35 @@ class StashPlayerController(
     ) {
         val coercedPositionMs = coerceSeekRequestPosition(positionMs, player.duration)
         if (resumePlayback) {
-            player.playWhenReady = true
+            resumePlaybackWhenReady = true
+            player.pause()
+            player.playWhenReady = false
+        } else {
+            resumePlaybackWhenReady = false
         }
         player.seekTo(coercedPositionMs)
-        resumePlaybackIfDesired(resumePlayback)
+        resumeDeferredSeekPlaybackIfReady(player.playbackState)
     }
 
     fun resumePlaybackIfDesired(resumePlayback: Boolean) {
-        if (resumePlayback) {
-            player.playWhenReady = true
-            player.play()
+        if (!resumePlayback) return
+        resumePlaybackWhenReady = true
+        if (player.playbackState != Player.STATE_READY) {
+            player.pause()
+            player.playWhenReady = false
         }
+        resumeDeferredSeekPlaybackIfReady(player.playbackState)
+    }
+
+    private fun resumeDeferredSeekPlaybackIfReady(playbackState: Int) {
+        if (!shouldResumeDeferredSeekPlayback(resumePlaybackWhenReady, playbackState == Player.STATE_READY)) return
+        resumePlaybackWhenReady = false
+        player.playWhenReady = true
+        player.play()
     }
 
     fun holdPlaybackForSeekPreview() {
-        player.pause()
-        player.playWhenReady = false
+        pause()
     }
 
     fun clearLastError() {

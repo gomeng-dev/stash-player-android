@@ -989,7 +989,7 @@ private fun RealPlayerRoute(
                 shouldPausePlayerForLifecycleStop(backgroundPlaybackEnabled) &&
                 activity?.isInPictureInPictureMode != true
             ) {
-                controller.player.pause()
+                controller.pause()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

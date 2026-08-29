@@ -400,6 +400,11 @@ fun shouldResumePlaybackAfterSeek(
     isBuffering: Boolean = false,
 ): Boolean = wasPlaying || playWhenReady || isBuffering
 
+fun shouldResumeDeferredSeekPlayback(
+    resumeRequested: Boolean,
+    playerReady: Boolean,
+): Boolean = resumeRequested && playerReady
+
 @Suppress("UNUSED_PARAMETER")
 fun shouldResumePlaybackForSeekPreview(
     wasPlaying: Boolean,

@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.4] - 2026-08-29
+
+### English
+
+- Fixed seek playback resuming audio before Media3 finished buffering the target video frame.
+
+### 한국어
+
+- 탐색 후 Media3가 이동 위치의 영상 프레임을 준비하기 전에 오디오부터 재생되던 문제를 수정했습니다.
+
+### 简体中文
+
+- 修复了跳转后 Media3 尚未准备好目标视频帧时音频就先开始播放的问题。
+
+### 繁體中文
+
+- 修正了跳轉後 Media3 尚未準備好目標影片畫面時音訊就先開始播放的問題。
+
 ## [1.10.3] - 2026-08-17
 
 ### English
