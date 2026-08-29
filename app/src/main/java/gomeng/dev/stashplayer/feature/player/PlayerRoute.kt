@@ -1281,8 +1281,12 @@ private fun RealPlayerRoute(
         seekPreviewState = update.state
         resumeSaveState = PlayerResumeSyncPolicy.markSeekForResumeSave(resumeSaveState, update.markResumeSaveAtMs)
         update.seekRequest?.let { request ->
-            controller.seekTo(request.targetPositionMs, resumePlayback = request.resumePlayback)
-        } ?: controller.resumePlaybackIfDesired(update.resumeWithoutSeek)
+            controller.seekTo(
+                request.targetPositionMs,
+                resumePlayback = request.resumePlayback,
+                exact = request.exact,
+            )
+        }
         positionMs = update.displayPositionMs
     }
     val seekBy: (Long) -> Unit = { deltaMs ->
@@ -1307,7 +1311,11 @@ private fun RealPlayerRoute(
             if (update.holdPlayback) {
                 controller.holdPlaybackForSeekPreview()
             }
-            controller.seekTo(request.targetPositionMs, resumePlayback = request.resumePlayback)
+            controller.seekTo(
+                request.targetPositionMs,
+                resumePlayback = request.resumePlayback,
+                exact = request.exact,
+            )
         }
         update.markResumeSaveAtMs?.let { seekAtMs ->
             resumeSaveState = PlayerResumeSyncPolicy.markSeekForResumeSave(resumeSaveState, seekAtMs)

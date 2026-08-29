@@ -6,7 +6,6 @@ import gomeng.dev.stashplayer.core.player.shouldFallbackAfterSeekReset
 import gomeng.dev.stashplayer.core.player.shouldHoldPlaybackForSeekPreview
 import gomeng.dev.stashplayer.core.player.shouldResumePlaybackAfterSeekRelease
 import gomeng.dev.stashplayer.core.player.shouldResumePlaybackForSeekPreview
-import gomeng.dev.stashplayer.core.player.shouldSkipFinalSeekAfterWarm
 import gomeng.dev.stashplayer.core.player.shouldWarmSeekPreview
 import gomeng.dev.stashplayer.core.player.updatedSeekPreviewResumeIntent
 
@@ -25,6 +24,7 @@ data class PlayerSeekPreviewControllerState(
 data class PlayerSeekRequest(
     val targetPositionMs: Long,
     val resumePlayback: Boolean,
+    val exact: Boolean,
 )
 
 data class PlayerSeekPreviewUpdate(
@@ -38,7 +38,6 @@ data class PlayerSeekPreviewUpdate(
 data class PlayerSeekReleaseUpdate(
     val state: PlayerSeekPreviewControllerState,
     val seekRequest: PlayerSeekRequest? = null,
-    val resumeWithoutSeek: Boolean = false,
     val markResumeSaveAtMs: Long,
     val displayPositionMs: Long,
 )
@@ -114,6 +113,7 @@ object PlayerSeekPreviewController {
             seekRequest = PlayerSeekRequest(
                 targetPositionMs = warmedTargetMs,
                 resumePlayback = shouldResume,
+                exact = false,
             ),
             holdPlayback = shouldHoldPlayback,
             markResumeSaveAtMs = nowMs,
@@ -139,27 +139,16 @@ object PlayerSeekPreviewController {
             isSeekPreviewRelease = isSeekPreviewRelease,
         )
         val coercedPositionMs = coerceSeekRequestPosition(targetPositionMs, durationMs)
-        val shouldSkipSeek = shouldSkipFinalSeekAfterWarm(
-            lastWarmTargetMs = state.lastWarmSeekTargetMs,
-            finalTargetMs = coercedPositionMs,
-            lastWarmAtMs = state.lastWarmSeekAtMs,
-            nowMs = nowMs,
-        )
         val nextState = state.copy(
             resumeAfterPreview = false,
             pendingSeekTargetMs = coercedPositionMs,
             pendingSeekStartedAtMs = nowMs,
-            lastWarmSeekTargetMs = if (shouldSkipSeek) state.lastWarmSeekTargetMs else coercedPositionMs,
-            lastWarmSeekAtMs = if (shouldSkipSeek) state.lastWarmSeekAtMs else nowMs,
+            lastWarmSeekTargetMs = coercedPositionMs,
+            lastWarmSeekAtMs = nowMs,
         )
         return PlayerSeekReleaseUpdate(
             state = nextState,
-            seekRequest = if (shouldSkipSeek) {
-                null
-            } else {
-                PlayerSeekRequest(coercedPositionMs, shouldResume)
-            },
-            resumeWithoutSeek = shouldSkipSeek && shouldResume,
+            seekRequest = PlayerSeekRequest(coercedPositionMs, shouldResume, exact = true),
             markResumeSaveAtMs = nowMs,
             displayPositionMs = coercedPositionMs,
         )

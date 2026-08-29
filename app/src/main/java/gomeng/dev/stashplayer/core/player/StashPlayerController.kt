@@ -69,7 +69,7 @@ class StashPlayerController(
     }
 
     init {
-        player.setSeekParameters(SeekParameters.CLOSEST_SYNC)
+        player.setSeekParameters(SeekParameters.EXACT)
         player.addListener(listener)
     }
 
@@ -94,6 +94,7 @@ class StashPlayerController(
             )
             .build()
         player.setMediaItem(item)
+        player.setSeekParameters(SeekParameters.EXACT)
         if (startPositionMs != C.TIME_UNSET && startPositionMs > 0L) {
             player.seekTo(startPositionMs)
         }
@@ -126,8 +127,10 @@ class StashPlayerController(
             wasPlaying = player.isPlaying,
             playWhenReady = player.playWhenReady,
         ),
+        exact: Boolean = true,
     ) {
         val coercedPositionMs = coerceSeekRequestPosition(positionMs, player.duration)
+        player.setSeekParameters(if (exact) SeekParameters.EXACT else SeekParameters.CLOSEST_SYNC)
         if (resumePlayback) {
             resumePlaybackWhenReady = true
             player.pause()

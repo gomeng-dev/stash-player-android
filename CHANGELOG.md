@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.5] - 2026-08-29
+
+### English
+
+- Kept drag-preview seeks fast at the nearest keyframe while making the final released seek land at the exact requested position.
+
+### 한국어
+
+- 드래그 미리보기는 가까운 키프레임으로 빠르게 이동하고, 손을 뗀 최종 탐색은 지정한 위치에 정확히 도착하도록 수정했습니다.
+
+### 简体中文
+
+- 拖动预览仍快速跳至最近关键帧，松手后的最终跳转则精确到达指定位置。
+
+### 繁體中文
+
+- 拖曳預覽仍快速跳至最近關鍵影格，放開後的最終跳轉則精確到達指定位置。
+
 ## [1.10.4] - 2026-08-29
 
 ### English
