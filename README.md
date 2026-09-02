@@ -99,7 +99,7 @@ The Images tab supports search, sort, filters, and full-screen browsing. In the 
 3. Open the APK and allow installs from your browser or file manager if Android asks.
 4. Launch **Stash Player** and connect it to your Stash server.
 
-Current public release: **v1.10.5**
+Current public release: **v1.10.6**
 
 ## Requirements
 

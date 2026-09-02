@@ -19,8 +19,13 @@ data class StashBrowseScenePageState(
     val pageSize: Int = DEFAULT_STASH_DISCOVERY_PAGE_SIZE,
     val sortDirection: StashSortDirection = sortOption.direction,
 ) {
-    fun forSort(sortOption: StashBrowseSortOption): StashBrowseScenePageState = reset().copy(
-        sortOption = sortOption,
+    fun forSort(
+        sortOption: StashBrowseSortOption,
+        randomSeed: Int? = null,
+    ): StashBrowseScenePageState = reset().copy(
+        sortOption = sortOption.copy(
+            sort = freshStashRandomServerSort(sortOption.sort, this.sortOption.sort, randomSeed),
+        ),
         sortDirection = sortOption.direction,
         videoFilter = videoFilter,
     )
@@ -105,7 +110,7 @@ data class StashBrowseScenePageState(
             sortDirection: StashSortDirection = sortOption.direction,
             pageSize: Int = DEFAULT_STASH_DISCOVERY_PAGE_SIZE,
         ): StashBrowseScenePageState = StashBrowseScenePageState(
-            sortOption = sortOption,
+            sortOption = sortOption.copy(sort = freshStashRandomServerSort(sortOption.sort)),
             videoFilter = videoFilter,
             sortDirection = sortDirection,
             pageSize = pageSize,

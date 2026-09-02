@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.6] - 2026-08-29
+
+### English
+
+- Fixed selecting Random sort again reusing the same `random_0` order instead of generating a fresh stable seed.
+
+### 한국어
+
+- 무작위 정렬을 다시 선택해도 같은 `random_0` 순서를 재사용하던 문제를 수정해 매번 새 순서로 섞이도록 했습니다.
+
+### 简体中文
+
+- 修复了重复选择随机排序时仍复用相同 `random_0` 顺序的问题，现在每次都会生成新的稳定随机顺序。
+
+### 繁體中文
+
+- 修正了重複選擇隨機排序時仍重用相同 `random_0` 順序的問題，現在每次都會產生新的穩定隨機順序。
+
 ## [1.10.5] - 2026-08-29
 
 ### English

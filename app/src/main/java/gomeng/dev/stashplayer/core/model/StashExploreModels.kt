@@ -37,9 +37,14 @@ data class StashExplorePageState(
 
     fun withQuery(query: String): StashExplorePageState = reset().copy(query = normalizeStashDiscoveryQuery(query))
 
-    fun forSort(sortOption: StashExploreSortOption): StashExplorePageState = reset().copy(
+    fun forSort(
+        sortOption: StashExploreSortOption,
+        randomSeed: Int? = null,
+    ): StashExplorePageState = reset().copy(
         query = query,
-        sortOption = sortOption,
+        sortOption = sortOption.copy(
+            sort = freshStashRandomServerSort(sortOption.sort, this.sortOption.sort, randomSeed),
+        ),
         sortDirection = sortOption.defaultDirection,
         videoFilter = videoFilter,
     )
@@ -99,7 +104,10 @@ data class StashExplorePageState(
 
     companion object {
         fun initial(sortOption: StashExploreSortOption): StashExplorePageState =
-            StashExplorePageState(sortOption = sortOption, sortDirection = sortOption.defaultDirection)
+            StashExplorePageState(
+                sortOption = sortOption.copy(sort = freshStashRandomServerSort(sortOption.sort)),
+                sortDirection = sortOption.defaultDirection,
+            )
     }
 }
 
