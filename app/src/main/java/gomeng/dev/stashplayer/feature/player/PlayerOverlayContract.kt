@@ -46,6 +46,7 @@ data class PlayerOverlayState(
     val currentStreamInfoText: String?,
     val quickActions: List<PlayerOverlayQuickActionState>,
     val fullscreenPlayerActive: Boolean,
+    val showFullscreenToggle: Boolean,
     val sceneId: String,
     val infoDrawerContentState: PlayerInfoDrawerContentState,
     val debugInfoUiState: PlayerDebugInfoUiState,

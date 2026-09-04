@@ -6,6 +6,7 @@ data class PlayerPresentationRouteState(
     val dragUpdate: PlayerPresentationDragUpdate? = null,
     val releaseProgress: Float? = null,
     val gestureMode: PlayerPresentationGestureMode = PlayerPresentationGestureMode.None,
+    val landscapeAutoFullscreen: Boolean = false,
 ) {
     val fullscreenPlayerActive: Boolean
         get() = targetMode == PlayerPresentationMode.Fullscreen
@@ -59,6 +60,24 @@ data class PlayerPresentationRouteState(
         gestureMode = PlayerPresentationGestureMode.None,
     )
 
+    fun forDeviceLandscape(isLandscape: Boolean): PlayerPresentationRouteState = when {
+        isLandscape && targetMode == PlayerPresentationMode.WatchPage -> copy(
+            targetMode = PlayerPresentationMode.Fullscreen,
+            dragUpdate = null,
+            releaseProgress = null,
+            gestureMode = PlayerPresentationGestureMode.None,
+            landscapeAutoFullscreen = true,
+        )
+        !isLandscape && landscapeAutoFullscreen -> copy(
+            targetMode = PlayerPresentationMode.WatchPage,
+            dragUpdate = null,
+            releaseProgress = null,
+            gestureMode = PlayerPresentationGestureMode.None,
+            landscapeAutoFullscreen = false,
+        )
+        else -> this
+    }
+
     companion object {
         fun initial(mode: PlayerPresentationMode): PlayerPresentationRouteState =
             PlayerPresentationRouteState(
@@ -72,3 +91,10 @@ data class PlayerPresentationRouteStateUpdate(
     val state: PlayerPresentationRouteState,
     val refreshControls: Boolean,
 )
+
+fun shouldExitPlayerFromFullscreenBack(
+    fullscreenPlayerActive: Boolean,
+    isLandscape: Boolean,
+): Boolean = fullscreenPlayerActive && isLandscape
+
+fun allowsPlayerPresentationModeChanges(isLandscape: Boolean): Boolean = !isLandscape

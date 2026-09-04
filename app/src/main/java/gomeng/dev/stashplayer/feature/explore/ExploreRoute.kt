@@ -1,5 +1,7 @@
 package gomeng.dev.stashplayer.feature.explore
 
+import android.content.res.Configuration
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -77,6 +80,7 @@ import gomeng.dev.stashplayer.core.model.initialFromPersisted
 import gomeng.dev.stashplayer.core.model.normalizeStashDiscoveryQuery
 import gomeng.dev.stashplayer.core.model.shouldLoadExploreResultsFromServer
 import gomeng.dev.stashplayer.core.model.shouldShowSceneCardQuickActionsInMediaGrid
+import gomeng.dev.stashplayer.core.model.showExploreSupportingChrome
 import gomeng.dev.stashplayer.core.model.shouldUseLocalFavoriteExploreResults
 import gomeng.dev.stashplayer.core.model.stashDiscoveryResultCountLabel
 import gomeng.dev.stashplayer.core.model.stashMediaGridColumnCount
@@ -681,6 +685,9 @@ private fun ExploreContent(
     val thumbnailHeight = stashMediaGridThumbnailHeightDp(isFoldLikeLayout).dp
     val results = pageState.results.applyLocalFavoriteFilter(pageState.videoFilter.localFavoriteOnly, favoriteSceneIds)
     val totalCount = pageState.totalCount
+    val showSupportingChrome = showExploreSupportingChrome(
+        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE,
+    )
     val visibleResultIds = results.map { it.id }
     var selectionState by remember { mutableStateOf(SceneSelectionState()) }
     var viewMode by remember { mutableStateOf(StashScenesViewMode.Grid) }
@@ -738,7 +745,7 @@ private fun ExploreContent(
                 .padding(top = StashSpacing.SectionGap),
             verticalArrangement = Arrangement.spacedBy(StashSpacing.CardGap),
         ) {
-        Column(
+        if (showSupportingChrome) Column(
             modifier = Modifier.padding(horizontal = horizontalPadding),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
@@ -788,7 +795,7 @@ private fun ExploreContent(
             onDeleteSelection = { deleteConfirmation = SceneBulkDeleteConfirmationState.open(selectionState.selectedCount) },
         )
 
-        if (selectionState.selectedCount == 0) {
+        if (showSupportingChrome && selectionState.selectedCount == 0) {
             StashVideoFilterGroupRow(
                 horizontalPadding = horizontalPadding,
                 isConfigured = isConfigured,
@@ -803,7 +810,7 @@ private fun ExploreContent(
             )
         }
 
-        StashActiveVideoFilterChipsRow(
+        if (showSupportingChrome) StashActiveVideoFilterChipsRow(
             videoFilter = pageState.videoFilter,
             horizontalPadding = horizontalPadding,
             onTagClick = onOpenTagFilter,
@@ -823,7 +830,7 @@ private fun ExploreContent(
             onClearRandomShuffle = onClearRandomShuffle,
         )
 
-        if (pageState.hasExploreIntent) {
+        if (showSupportingChrome && pageState.hasExploreIntent) {
             Column(
                 modifier = Modifier.padding(horizontal = horizontalPadding),
                 verticalArrangement = Arrangement.spacedBy(4.dp),

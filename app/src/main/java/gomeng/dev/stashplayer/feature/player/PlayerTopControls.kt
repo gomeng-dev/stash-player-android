@@ -79,6 +79,7 @@ fun PlayerTopControls(
     canShuffleQueue: Boolean,
     quickActions: List<PlayerOverlayQuickActionState>,
     fullscreenPlayerActive: Boolean,
+    showFullscreenToggle: Boolean,
     onToggleFullscreenPlayer: () -> Unit,
     onOpenStreamOptions: () -> Unit,
     onOpenSpeedOptions: () -> Unit,
@@ -115,7 +116,10 @@ fun PlayerTopControls(
             PlayerGlassIconButton(onClick = onExitPlayer) {
                 Icon(
                     Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = PlayerWatchPageController.playerExitButtonContentDescription(fullscreenPlayerActive),
+                    contentDescription = PlayerWatchPageController.playerExitButtonContentDescription(
+                        fullscreenPlayerActive = fullscreenPlayerActive,
+                        canExitFullscreen = showFullscreenToggle,
+                    ),
                     tint = Color.White,
                 )
             }
@@ -134,12 +138,14 @@ fun PlayerTopControls(
                     tint = Color.White,
                 )
             }
-            PlayerGlassIconButton(onClick = onToggleFullscreenPlayer) {
-                Icon(
-                    if (fullscreenPlayerActive) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
-                    contentDescription = PlayerWatchPageController.playerFullscreenToggleContentDescription(fullscreenPlayerActive),
-                    tint = Color.White,
-                )
+            if (showFullscreenToggle) {
+                PlayerGlassIconButton(onClick = onToggleFullscreenPlayer) {
+                    Icon(
+                        if (fullscreenPlayerActive) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
+                        contentDescription = PlayerWatchPageController.playerFullscreenToggleContentDescription(fullscreenPlayerActive),
+                        tint = Color.White,
+                    )
+                }
             }
             Box {
                 PlayerGlassIconButton(onClick = { overflowExpanded = true }) {

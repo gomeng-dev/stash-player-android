@@ -155,6 +155,7 @@ fun StashNavHost(
     var playbackQueueRestored by remember { mutableStateOf(false) }
     var playbackQueueContinuation by remember { mutableStateOf<PlayerPlaybackQueueContinuation?>(null) }
     var playerPresentationMode by remember { mutableStateOf(PlayerPresentationMode.WatchPage) }
+    var playerLandscapeAutoFullscreen by remember { mutableStateOf(false) }
     var playerPlaybackSpeed by remember { mutableFloatStateOf(1f) }
     var refreshedPasswordSessionKey by remember { mutableStateOf<String?>(null) }
     var availableUpdateNotice by remember { mutableStateOf<AppUpdateNotice?>(null) }
@@ -259,10 +260,13 @@ fun StashNavHost(
             )
         }
         updatePlaybackQueue(nextQueue)
-        playerPresentationMode = resolvePlayerPresentationModeForOpenedScene(
+        val presentation = resolvePlayerPresentationLaunchStateForOpenedScene(
             openedFromActivePlayer = isPlayerRoute(currentRoute),
             currentMode = playerPresentationMode,
+            currentLandscapeAutoFullscreen = playerLandscapeAutoFullscreen,
         )
+        playerPresentationMode = presentation.mode
+        playerLandscapeAutoFullscreen = presentation.landscapeAutoFullscreen
         playbackQueueContinuation = continuation
         navController.navigate(playerRouteForScene(sceneId))
     }
@@ -334,10 +338,13 @@ fun StashNavHost(
     }
 
     fun replaceCurrentPlayerScene(sceneId: String) {
-        playerPresentationMode = resolvePlayerPresentationModeForOpenedScene(
+        val presentation = resolvePlayerPresentationLaunchStateForOpenedScene(
             openedFromActivePlayer = true,
             currentMode = playerPresentationMode,
+            currentLandscapeAutoFullscreen = playerLandscapeAutoFullscreen,
         )
+        playerPresentationMode = presentation.mode
+        playerLandscapeAutoFullscreen = presentation.landscapeAutoFullscreen
         navController.navigate(playerRouteForScene(sceneId)) {
             popUpTo("player/{sceneId}") { inclusive = true }
             launchSingleTop = true
@@ -550,7 +557,11 @@ fun StashNavHost(
                                     images = images,
                                 )
                             },
-                            onOpenScene = { sceneId -> navController.navigate(playerRouteForScene(sceneId)) },
+                            onOpenScene = { sceneId ->
+                                playerPresentationMode = PlayerPresentationMode.WatchPage
+                                playerLandscapeAutoFullscreen = false
+                                navController.navigate(playerRouteForScene(sceneId))
+                            },
                             onOpenGallery = { linkedGalleryId -> navController.navigate(galleryDetailRouteForGallery(linkedGalleryId)) },
                             onOpenSettings = { navigateTopLevel(TopLevelDestination.Settings) },
                         )
@@ -601,9 +612,13 @@ fun StashNavHost(
                             isFoldLikeLayout = isFoldLikeLayout,
                             playbackQueue = playbackQueue,
                             initialPresentationMode = playerPresentationMode,
+                            initialLandscapeAutoFullscreen = playerLandscapeAutoFullscreen,
                             initialPlaybackSpeed = playerPlaybackSpeed,
                             onPlaybackQueueChange = ::updatePlaybackQueue,
-                            onPresentationModeChange = { playerPresentationMode = it },
+                            onPresentationStateChange = { mode, landscapeAutoFullscreen ->
+                                playerPresentationMode = mode
+                                playerLandscapeAutoFullscreen = landscapeAutoFullscreen
+                            },
                             onPlaybackSpeedChange = { playerPlaybackSpeed = it },
                             onOpenScene = { sceneId -> replaceCurrentPlayerScene(sceneId) },
                             onOpenSettings = { navController.navigate(TopLevelDestination.Settings.route) },

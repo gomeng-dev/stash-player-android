@@ -92,16 +92,28 @@ internal fun resolveAppOrientationRequest(
     playerPresentationMode: PlayerPresentationMode,
     playbackOrientationMode: PlaybackOrientationMode,
 ): AppOrientationRequest = when {
-    !isFoldLikeLayout && (!isPlayerRoute(route) || playerPresentationMode != PlayerPresentationMode.Fullscreen) ->
-        AppOrientationRequest.Portrait
+    !isFoldLikeLayout && !isPlayerRoute(route) -> AppOrientationRequest.Portrait
     isPlayerRoute(route) && playbackOrientationMode == PlaybackOrientationMode.Sensor -> AppOrientationRequest.Sensor
+    !isFoldLikeLayout &&
+        isPlayerRoute(route) &&
+        playerPresentationMode == PlayerPresentationMode.WatchPage -> AppOrientationRequest.Portrait
     else -> AppOrientationRequest.Unspecified
 }
 
-internal fun resolvePlayerPresentationModeForOpenedScene(
+internal data class PlayerPresentationLaunchState(
+    val mode: PlayerPresentationMode,
+    val landscapeAutoFullscreen: Boolean,
+)
+
+internal fun resolvePlayerPresentationLaunchStateForOpenedScene(
     openedFromActivePlayer: Boolean,
     currentMode: PlayerPresentationMode,
-): PlayerPresentationMode = if (openedFromActivePlayer) currentMode else PlayerPresentationMode.WatchPage
+    currentLandscapeAutoFullscreen: Boolean,
+): PlayerPresentationLaunchState = if (openedFromActivePlayer) {
+    PlayerPresentationLaunchState(currentMode, currentLandscapeAutoFullscreen)
+} else {
+    PlayerPresentationLaunchState(PlayerPresentationMode.WatchPage, landscapeAutoFullscreen = false)
+}
 
 internal fun resolveTopLevelNavigationStatePolicy(destinationRoute: String): TopLevelNavigationStatePolicy =
     if (destinationRoute == "settings") {

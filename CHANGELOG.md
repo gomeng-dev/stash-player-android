@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.10.7] - 2026-09-04
+
+### English
+
+- Fixed issue #6 by compacting Explore chrome in landscape, presenting active landscape playback fullscreen, and making Back exit instead of revealing details over background playback.
+
+### 한국어
+
+- 가로 화면에서 탐색 상단 UI를 압축하고 재생 중인 영상을 전체 화면으로 표시하며, 뒤로가기가 배경 재생 위에 상세 화면을 노출하지 않고 플레이어를 종료하도록 이슈 #6을 수정했습니다.
+
+### 简体中文
+
+- 修复了问题 #6：横屏时精简探索页顶部界面、以全屏显示正在播放的视频，并让返回键退出播放器，而不是在后台播放上显示详情页。
+
+### 繁體中文
+
+- 修正了問題 #6：橫向畫面時精簡探索頁頂部介面、以全螢幕顯示正在播放的影片，並讓返回鍵退出播放器，而不是在背景播放上顯示詳細頁面。
+
 ## [1.10.6] - 2026-08-29
 
 ### English

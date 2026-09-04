@@ -210,7 +210,10 @@ object PlayerWatchPageController {
         stashString(R.string.auto_kr_0283)
     }
 
-    fun playerExitButtonContentDescription(fullscreenPlayerActive: Boolean): String = if (fullscreenPlayerActive) {
+    fun playerExitButtonContentDescription(
+        fullscreenPlayerActive: Boolean,
+        canExitFullscreen: Boolean = true,
+    ): String = if (fullscreenPlayerActive && canExitFullscreen) {
         stashString(R.string.auto_kr_0284)
     } else {
         stashString(R.string.auto_kr_0285)

@@ -2,6 +2,8 @@ package gomeng.dev.stashplayer.core.model
 
 fun defaultStashExplorePageSizeOptions(): List<Int> = defaultStashDiscoveryPageSizeOptions()
 
+internal fun showExploreSupportingChrome(isLandscape: Boolean): Boolean = !isLandscape
+
 data class StashExploreSortOption(
     val id: String,
     val label: String,

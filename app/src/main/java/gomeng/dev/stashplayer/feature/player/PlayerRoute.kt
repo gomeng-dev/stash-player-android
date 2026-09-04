@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.res.Configuration
 import android.util.Rational
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
@@ -89,6 +91,7 @@ import gomeng.dev.stashplayer.core.network.findStashSpriteAtTime
 import gomeng.dev.stashplayer.core.network.redactStashCredentialText
 import gomeng.dev.stashplayer.core.network.spritePreviewHeadersFor
 import gomeng.dev.stashplayer.core.player.AspectRatioMode
+import gomeng.dev.stashplayer.core.player.allowsPlayerPresentationModeChanges
 import gomeng.dev.stashplayer.core.player.BrightnessController
 import gomeng.dev.stashplayer.core.player.FastPlaybackHoldSpeedPreference
 import gomeng.dev.stashplayer.core.player.PLAYER_CONTROLS_AUTO_HIDE_MS
@@ -167,6 +170,7 @@ import gomeng.dev.stashplayer.core.player.resolvePlayerResumeStartPositionMs
 import gomeng.dev.stashplayer.core.player.sanitizePlaybackErrorText
 import gomeng.dev.stashplayer.core.player.shouldAutoHidePlayerControls
 import gomeng.dev.stashplayer.core.player.shouldAutoFallbackPlaybackSource
+import gomeng.dev.stashplayer.core.player.shouldExitPlayerFromFullscreenBack
 import gomeng.dev.stashplayer.core.player.shouldHidePlayerSystemBars
 import gomeng.dev.stashplayer.core.player.shouldPausePlayerForLifecycleStop
 import gomeng.dev.stashplayer.core.player.shouldExposePictureInPictureButton
@@ -254,9 +258,10 @@ fun PlayerRoute(
     isFoldLikeLayout: Boolean,
     playbackQueue: PlayerPlaybackQueue = buildSingleScenePlaybackQueue(sceneId),
     initialPresentationMode: PlayerPresentationMode = PlayerPresentationMode.WatchPage,
+    initialLandscapeAutoFullscreen: Boolean = false,
     initialPlaybackSpeed: Float = 1f,
     onPlaybackQueueChange: (PlayerPlaybackQueue) -> Unit = {},
-    onPresentationModeChange: (PlayerPresentationMode) -> Unit = {},
+    onPresentationStateChange: (PlayerPresentationMode, Boolean) -> Unit = { _, _ -> },
     onPlaybackSpeedChange: (Float) -> Unit = {},
     onOpenScene: (String) -> Unit = {},
     onOpenSettings: () -> Unit = {},
@@ -369,9 +374,10 @@ fun PlayerRoute(
             isFoldLikeLayout = isFoldLikeLayout,
             playbackQueue = playbackQueue.withCurrent(sceneId),
             initialPresentationMode = initialPresentationMode,
+            initialLandscapeAutoFullscreen = initialLandscapeAutoFullscreen,
             initialPlaybackSpeed = initialPlaybackSpeed,
             onPlaybackQueueChange = onPlaybackQueueChange,
-            onPresentationModeChange = onPresentationModeChange,
+            onPresentationStateChange = onPresentationStateChange,
             onPlaybackSpeedChange = onPlaybackSpeedChange,
             onOpenScene = onOpenScene,
             onOpenSettings = onOpenSettings,
@@ -403,9 +409,10 @@ private fun RealPlayerRoute(
     isFoldLikeLayout: Boolean,
     playbackQueue: PlayerPlaybackQueue,
     initialPresentationMode: PlayerPresentationMode,
+    initialLandscapeAutoFullscreen: Boolean,
     initialPlaybackSpeed: Float,
     onPlaybackQueueChange: (PlayerPlaybackQueue) -> Unit,
-    onPresentationModeChange: (PlayerPresentationMode) -> Unit,
+    onPresentationStateChange: (PlayerPresentationMode, Boolean) -> Unit,
     onPlaybackSpeedChange: (Float) -> Unit,
     onOpenScene: (String) -> Unit,
     onOpenSettings: () -> Unit,
@@ -416,6 +423,7 @@ private fun RealPlayerRoute(
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localView = LocalView.current
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
@@ -485,18 +493,30 @@ private fun RealPlayerRoute(
     var controlsVisible by remember { mutableStateOf(true) }
     var locked by remember { mutableStateOf(false) }
     var presentationRouteState by remember(sceneId) {
-        mutableStateOf(PlayerPresentationRouteState.initial(initialPresentationMode))
+        mutableStateOf(
+            PlayerPresentationRouteState.initial(initialPresentationMode)
+                .copy(landscapeAutoFullscreen = initialLandscapeAutoFullscreen)
+                .forDeviceLandscape(isLandscape),
+        )
     }
+    val canChangePlayerPresentation = allowsPlayerPresentationModeChanges(isLandscape)
     val fullscreenPlayerActive = presentationRouteState.fullscreenPlayerActive
     val presentationTransitionActive = presentationRouteState.presentationTransitionActive
     val fullscreenChromeActive = presentationRouteState.fullscreenChromeActive
     val playerSurfacePresentationMode = presentationRouteState.playerSurfacePresentationMode
+        .takeIf { canChangePlayerPresentation }
     val presentationDragUpdate = presentationRouteState.dragUpdate
     val presentationProgressAnimation = remember(sceneId) {
         Animatable(if (presentationRouteState.targetMode == PlayerPresentationMode.Fullscreen) 1f else 0f)
     }
-    LaunchedEffect(presentationRouteState.targetMode) {
-        onPresentationModeChange(presentationRouteState.targetMode)
+    LaunchedEffect(isLandscape) {
+        presentationRouteState = presentationRouteState.forDeviceLandscape(isLandscape)
+    }
+    LaunchedEffect(presentationRouteState.targetMode, presentationRouteState.landscapeAutoFullscreen) {
+        onPresentationStateChange(
+            presentationRouteState.targetMode,
+            presentationRouteState.landscapeAutoFullscreen,
+        )
     }
     LaunchedEffect(sceneId, presentationRouteState.targetMode, presentationDragUpdate) {
         val dragUpdate = presentationDragUpdate
@@ -767,6 +787,10 @@ private fun RealPlayerRoute(
     var resumePromptVisible by remember(stream) { mutableStateOf(shouldShowResumePrompt) }
 
     BackHandler {
+        if (shouldExitPlayerFromFullscreenBack(fullscreenPlayerActive, isLandscape)) {
+            onExitPlayer()
+            return@BackHandler
+        }
         when (
             PlayerTransportController.resolveBackAction(
                 playlistDrawerOpen = false,
@@ -1794,6 +1818,7 @@ private fun RealPlayerRoute(
         currentStreamInfoText = currentStreamInfoText,
         quickActions = quickActions,
         fullscreenPlayerActive = fullscreenChromeActive,
+        showFullscreenToggle = canChangePlayerPresentation,
         sceneId = sceneId,
         infoDrawerContentState = infoDrawerContentState,
         debugInfoUiState = debugInfoUiState,
@@ -1812,7 +1837,9 @@ private fun RealPlayerRoute(
     val overlayCallbacks = PlayerOverlayCallbacks(
         onSeekPreview = updateSeekPreview,
         onExitPlayer = {
-            if (fullscreenPlayerActive) {
+            if (shouldExitPlayerFromFullscreenBack(fullscreenPlayerActive, isLandscape)) {
+                onExitPlayer()
+            } else if (fullscreenPlayerActive) {
                 exitFullscreenToWatchPage()
             } else {
                 onExitPlayer()
@@ -1836,12 +1863,13 @@ private fun RealPlayerRoute(
         onToggleFullscreenPlayer = {
             markPlayerInteraction()
             controlsVisible = true
-            val nextMode = if (fullscreenPlayerActive) {
-                PlayerPresentationMode.WatchPage
+            if (fullscreenPlayerActive) {
+                exitFullscreenToWatchPage()
             } else {
-                PlayerPresentationMode.Fullscreen
+                presentationRouteState = presentationRouteState
+                    .withTargetMode(PlayerPresentationMode.Fullscreen)
+                    .state
             }
-            presentationRouteState = presentationRouteState.withTargetMode(nextMode).state
         },
         onEnterPictureInPicture = {
             markPlayerInteraction()
