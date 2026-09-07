@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -45,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.R
@@ -976,28 +978,38 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                             libraryPaths.forEach { path ->
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     Text(path, style = MaterialTheme.typography.bodySmall)
-                                    Row {
-                                        TextButton(onClick = { loadDirectory(path) }, enabled = !isDirectoryLoading) {
-                                            Text(stringResource(R.string.settings_server_browse_scan_path))
-                                        }
-                                        TextButton(onClick = { selectedScanPaths = (selectedScanPaths + path).distinct() }) {
-                                            Text(stringResource(R.string.settings_server_add_scan_path))
-                                        }
+                                    TextButton(
+                                        onClick = { loadDirectory(path) },
+                                        enabled = !isDirectoryLoading,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) {
+                                        Text(stringResource(R.string.settings_server_browse_scan_path))
+                                    }
+                                    TextButton(
+                                        onClick = { selectedScanPaths = (selectedScanPaths + path).distinct() },
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) {
+                                        Text(stringResource(R.string.settings_server_add_scan_path))
                                     }
                                 }
                             }
                         }
                     } else {
                         Text(directory.path, style = MaterialTheme.typography.titleSmall)
-                        Row {
-                            directory.parent?.let { parent ->
-                                TextButton(onClick = { loadDirectory(parent) }, enabled = !isDirectoryLoading) {
-                                    Text(stringResource(R.string.settings_server_parent_directory))
-                                }
+                        directory.parent?.let { parent ->
+                            TextButton(
+                                onClick = { loadDirectory(parent) },
+                                enabled = !isDirectoryLoading,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(stringResource(R.string.settings_server_parent_directory))
                             }
-                            TextButton(onClick = { selectedScanPaths = (selectedScanPaths + directory.path).distinct() }) {
-                                Text(stringResource(R.string.settings_server_add_scan_path))
-                            }
+                        }
+                        TextButton(
+                            onClick = { selectedScanPaths = (selectedScanPaths + directory.path).distinct() },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.settings_server_add_scan_path))
                         }
                         directory.directories.forEach { path ->
                             TextButton(
@@ -1488,12 +1500,19 @@ private fun ScanOptionRow(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .toggleable(
+                value = checked,
+                enabled = enabled,
+                role = Role.Switch,
+                onValueChange = onCheckedChange,
+            ),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(stringResource(title), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = checked, enabled = enabled, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, enabled = enabled, onCheckedChange = null)
     }
 }
 

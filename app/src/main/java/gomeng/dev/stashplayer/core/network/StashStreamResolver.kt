@@ -1057,7 +1057,9 @@ internal fun buildMetadataScanVariables(
     options: StashScanOptions = StashScanOptions(),
     paths: List<String>? = null,
 ): Map<String, Any?> {
-    require(paths == null || paths.isNotEmpty()) { "Selective scan requires at least one path" }
+    require(paths == null || (paths.isNotEmpty() && paths.all(String::isNotEmpty))) {
+        "Selective scan requires non-empty paths"
+    }
     return mapOf(
         "input" to buildMap {
             paths?.distinct()?.let { put("paths", it) }

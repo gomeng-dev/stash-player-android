@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-09-07
+
+### English
+
+- Hardened selective scans against empty server paths and improved scan-option accessibility and narrow-screen layout.
+
+### 한국어
+
+- 빈 서버 경로가 선택 스캔에 전달되지 않도록 보강하고 스캔 옵션 접근성과 좁은 화면 레이아웃을 개선했습니다.
+
+### 简体中文
+
+- 阻止选择性扫描提交空服务器路径，并改进了扫描选项的无障碍支持和窄屏布局。
+
+### 繁體中文
+
+- 防止選擇性掃描提交空白伺服器路徑，並改善掃描選項的無障礙支援與窄螢幕版面。
+
 ## [1.11.0] - 2026-09-07
 
 ### English

@@ -219,9 +219,9 @@ fun parseDirectoryResponse(json: String): StashServerDirectory {
     envelope.throwIfErrors()
     val directory = envelope.data?.directory ?: error("Stash directory returned no result")
     return StashServerDirectory(
-        path = directory.path.orEmpty(),
-        parent = directory.parent,
-        directories = directory.directories.orEmpty(),
+        path = directory.path?.takeIf(String::isNotEmpty) ?: error("Stash directory returned an empty path"),
+        parent = directory.parent?.takeIf(String::isNotEmpty),
+        directories = directory.directories.orEmpty().filter(String::isNotEmpty),
     )
 }
 
@@ -357,7 +357,7 @@ private data class ApiConfiguration(
         val defaultOptions = defaults?.scan?.toDomain() ?: StashScanOptions()
         return StashServerLibrarySettings(
             createGalleriesFromFolders = general?.createGalleriesFromFolders == true,
-            libraryPaths = general?.stashes.orEmpty().mapNotNull { it.path },
+            libraryPaths = general?.stashes.orEmpty().mapNotNull { it.path?.takeIf(String::isNotEmpty) },
             scanOptions = ui.scanOptionsOrNull(defaultOptions) ?: defaultOptions,
         )
     }
