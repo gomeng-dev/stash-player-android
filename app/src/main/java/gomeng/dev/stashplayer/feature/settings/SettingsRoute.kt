@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -58,6 +59,8 @@ import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashPluginRecommendationStatusClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
+import gomeng.dev.stashplayer.core.network.StashScanOptions
+import gomeng.dev.stashplayer.core.network.StashServerDirectory
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.StashStreamPreference
 import gomeng.dev.stashplayer.core.network.canAttemptStashCredentialTransport
@@ -808,6 +811,14 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var isServerLibraryLoading by remember { mutableStateOf(false) }
     var isServerLibrarySaving by remember { mutableStateOf(false) }
     var isMetadataScanRunning by remember { mutableStateOf(false) }
+    var scanOptions by remember { mutableStateOf(StashScanOptions()) }
+    var scanOptionsExpanded by remember { mutableStateOf(false) }
+    var libraryPaths by remember { mutableStateOf(emptyList<String>()) }
+    var showSelectiveScanDialog by remember { mutableStateOf(false) }
+    var selectedScanPaths by remember { mutableStateOf(emptyList<String>()) }
+    var scannedDirectory by remember { mutableStateOf<StashServerDirectory?>(null) }
+    var isDirectoryLoading by remember { mutableStateOf(false) }
+    var directoryErrorText by remember { mutableStateOf<String?>(null) }
     var serverLibraryStatusText by remember { mutableStateOf<String?>(null) }
     var serverLibraryErrorText by remember { mutableStateOf<String?>(null) }
     var showMetadataScanConfirm by remember { mutableStateOf(false) }
@@ -827,6 +838,11 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             }
         }
         createGalleriesFromFolders = null
+        libraryPaths = emptyList()
+        scanOptions = StashScanOptions()
+        selectedScanPaths = emptyList()
+        scannedDirectory = null
+        directoryErrorText = null
         serverLibraryStatusText = null
         serverLibraryErrorText = null
         val activeProfile = savedProfile
@@ -838,12 +854,70 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         runCatching { StashGraphQlClient(activeProfile).findServerLibrarySettings() }
             .onSuccess { settings ->
                 createGalleriesFromFolders = settings.createGalleriesFromFolders
+                libraryPaths = settings.libraryPaths
+                scanOptions = settings.scanOptions
             }
             .onFailure {
                 StashDebugLogBuffer.record("Settings", "Stash server library settings load failed", it)
                 serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_library_load_failed)
             }
         isServerLibraryLoading = false
+    }
+
+    fun startMetadataScan(paths: List<String>? = null) {
+        coroutineScope.launch {
+            val activeProfile = savedProfile
+            if (activeProfile == null) {
+                serverLibraryStatusText = null
+                serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
+                return@launch
+            }
+            isMetadataScanRunning = true
+            serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_starting)
+            serverLibraryErrorText = null
+            runCatching { StashGraphQlClient(activeProfile).scanMetadata(scanOptions, paths) }
+                .onSuccess { jobId ->
+                    serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_started, jobId)
+                }
+                .onFailure {
+                    StashDebugLogBuffer.record("Settings", "Stash metadata scan start failed", it)
+                    serverLibraryStatusText = null
+                    serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_metadata_scan_failed)
+                }
+            isMetadataScanRunning = false
+        }
+    }
+
+    fun persistScanOptions(updated: StashScanOptions) {
+        val previous = scanOptions
+        scanOptions = updated
+        isServerLibrarySaving = true
+        serverLibraryErrorText = null
+        coroutineScope.launch {
+            runCatching { savedProfile?.let { StashGraphQlClient(it).setScanOptions(updated) } ?: error("No Stash server") }
+                .onFailure {
+                    if (scanOptions == updated) scanOptions = previous
+                    StashDebugLogBuffer.record("Settings", "Stash scan options save failed", it)
+                    serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_scan_options_save_failed)
+                }
+            isServerLibrarySaving = false
+        }
+    }
+
+    fun loadDirectory(path: String) {
+        if (isDirectoryLoading) return
+        val activeProfile = savedProfile ?: return
+        isDirectoryLoading = true
+        directoryErrorText = null
+        coroutineScope.launch {
+            runCatching { StashGraphQlClient(activeProfile).findDirectory(path) }
+                .onSuccess { scannedDirectory = it }
+                .onFailure {
+                    StashDebugLogBuffer.record("Settings", "Stash directory load failed", it)
+                    directoryErrorText = it.message ?: context.getString(R.string.settings_server_directory_load_failed)
+                }
+            isDirectoryLoading = false
+        }
     }
 
     if (showMetadataScanConfirm) {
@@ -855,27 +929,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 TextButton(
                     onClick = {
                         showMetadataScanConfirm = false
-                        coroutineScope.launch {
-                            val activeProfile = savedProfile
-                            if (activeProfile == null) {
-                                serverLibraryStatusText = null
-                                serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
-                                return@launch
-                            }
-                            isMetadataScanRunning = true
-                            serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_starting)
-                            serverLibraryErrorText = null
-                            runCatching { StashGraphQlClient(activeProfile).scanMetadata() }
-                                .onSuccess { jobId ->
-                                    serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_started, jobId)
-                                }
-                                .onFailure {
-                                    StashDebugLogBuffer.record("Settings", "Stash metadata scan start failed", it)
-                                    serverLibraryStatusText = null
-                                    serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_metadata_scan_failed)
-                                }
-                            isMetadataScanRunning = false
-                        }
+                        startMetadataScan()
                     },
                 ) {
                     Text(stringResource(ServerLibrarySettingsCopy.scanConfirm))
@@ -883,6 +937,96 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             },
             dismissButton = {
                 TextButton(onClick = { showMetadataScanConfirm = false }) {
+                    Text(stringResource(ServerLibrarySettingsCopy.scanCancel))
+                }
+            },
+        )
+    }
+
+    if (showSelectiveScanDialog) {
+        AlertDialog(
+            onDismissRequest = { showSelectiveScanDialog = false },
+            title = { Text(stringResource(R.string.settings_server_selective_scan_title)) },
+            text = {
+                Column(
+                    modifier = Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (selectedScanPaths.isNotEmpty()) {
+                        Text(stringResource(R.string.settings_server_selected_scan_paths), style = MaterialTheme.typography.titleSmall)
+                        selectedScanPaths.forEach { path ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(path, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                                TextButton(onClick = { selectedScanPaths = selectedScanPaths - path }) {
+                                    Text(stringResource(R.string.settings_server_remove_scan_path))
+                                }
+                            }
+                        }
+                    }
+                    val directory = scannedDirectory
+                    if (directory == null) {
+                        Text(stringResource(R.string.settings_server_scan_library_roots), style = MaterialTheme.typography.titleSmall)
+                        if (libraryPaths.isEmpty()) {
+                            Text(stringResource(R.string.settings_server_scan_no_library_paths))
+                        } else {
+                            libraryPaths.forEach { path ->
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(path, style = MaterialTheme.typography.bodySmall)
+                                    Row {
+                                        TextButton(onClick = { loadDirectory(path) }, enabled = !isDirectoryLoading) {
+                                            Text(stringResource(R.string.settings_server_browse_scan_path))
+                                        }
+                                        TextButton(onClick = { selectedScanPaths = (selectedScanPaths + path).distinct() }) {
+                                            Text(stringResource(R.string.settings_server_add_scan_path))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Text(directory.path, style = MaterialTheme.typography.titleSmall)
+                        Row {
+                            directory.parent?.let { parent ->
+                                TextButton(onClick = { loadDirectory(parent) }, enabled = !isDirectoryLoading) {
+                                    Text(stringResource(R.string.settings_server_parent_directory))
+                                }
+                            }
+                            TextButton(onClick = { selectedScanPaths = (selectedScanPaths + directory.path).distinct() }) {
+                                Text(stringResource(R.string.settings_server_add_scan_path))
+                            }
+                        }
+                        directory.directories.forEach { path ->
+                            TextButton(
+                                onClick = { loadDirectory(path) },
+                                enabled = !isDirectoryLoading,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(path, modifier = Modifier.fillMaxWidth())
+                            }
+                        }
+                    }
+                    if (isDirectoryLoading) Text(stringResource(R.string.settings_server_directory_loading))
+                    directoryErrorText?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val paths = selectedScanPaths
+                        showSelectiveScanDialog = false
+                        startMetadataScan(paths)
+                    },
+                    enabled = selectedScanPaths.isNotEmpty() && !isDirectoryLoading,
+                ) {
+                    Text(stringResource(ServerLibrarySettingsCopy.scanConfirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSelectiveScanDialog = false }) {
                     Text(stringResource(ServerLibrarySettingsCopy.scanCancel))
                 }
             },
@@ -1100,6 +1244,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     ServerLibrarySettingsCard(
         serverConfigured = savedProfile?.isConfigured() == true,
         createGalleriesFromFolders = createGalleriesFromFolders,
+        scanOptions = scanOptions,
+        scanOptionsExpanded = scanOptionsExpanded,
         loading = isServerLibraryLoading,
         saving = isServerLibrarySaving,
         scanning = isMetadataScanRunning,
@@ -1129,7 +1275,15 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 isServerLibrarySaving = false
             }
         },
+        onScanOptionsExpandedChange = { scanOptionsExpanded = it },
+        onScanOptionsChange = ::persistScanOptions,
         onRequestScan = { showMetadataScanConfirm = true },
+        onRequestSelectiveScan = {
+            selectedScanPaths = emptyList()
+            scannedDirectory = null
+            directoryErrorText = null
+            showSelectiveScanDialog = true
+        },
     )
 
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -1179,14 +1333,20 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
 private fun ServerLibrarySettingsCard(
     serverConfigured: Boolean,
     createGalleriesFromFolders: Boolean?,
+    scanOptions: StashScanOptions,
+    scanOptionsExpanded: Boolean,
     loading: Boolean,
     saving: Boolean,
     scanning: Boolean,
     statusText: String?,
     errorText: String?,
     onToggleCreateGalleries: (Boolean) -> Unit,
+    onScanOptionsExpandedChange: (Boolean) -> Unit,
+    onScanOptionsChange: (StashScanOptions) -> Unit,
     onRequestScan: () -> Unit,
+    onRequestSelectiveScan: () -> Unit,
 ) {
+    val controlsEnabled = serverConfigured && createGalleriesFromFolders != null && !loading && !saving
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -1211,16 +1371,92 @@ private fun ServerLibrarySettingsCard(
                 }
                 Switch(
                     checked = createGalleriesFromFolders == true,
-                    enabled = serverConfigured && createGalleriesFromFolders != null && !loading && !saving,
+                    enabled = controlsEnabled,
                     onCheckedChange = onToggleCreateGalleries,
                 )
             }
             Button(
                 onClick = onRequestScan,
-                enabled = serverConfigured && !loading && !saving && !scanning,
+                enabled = controlsEnabled && !scanning,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(ServerLibrarySettingsCopy.scanButton))
+                Text(stringResource(R.string.settings_server_scan_all_button))
+            }
+            Button(
+                onClick = onRequestSelectiveScan,
+                enabled = controlsEnabled && !scanning,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.settings_server_selective_scan_button))
+            }
+            TextButton(
+                onClick = { onScanOptionsExpandedChange(!scanOptionsExpanded) },
+                enabled = controlsEnabled,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    stringResource(
+                        if (scanOptionsExpanded) R.string.settings_server_scan_options_hide
+                        else R.string.settings_server_scan_options_show,
+                    ),
+                )
+            }
+            if (scanOptionsExpanded) {
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_covers,
+                    checked = scanOptions.scanGenerateCovers,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGenerateCovers = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_previews,
+                    checked = scanOptions.scanGeneratePreviews,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGeneratePreviews = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_image_previews,
+                    checked = scanOptions.scanGenerateImagePreviews,
+                    enabled = controlsEnabled && scanOptions.scanGeneratePreviews,
+                    modifier = Modifier.padding(start = 16.dp),
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGenerateImagePreviews = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_sprites,
+                    checked = scanOptions.scanGenerateSprites,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGenerateSprites = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_video_phashes,
+                    checked = scanOptions.scanGeneratePhashes,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGeneratePhashes = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_thumbnails,
+                    checked = scanOptions.scanGenerateThumbnails,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGenerateThumbnails = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_image_phashes,
+                    checked = scanOptions.scanGenerateImagePhashes,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGenerateImagePhashes = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_generate_clip_previews,
+                    checked = scanOptions.scanGenerateClipPreviews,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(scanGenerateClipPreviews = it)) },
+                )
+                ScanOptionRow(
+                    title = R.string.settings_server_scan_force_rescan,
+                    checked = scanOptions.rescan,
+                    enabled = controlsEnabled,
+                    onCheckedChange = { onScanOptionsChange(scanOptions.copy(rescan = it)) },
+                )
             }
             Text(
                 text = when {
@@ -1240,6 +1476,24 @@ private fun ServerLibrarySettingsCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ScanOptionRow(
+    @StringRes title: Int,
+    checked: Boolean,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(stringResource(title), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        Switch(checked = checked, enabled = enabled, onCheckedChange = onCheckedChange)
     }
 }
 

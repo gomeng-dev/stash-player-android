@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-09-07
+
+### English
+
+- Added Stash Web-compatible library scan options and selective server-folder scanning in Settings.
+
+### 한국어
+
+- 설정에 Stash 웹과 동일한 라이브러리 스캔 옵션과 서버 폴더 선택 스캔을 추가했습니다.
+
+### 简体中文
+
+- 在设置中添加了与 Stash Web 兼容的媒体库扫描选项和服务器文件夹选择扫描。
+
+### 繁體中文
+
+- 在設定中加入了與 Stash Web 相容的媒體庫掃描選項與伺服器資料夾選擇掃描。
+
 ## [1.10.7] - 2026-09-04
 
 ### English

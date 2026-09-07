@@ -145,11 +145,27 @@ class StashGraphQlClient(
         )
     }
 
-    suspend fun scanMetadata(): String {
+    suspend fun setScanOptions(options: StashScanOptions) {
+        parseConfigureUiSettingResponse(
+            execute(
+                CONFIGURE_UI_SETTING_MUTATION,
+                buildConfigureScanOptionsVariables(options),
+            ),
+        )
+    }
+
+    suspend fun findDirectory(path: String): StashServerDirectory {
+        return parseDirectoryResponse(execute(DIRECTORY_QUERY, buildDirectoryVariables(path)))
+    }
+
+    suspend fun scanMetadata(
+        options: StashScanOptions = StashScanOptions(),
+        paths: List<String>? = null,
+    ): String {
         return parseMetadataScanResponse(
             execute(
                 METADATA_SCAN_MUTATION,
-                buildMetadataScanVariables(),
+                buildMetadataScanVariables(options, paths),
             ),
         )
     }
@@ -665,7 +681,22 @@ class StashGraphQlClient(
               configuration {
                 general {
                   createGalleriesFromFolders
+                  stashes { path }
                 }
+                defaults {
+                  scan {
+                    rescan
+                    scanGenerateCovers
+                    scanGeneratePreviews
+                    scanGenerateImagePreviews
+                    scanGenerateSprites
+                    scanGeneratePhashes
+                    scanGenerateThumbnails
+                    scanGenerateImagePhashes
+                    scanGenerateClipPreviews
+                  }
+                }
+                ui
               }
             }
         """
@@ -681,6 +712,22 @@ class StashGraphQlClient(
         val METADATA_SCAN_MUTATION = """
             mutation MetadataScan(${'$'}input: ScanMetadataInput!) {
               metadataScan(input: ${'$'}input)
+            }
+        """
+
+        val CONFIGURE_UI_SETTING_MUTATION = """
+            mutation ConfigureUISetting(${'$'}key: String!, ${'$'}value: Any) {
+              configureUISetting(key: ${'$'}key, value: ${'$'}value)
+            }
+        """
+
+        val DIRECTORY_QUERY = """
+            query Directory(${'$'}path: String!) {
+              directory(path: ${'$'}path) {
+                path
+                parent
+                directories
+              }
             }
         """
 
@@ -1006,9 +1053,33 @@ internal fun buildConfigureCreateGalleriesFromFoldersVariables(enabled: Boolean)
     "input" to mapOf("createGalleriesFromFolders" to enabled),
 )
 
-internal fun buildMetadataScanVariables(): Map<String, Any?> = mapOf(
-    "input" to emptyMap<String, Any?>(),
+internal fun buildMetadataScanVariables(
+    options: StashScanOptions = StashScanOptions(),
+    paths: List<String>? = null,
+): Map<String, Any?> {
+    require(paths == null || paths.isNotEmpty()) { "Selective scan requires at least one path" }
+    return mapOf(
+        "input" to buildMap {
+            paths?.distinct()?.let { put("paths", it) }
+            put("scanGenerateCovers", options.scanGenerateCovers)
+            put("scanGeneratePreviews", options.scanGeneratePreviews)
+            put("scanGenerateImagePreviews", options.scanGenerateImagePreviews)
+            put("scanGenerateSprites", options.scanGenerateSprites)
+            put("scanGeneratePhashes", options.scanGeneratePhashes)
+            put("scanGenerateThumbnails", options.scanGenerateThumbnails)
+            put("scanGenerateImagePhashes", options.scanGenerateImagePhashes)
+            put("scanGenerateClipPreviews", options.scanGenerateClipPreviews)
+            put("rescan", options.rescan)
+        },
+    )
+}
+
+internal fun buildConfigureScanOptionsVariables(options: StashScanOptions): Map<String, Any?> = mapOf(
+    "key" to "taskDefaults.scan",
+    "value" to buildMetadataScanVariables(options).getValue("input"),
 )
+
+internal fun buildDirectoryVariables(path: String): Map<String, Any?> = mapOf("path" to path)
 
 internal fun buildStashTagMetadataGenerateVariables(sceneId: String): Map<String, Any?> = mapOf(
     "input" to mapOf(
@@ -1374,6 +1445,10 @@ internal fun serverLibrarySettingsQueryForTesting(): String = StashGraphQlClient
 internal fun configureGeneralMutationForTesting(): String = StashGraphQlClient.CONFIGURE_GENERAL_MUTATION
 
 internal fun metadataScanMutationForTesting(): String = StashGraphQlClient.METADATA_SCAN_MUTATION
+
+internal fun configureUiSettingMutationForTesting(): String = StashGraphQlClient.CONFIGURE_UI_SETTING_MUTATION
+
+internal fun directoryQueryForTesting(): String = StashGraphQlClient.DIRECTORY_QUERY
 
 internal fun stashTagMetadataGenerateMutationForTesting(): String = StashGraphQlClient.STASH_TAG_METADATA_GENERATE_MUTATION
 

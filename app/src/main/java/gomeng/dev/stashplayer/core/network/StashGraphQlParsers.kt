@@ -89,6 +89,8 @@ data class StashSceneCardPage(
 
 data class StashServerLibrarySettings(
     val createGalleriesFromFolders: Boolean,
+    val libraryPaths: List<String> = emptyList(),
+    val scanOptions: StashScanOptions = StashScanOptions(),
 )
 
 enum class StashJobStatus {
@@ -188,8 +190,8 @@ fun parseVersionResponse(json: String): String {
 fun parseServerLibrarySettingsResponse(json: String): StashServerLibrarySettings {
     val envelope = parseJson<ConfigurationEnvelope>(json)
     envelope.throwIfErrors()
-    return envelope.data?.configuration?.general?.toServerLibrarySettings()
-        ?: error("Stash configuration returned no general settings")
+    return envelope.data?.configuration?.toServerLibrarySettings()
+        ?: error("Stash configuration returned no settings")
 }
 
 fun parseConfigureGeneralResponse(json: String): StashServerLibrarySettings {
@@ -204,6 +206,23 @@ fun parseMetadataScanResponse(json: String): String {
     envelope.throwIfErrors()
     return envelope.data?.metadataScan?.trim()?.takeIf { it.isNotBlank() }
         ?: error("Stash metadataScan returned no job ID")
+}
+
+fun parseConfigureUiSettingResponse(json: String) {
+    val envelope = parseJson<ConfigureUiSettingEnvelope>(json)
+    envelope.throwIfErrors()
+    if (envelope.data?.configureUISetting == null) error("Stash configureUISetting returned no settings")
+}
+
+fun parseDirectoryResponse(json: String): StashServerDirectory {
+    val envelope = parseJson<DirectoryEnvelope>(json)
+    envelope.throwIfErrors()
+    val directory = envelope.data?.directory ?: error("Stash directory returned no result")
+    return StashServerDirectory(
+        path = directory.path.orEmpty(),
+        parent = directory.parent,
+        directories = directory.directories.orEmpty(),
+    )
 }
 
 fun parseMetadataGenerateResponse(json: String): String {
@@ -329,7 +348,20 @@ private data class ConfigurationEnvelope(
 ) : GraphQlEnvelope
 
 private data class ConfigurationData(val configuration: ApiConfiguration? = null)
-private data class ApiConfiguration(val general: ApiConfigGeneral? = null)
+private data class ApiConfiguration(
+    val general: ApiConfigGeneral? = null,
+    val defaults: ApiConfigDefaults? = null,
+    val ui: Map<String, Any?>? = null,
+) {
+    fun toServerLibrarySettings(): StashServerLibrarySettings {
+        val defaultOptions = defaults?.scan?.toDomain() ?: StashScanOptions()
+        return StashServerLibrarySettings(
+            createGalleriesFromFolders = general?.createGalleriesFromFolders == true,
+            libraryPaths = general?.stashes.orEmpty().mapNotNull { it.path },
+            scanOptions = ui.scanOptionsOrNull(defaultOptions) ?: defaultOptions,
+        )
+    }
+}
 
 private data class ConfigureGeneralEnvelope(
     val data: ConfigureGeneralData? = null,
@@ -344,6 +376,25 @@ private data class MetadataScanEnvelope(
 ) : GraphQlEnvelope
 
 private data class MetadataScanData(val metadataScan: String? = null)
+
+private data class ConfigureUiSettingEnvelope(
+    val data: ConfigureUiSettingData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class ConfigureUiSettingData(val configureUISetting: Map<String, Any?>? = null)
+
+private data class DirectoryEnvelope(
+    val data: DirectoryData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class DirectoryData(val directory: ApiDirectory? = null)
+private data class ApiDirectory(
+    val path: String? = null,
+    val parent: String? = null,
+    val directories: List<String>? = null,
+)
 
 private data class MetadataGenerateEnvelope(
     val data: MetadataGenerateData? = null,
@@ -365,10 +416,54 @@ private data class ApiJob(
 
 private data class ApiConfigGeneral(
     val createGalleriesFromFolders: Boolean? = null,
+    val stashes: List<ApiStashConfig>? = null,
 ) {
     fun toServerLibrarySettings(): StashServerLibrarySettings = StashServerLibrarySettings(
         createGalleriesFromFolders = createGalleriesFromFolders == true,
     )
+}
+
+private data class ApiStashConfig(val path: String? = null)
+private data class ApiConfigDefaults(val scan: ApiScanOptions? = null)
+private data class ApiScanOptions(
+    val scanGenerateCovers: Boolean? = null,
+    val scanGeneratePreviews: Boolean? = null,
+    val scanGenerateImagePreviews: Boolean? = null,
+    val scanGenerateSprites: Boolean? = null,
+    val scanGeneratePhashes: Boolean? = null,
+    val scanGenerateThumbnails: Boolean? = null,
+    val scanGenerateImagePhashes: Boolean? = null,
+    val scanGenerateClipPreviews: Boolean? = null,
+    val rescan: Boolean? = null,
+) {
+    fun toDomain(base: StashScanOptions = StashScanOptions()): StashScanOptions = StashScanOptions(
+        scanGenerateCovers = scanGenerateCovers ?: base.scanGenerateCovers,
+        scanGeneratePreviews = scanGeneratePreviews ?: base.scanGeneratePreviews,
+        scanGenerateImagePreviews = scanGenerateImagePreviews ?: base.scanGenerateImagePreviews,
+        scanGenerateSprites = scanGenerateSprites ?: base.scanGenerateSprites,
+        scanGeneratePhashes = scanGeneratePhashes ?: base.scanGeneratePhashes,
+        scanGenerateThumbnails = scanGenerateThumbnails ?: base.scanGenerateThumbnails,
+        scanGenerateImagePhashes = scanGenerateImagePhashes ?: base.scanGenerateImagePhashes,
+        scanGenerateClipPreviews = scanGenerateClipPreviews ?: base.scanGenerateClipPreviews,
+        rescan = rescan ?: base.rescan,
+    )
+}
+
+private fun Map<String, Any?>?.scanOptionsOrNull(base: StashScanOptions): StashScanOptions? {
+    val taskDefaults = this?.get("taskDefaults") as? Map<*, *> ?: return null
+    val scan = taskDefaults["scan"] as? Map<*, *> ?: return null
+    fun flag(name: String): Boolean? = scan[name] as? Boolean
+    return ApiScanOptions(
+        scanGenerateCovers = flag("scanGenerateCovers"),
+        scanGeneratePreviews = flag("scanGeneratePreviews"),
+        scanGenerateImagePreviews = flag("scanGenerateImagePreviews"),
+        scanGenerateSprites = flag("scanGenerateSprites"),
+        scanGeneratePhashes = flag("scanGeneratePhashes"),
+        scanGenerateThumbnails = flag("scanGenerateThumbnails"),
+        scanGenerateImagePhashes = flag("scanGenerateImagePhashes"),
+        scanGenerateClipPreviews = flag("scanGenerateClipPreviews"),
+        rescan = flag("rescan"),
+    ).toDomain(base)
 }
 
 private data class FindSceneEnvelope(
