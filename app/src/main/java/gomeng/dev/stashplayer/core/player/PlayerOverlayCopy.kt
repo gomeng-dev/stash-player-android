@@ -411,17 +411,20 @@ fun playerPlaylistButtonContentDescription(playlistItemCount: Int): String =
 
 fun nextPlaybackOrientationMode(current: PlaybackOrientationMode): PlaybackOrientationMode = when (current) {
     PlaybackOrientationMode.Off -> PlaybackOrientationMode.Sensor
-    PlaybackOrientationMode.Sensor -> PlaybackOrientationMode.Off
+    PlaybackOrientationMode.Sensor -> PlaybackOrientationMode.Landscape
+    PlaybackOrientationMode.Landscape -> PlaybackOrientationMode.Off
 }
 
 fun playerPlaybackOrientationContentDescription(mode: PlaybackOrientationMode): String = when (mode) {
     PlaybackOrientationMode.Off -> stashString(R.string.player_orientation_toggle_sensor_content_description)
-    PlaybackOrientationMode.Sensor -> stashString(R.string.player_orientation_toggle_off_content_description)
+    PlaybackOrientationMode.Sensor -> stashString(R.string.player_orientation_toggle_landscape_content_description)
+    PlaybackOrientationMode.Landscape -> stashString(R.string.player_orientation_toggle_off_content_description)
 }
 
 fun playerPlaybackOrientationHudText(mode: PlaybackOrientationMode): String = when (mode) {
     PlaybackOrientationMode.Off -> stashString(R.string.player_orientation_hud_off)
     PlaybackOrientationMode.Sensor -> stashString(R.string.player_orientation_hud_sensor)
+    PlaybackOrientationMode.Landscape -> stashString(R.string.player_orientation_hud_landscape)
 }
 
 fun resolvePlayerOverlayTransportUiState(

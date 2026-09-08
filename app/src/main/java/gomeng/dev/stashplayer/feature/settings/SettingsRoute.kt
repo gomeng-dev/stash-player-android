@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -58,6 +59,8 @@ import gomeng.dev.stashplayer.core.network.STASH_ANDROID_RELEASES_URL
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
+import gomeng.dev.stashplayer.core.network.StashJob
+import gomeng.dev.stashplayer.core.network.StashJobStatus
 import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashPluginRecommendationStatusClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
@@ -89,6 +92,7 @@ import gomeng.dev.stashplayer.feature.security.deviceAuthenticationAvailabilityD
 import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationAvailability
 import gomeng.dev.stashplayer.feature.security.rememberDeviceAuthenticationLauncher
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object SettingsDestinations {
@@ -343,18 +347,21 @@ object PlaybackOrientationSettingCopy {
     val options: List<PlaybackOrientationModeOption> = listOf(
         PlaybackOrientationModeOption(PlaybackOrientationMode.Off, labelFor(PlaybackOrientationMode.Off), descriptionFor(PlaybackOrientationMode.Off)),
         PlaybackOrientationModeOption(PlaybackOrientationMode.Sensor, labelFor(PlaybackOrientationMode.Sensor), descriptionFor(PlaybackOrientationMode.Sensor)),
+        PlaybackOrientationModeOption(PlaybackOrientationMode.Landscape, labelFor(PlaybackOrientationMode.Landscape), descriptionFor(PlaybackOrientationMode.Landscape)),
     )
 
     @StringRes
     fun labelFor(mode: PlaybackOrientationMode): Int = when (mode) {
         PlaybackOrientationMode.Off -> R.string.settings_playback_orientation_off_label
         PlaybackOrientationMode.Sensor -> R.string.settings_playback_orientation_sensor_label
+        PlaybackOrientationMode.Landscape -> R.string.settings_playback_orientation_landscape_label
     }
 
     @StringRes
     fun descriptionFor(mode: PlaybackOrientationMode): Int = when (mode) {
         PlaybackOrientationMode.Off -> R.string.settings_playback_orientation_off_description
         PlaybackOrientationMode.Sensor -> R.string.settings_playback_orientation_sensor_description
+        PlaybackOrientationMode.Landscape -> R.string.settings_playback_orientation_landscape_description
     }
 }
 
@@ -813,6 +820,10 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var isServerLibraryLoading by remember { mutableStateOf(false) }
     var isServerLibrarySaving by remember { mutableStateOf(false) }
     var isMetadataScanRunning by remember { mutableStateOf(false) }
+    var serverJobs by remember { mutableStateOf(emptyList<StashJob>()) }
+    var isJobQueueLoading by remember { mutableStateOf(false) }
+    var jobQueueErrorText by remember { mutableStateOf<String?>(null) }
+    var jobQueueRefreshKey by remember { mutableStateOf(0) }
     var scanOptions by remember { mutableStateOf(StashScanOptions()) }
     var scanOptionsExpanded by remember { mutableStateOf(false) }
     var libraryPaths by remember { mutableStateOf(emptyList<String>()) }
@@ -866,6 +877,27 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         isServerLibraryLoading = false
     }
 
+    LaunchedEffect(savedProfile, jobQueueRefreshKey) {
+        val activeProfile = savedProfile
+        if (activeProfile?.isConfigured() != true) {
+            serverJobs = emptyList()
+            jobQueueErrorText = null
+            return@LaunchedEffect
+        }
+        val client = StashGraphQlClient(activeProfile)
+        while (true) {
+            isJobQueueLoading = serverJobs.isEmpty()
+            runCatching { client.findJobQueue() }
+                .onSuccess {
+                    serverJobs = it
+                    jobQueueErrorText = null
+                }
+                .onFailure { jobQueueErrorText = it.message ?: context.getString(R.string.settings_server_job_queue_failed) }
+            isJobQueueLoading = false
+            delay(2_000)
+        }
+    }
+
     fun startMetadataScan(paths: List<String>? = null) {
         coroutineScope.launch {
             val activeProfile = savedProfile
@@ -880,6 +912,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
             runCatching { StashGraphQlClient(activeProfile).scanMetadata(scanOptions, paths) }
                 .onSuccess { jobId ->
                     serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_started, jobId)
+                    jobQueueRefreshKey++
                 }
                 .onFailure {
                     StashDebugLogBuffer.record("Settings", "Stash metadata scan start failed", it)
@@ -1261,6 +1294,9 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         loading = isServerLibraryLoading,
         saving = isServerLibrarySaving,
         scanning = isMetadataScanRunning,
+        jobs = serverJobs,
+        jobQueueLoading = isJobQueueLoading,
+        jobQueueErrorText = jobQueueErrorText,
         statusText = serverLibraryStatusText,
         errorText = serverLibraryErrorText,
         onToggleCreateGalleries = { enabled ->
@@ -1350,6 +1386,9 @@ private fun ServerLibrarySettingsCard(
     loading: Boolean,
     saving: Boolean,
     scanning: Boolean,
+    jobs: List<StashJob>,
+    jobQueueLoading: Boolean,
+    jobQueueErrorText: String?,
     statusText: String?,
     errorText: String?,
     onToggleCreateGalleries: (Boolean) -> Unit,
@@ -1401,6 +1440,17 @@ private fun ServerLibrarySettingsCard(
             ) {
                 Text(stringResource(R.string.settings_server_selective_scan_button))
             }
+            Text(stringResource(R.string.settings_server_job_queue_title), style = MaterialTheme.typography.titleSmall)
+            when {
+                jobQueueLoading -> LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                jobs.isEmpty() -> Text(
+                    stringResource(R.string.settings_server_job_queue_empty),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                else -> jobs.forEach { job -> ServerJobRow(job) }
+            }
+            jobQueueErrorText?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             TextButton(
                 onClick = { onScanOptionsExpandedChange(!scanOptionsExpanded) },
                 enabled = controlsEnabled,
@@ -1488,6 +1538,35 @@ private fun ServerLibrarySettingsCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ServerJobRow(job: StashJob) {
+    val status = when (job.status) {
+        StashJobStatus.Ready -> R.string.settings_server_job_status_ready
+        StashJobStatus.Running -> R.string.settings_server_job_status_running
+        StashJobStatus.Stopping -> R.string.settings_server_job_status_stopping
+        StashJobStatus.Finished -> R.string.settings_server_job_status_finished
+        StashJobStatus.Failed -> R.string.settings_server_job_status_failed
+        StashJobStatus.Cancelled -> R.string.settings_server_job_status_cancelled
+        StashJobStatus.Missing -> R.string.settings_server_job_status_unknown
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(job.description, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(status), style = MaterialTheme.typography.labelMedium)
+        }
+        job.progress?.let { progress ->
+            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+            Text(
+                stringResource(R.string.settings_server_job_progress, (progress * 100).roundToInt()),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } ?: LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        job.subTasks.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+        job.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
     }
 }
 

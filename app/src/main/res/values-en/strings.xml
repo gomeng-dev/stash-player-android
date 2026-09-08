@@ -321,7 +321,7 @@
     <string name="player_pip_action_previous">Previous video</string>
     <string name="player_pip_action_next">Next video</string>
     <string name="player_orientation_toggle_sensor_content_description">Turn on sensor orientation</string>
-    <string name="player_orientation_toggle_off_content_description">Turn off sensor orientation</string>
+    <string name="player_orientation_toggle_off_content_description">Turn off automatic orientation</string>
     <string name="player_orientation_hud_off">Sensor orientation off</string>
     <string name="player_orientation_hud_sensor">Sensor orientation on</string>
     <string name="player_more_options_content_description">Open player more options</string>
@@ -1121,4 +1121,21 @@
     <string name="player_stash_tag_applying_button" formatted="false">Applying...</string>
     <string name="player_stash_tag_already_applied" formatted="false">Tags already applied</string>
     <string name="player_stash_tag_applied_count">Applied %1$d tag(s)</string>
+    <string name="settings_server_job_queue_title">Job queue</string>
+    <string name="settings_server_job_queue_empty">No queued or running jobs.</string>
+    <string name="settings_server_job_queue_failed">Could not load the job queue.</string>
+    <string name="settings_server_job_status_ready">Queued</string>
+    <string name="settings_server_job_status_running">Running</string>
+    <string name="settings_server_job_status_stopping">Stopping</string>
+    <string name="settings_server_job_status_finished">Finished</string>
+    <string name="settings_server_job_status_failed">Failed</string>
+    <string name="settings_server_job_status_cancelled">Cancelled</string>
+    <string name="settings_server_job_status_unknown">Unknown</string>
+    <string name="settings_server_job_progress">%1$d%%</string>
+    <string name="settings_playback_orientation_landscape_label">Lock landscape</string>
+    <string name="settings_playback_orientation_landscape_description">Keep fullscreen playback in landscape regardless of the rotation sensor.</string>
+    <string name="player_orientation_toggle_landscape_content_description">Switch to fullscreen landscape lock</string>
+    <string name="player_orientation_hud_landscape">Fullscreen landscape locked</string>
+    <string name="explore_show_controls">Show search and filters</string>
+    <string name="explore_hide_controls">Hide search and filters</string>
 </resources>

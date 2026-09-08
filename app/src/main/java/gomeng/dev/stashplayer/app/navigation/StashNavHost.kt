@@ -702,6 +702,7 @@ private fun AppOrientationEffect(
 
 private fun AppOrientationRequest.toActivityInfoOrientation(): Int = when (this) {
     AppOrientationRequest.Portrait -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    AppOrientationRequest.Landscape -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     AppOrientationRequest.Sensor -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
     AppOrientationRequest.Unspecified -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 }

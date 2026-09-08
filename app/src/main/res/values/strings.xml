@@ -321,7 +321,7 @@
     <string name="player_pip_action_previous">이전 영상</string>
     <string name="player_pip_action_next">다음 영상</string>
     <string name="player_orientation_toggle_sensor_content_description">화면 방향 센서 따름 켜기</string>
-    <string name="player_orientation_toggle_off_content_description">화면 방향 센서 따름 끄기</string>
+    <string name="player_orientation_toggle_off_content_description">자동 화면 방향 끄기</string>
     <string name="player_orientation_hud_off">화면 방향 센서 따름 꺼짐</string>
     <string name="player_orientation_hud_sensor">화면 방향 센서 따름 켜짐</string>
     <string name="player_more_options_content_description">플레이어 상세 메뉴 열기</string>
@@ -1122,5 +1122,22 @@
     <string name="player_stash_tag_applying_button" formatted="false">적용 중...</string>
     <string name="player_stash_tag_already_applied" formatted="false">이미 적용된 태그입니다</string>
     <string name="player_stash_tag_applied_count">태그 %1$d개 적용 완료</string>
+    <string name="settings_server_job_queue_title">작업 큐</string>
+    <string name="settings_server_job_queue_empty">대기 중이거나 실행 중인 작업이 없습니다.</string>
+    <string name="settings_server_job_queue_failed">작업 큐를 불러오지 못했습니다.</string>
+    <string name="settings_server_job_status_ready">대기 중</string>
+    <string name="settings_server_job_status_running">실행 중</string>
+    <string name="settings_server_job_status_stopping">중지 중</string>
+    <string name="settings_server_job_status_finished">완료</string>
+    <string name="settings_server_job_status_failed">실패</string>
+    <string name="settings_server_job_status_cancelled">취소됨</string>
+    <string name="settings_server_job_status_unknown">알 수 없음</string>
+    <string name="settings_server_job_progress">%1$d%%</string>
+    <string name="settings_playback_orientation_landscape_label">가로 고정</string>
+    <string name="settings_playback_orientation_landscape_description">전체화면 재생을 센서와 무관하게 가로 방향으로 고정합니다.</string>
+    <string name="player_orientation_toggle_landscape_content_description">전체화면 가로 고정으로 전환</string>
+    <string name="player_orientation_hud_landscape">전체화면 가로 고정</string>
+    <string name="explore_show_controls">검색 및 필터 표시</string>
+    <string name="explore_hide_controls">검색 및 필터 숨기기</string>
 </resources>
 

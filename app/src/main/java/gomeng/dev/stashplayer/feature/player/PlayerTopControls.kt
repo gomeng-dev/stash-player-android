@@ -227,7 +227,7 @@ fun PlayerTopControls(
                 Icon(
                     Icons.Outlined.ScreenRotation,
                     contentDescription = playerPlaybackOrientationContentDescription(playbackOrientationMode),
-                    tint = if (playbackOrientationMode == PlaybackOrientationMode.Sensor) StashColors.Primary else Color.White,
+                    tint = if (playbackOrientationMode != PlaybackOrientationMode.Off) StashColors.Primary else Color.White,
                 )
             }
         }

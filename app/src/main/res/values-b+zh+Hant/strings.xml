@@ -321,7 +321,7 @@
     <string name="player_pip_action_previous">上一個視頻</string>
     <string name="player_pip_action_next">下一個視頻</string>
     <string name="player_orientation_toggle_sensor_content_description">打開感測器方向</string>
-    <string name="player_orientation_toggle_off_content_description">關閉感測器方向</string>
+    <string name="player_orientation_toggle_off_content_description">關閉自動畫面方向</string>
     <string name="player_orientation_hud_off">感測器方向關閉</string>
     <string name="player_orientation_hud_sensor">感測器方向打開</string>
     <string name="player_more_options_content_description">為玩家開啟更多選項</string>
@@ -1120,4 +1120,21 @@
     <string name="player_stash_tag_applying_button" formatted="false">正在套用...</string>
     <string name="player_stash_tag_already_applied" formatted="false">標籤已套用</string>
     <string name="player_stash_tag_applied_count">已套用 %1$d 個標籤</string>
+    <string name="settings_server_job_queue_title">工作佇列</string>
+    <string name="settings_server_job_queue_empty">沒有排隊或執行中的工作。</string>
+    <string name="settings_server_job_queue_failed">無法載入工作佇列。</string>
+    <string name="settings_server_job_status_ready">排隊中</string>
+    <string name="settings_server_job_status_running">執行中</string>
+    <string name="settings_server_job_status_stopping">正在停止</string>
+    <string name="settings_server_job_status_finished">已完成</string>
+    <string name="settings_server_job_status_failed">失敗</string>
+    <string name="settings_server_job_status_cancelled">已取消</string>
+    <string name="settings_server_job_status_unknown">未知</string>
+    <string name="settings_server_job_progress">%1$d%%</string>
+    <string name="settings_playback_orientation_landscape_label">鎖定橫向</string>
+    <string name="settings_playback_orientation_landscape_description">無論旋轉感應器如何，均將全螢幕播放維持為橫向。</string>
+    <string name="player_orientation_toggle_landscape_content_description">切換為全螢幕橫向鎖定</string>
+    <string name="player_orientation_hud_landscape">全螢幕橫向已鎖定</string>
+    <string name="explore_show_controls">顯示搜尋與篩選</string>
+    <string name="explore_hide_controls">隱藏搜尋與篩選</string>
 </resources>

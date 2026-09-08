@@ -4,6 +4,8 @@ fun defaultStashExplorePageSizeOptions(): List<Int> = defaultStashDiscoveryPageS
 
 internal fun showExploreSupportingChrome(isLandscape: Boolean): Boolean = !isLandscape
 
+internal fun defaultExploreControlsExpanded(isLandscape: Boolean): Boolean = !isLandscape
+
 data class StashExploreSortOption(
     val id: String,
     val label: String,

@@ -2,7 +2,8 @@ package gomeng.dev.stashplayer.core.player
 
 enum class PlaybackOrientationMode(val persistedValue: String) {
     Off("off"),
-    Sensor("sensor");
+    Sensor("sensor"),
+    Landscape("landscape");
 
     companion object {
         val default: PlaybackOrientationMode = Off

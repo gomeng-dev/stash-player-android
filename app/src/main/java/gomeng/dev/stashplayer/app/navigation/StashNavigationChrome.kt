@@ -42,6 +42,7 @@ internal data class TopLevelNavigationStatePolicy(
 
 internal enum class AppOrientationRequest {
     Portrait,
+    Landscape,
     Sensor,
     Unspecified,
 }
@@ -93,6 +94,9 @@ internal fun resolveAppOrientationRequest(
     playbackOrientationMode: PlaybackOrientationMode,
 ): AppOrientationRequest = when {
     !isFoldLikeLayout && !isPlayerRoute(route) -> AppOrientationRequest.Portrait
+    isPlayerRoute(route) &&
+        playerPresentationMode == PlayerPresentationMode.Fullscreen &&
+        playbackOrientationMode == PlaybackOrientationMode.Landscape -> AppOrientationRequest.Landscape
     isPlayerRoute(route) && playbackOrientationMode == PlaybackOrientationMode.Sensor -> AppOrientationRequest.Sensor
     !isFoldLikeLayout &&
         isPlayerRoute(route) &&

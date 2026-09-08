@@ -188,6 +188,8 @@ class StashGraphQlClient(
         )
     }
 
+    suspend fun findJobQueue(): List<StashJob> = parseJobQueueResponse(execute(JOB_QUEUE_QUERY))
+
     suspend fun findScenes(
         perPage: Int = 25,
         page: Int = 1,
@@ -742,6 +744,19 @@ class StashGraphQlClient(
               findJob(input: ${'$'}input) {
                 id
                 status
+              }
+            }
+        """
+
+        val JOB_QUEUE_QUERY = """
+            query JobQueue {
+              jobQueue {
+                id
+                status
+                description
+                progress
+                subTasks
+                error
               }
             }
         """
@@ -1455,6 +1470,8 @@ internal fun directoryQueryForTesting(): String = StashGraphQlClient.DIRECTORY_Q
 internal fun stashTagMetadataGenerateMutationForTesting(): String = StashGraphQlClient.STASH_TAG_METADATA_GENERATE_MUTATION
 
 internal fun findJobQueryForTesting(): String = StashGraphQlClient.FIND_JOB_QUERY
+
+internal fun jobQueueQueryForTesting(): String = StashGraphQlClient.JOB_QUEUE_QUERY
 
 internal fun allTagsQueryForTesting(): String = StashGraphQlClient.ALL_TAGS_QUERY
 

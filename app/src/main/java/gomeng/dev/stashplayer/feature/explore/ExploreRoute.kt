@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -76,6 +78,7 @@ import gomeng.dev.stashplayer.core.model.StashExploreSortOption
 import gomeng.dev.stashplayer.core.model.StashSortDirection
 import gomeng.dev.stashplayer.core.model.defaultStashExplorePageSizeOptions
 import gomeng.dev.stashplayer.core.model.defaultStashExploreSortOptions
+import gomeng.dev.stashplayer.core.model.defaultExploreControlsExpanded
 import gomeng.dev.stashplayer.core.model.initialFromPersisted
 import gomeng.dev.stashplayer.core.model.normalizeStashDiscoveryQuery
 import gomeng.dev.stashplayer.core.model.shouldLoadExploreResultsFromServer
@@ -685,9 +688,10 @@ private fun ExploreContent(
     val thumbnailHeight = stashMediaGridThumbnailHeightDp(isFoldLikeLayout).dp
     val results = pageState.results.applyLocalFavoriteFilter(pageState.videoFilter.localFavoriteOnly, favoriteSceneIds)
     val totalCount = pageState.totalCount
-    val showSupportingChrome = showExploreSupportingChrome(
-        LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE,
-    )
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val showSupportingChrome = showExploreSupportingChrome(isLandscape)
+    var controlsExpanded by rememberSaveable(isLandscape) { mutableStateOf(defaultExploreControlsExpanded(isLandscape)) }
+    val showControls = !isLandscape || controlsExpanded
     val visibleResultIds = results.map { it.id }
     var selectionState by remember { mutableStateOf(SceneSelectionState()) }
     var viewMode by remember { mutableStateOf(StashScenesViewMode.Grid) }
@@ -752,6 +756,16 @@ private fun ExploreContent(
             Text(stashString(R.string.navigation_explore_label), style = MaterialTheme.typography.headlineLarge)
         }
 
+        if (isLandscape) {
+            TextButton(
+                onClick = { controlsExpanded = !controlsExpanded },
+                modifier = Modifier.padding(horizontal = horizontalPadding),
+            ) {
+                Text(stashString(if (controlsExpanded) R.string.explore_hide_controls else R.string.explore_show_controls))
+            }
+        }
+
+        if (showControls) {
         StashScenesToolbar(
             horizontalPadding = horizontalPadding,
             isConfigured = isConfigured,
@@ -794,8 +808,9 @@ private fun ExploreContent(
             },
             onDeleteSelection = { deleteConfirmation = SceneBulkDeleteConfirmationState.open(selectionState.selectedCount) },
         )
+        }
 
-        if (showSupportingChrome && selectionState.selectedCount == 0) {
+        if (showControls && selectionState.selectedCount == 0) {
             StashVideoFilterGroupRow(
                 horizontalPadding = horizontalPadding,
                 isConfigured = isConfigured,
@@ -810,7 +825,7 @@ private fun ExploreContent(
             )
         }
 
-        if (showSupportingChrome) StashActiveVideoFilterChipsRow(
+        if (showControls) StashActiveVideoFilterChipsRow(
             videoFilter = pageState.videoFilter,
             horizontalPadding = horizontalPadding,
             onTagClick = onOpenTagFilter,
@@ -830,7 +845,7 @@ private fun ExploreContent(
             onClearRandomShuffle = onClearRandomShuffle,
         )
 
-        if (showSupportingChrome && pageState.hasExploreIntent) {
+        if (showControls && pageState.hasExploreIntent) {
             Column(
                 modifier = Modifier.padding(horizontal = horizontalPadding),
                 verticalArrangement = Arrangement.spacedBy(4.dp),

@@ -314,7 +314,10 @@ object PlayerWatchPageController {
 
     fun resolveStashTagResourceGenerationTerminalAction(status: StashJobStatus): StashTagResourceGenerationTerminalAction =
         when (status) {
-            StashJobStatus.Running -> StashTagResourceGenerationTerminalAction.KeepPolling
+            StashJobStatus.Ready,
+            StashJobStatus.Running,
+            StashJobStatus.Stopping,
+            -> StashTagResourceGenerationTerminalAction.KeepPolling
             StashJobStatus.Finished -> StashTagResourceGenerationTerminalAction.RetryPrediction
             StashJobStatus.Failed,
             StashJobStatus.Cancelled,

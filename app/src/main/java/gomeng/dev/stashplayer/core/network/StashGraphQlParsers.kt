@@ -94,11 +94,28 @@ data class StashServerLibrarySettings(
 )
 
 enum class StashJobStatus {
+    Ready,
     Running,
+    Stopping,
     Finished,
     Failed,
     Cancelled,
     Missing,
+}
+
+data class StashJob(
+    val id: String,
+    val status: StashJobStatus,
+    val description: String,
+    val progress: Float?,
+    val subTasks: List<String>,
+    val error: String?,
+)
+
+fun parseJobQueueResponse(json: String): List<StashJob> {
+    val envelope = parseJson<JobQueueEnvelope>(json)
+    envelope.throwIfErrors()
+    return envelope.data?.jobQueue.orEmpty().mapNotNull { it.toDomainOrNull() }
 }
 
 fun parseFindScenesResponse(json: String): List<SceneCardModel> {
@@ -235,13 +252,16 @@ fun parseMetadataGenerateResponse(json: String): String {
 fun parseFindJobResponse(json: String): StashJobStatus {
     val envelope = parseJson<FindJobEnvelope>(json)
     envelope.throwIfErrors()
-    val status = envelope.data?.findJob?.status?.trim()?.uppercase(Locale.ROOT) ?: return StashJobStatus.Missing
-    return when (status) {
+    return envelope.data?.findJob?.status?.toStashJobStatus() ?: StashJobStatus.Missing
+}
+
+private fun String.toStashJobStatus(): StashJobStatus = when (trim().uppercase(Locale.ROOT)) {
+        "READY" -> StashJobStatus.Ready
         "FINISHED" -> StashJobStatus.Finished
+        "STOPPING" -> StashJobStatus.Stopping
         "FAILED" -> StashJobStatus.Failed
         "CANCELLED", "CANCELED" -> StashJobStatus.Cancelled
         else -> StashJobStatus.Running
-    }
 }
 
 fun buildStashStream(profile: StashServerProfile, scene: StashScene): StashStream {
@@ -409,10 +429,33 @@ private data class FindJobEnvelope(
 ) : GraphQlEnvelope
 
 private data class FindJobData(val findJob: ApiJob? = null)
+private data class JobQueueEnvelope(
+    val data: JobQueueData? = null,
+    override val errors: List<GraphQlError>? = null,
+) : GraphQlEnvelope
+
+private data class JobQueueData(val jobQueue: List<ApiJob>? = null)
 private data class ApiJob(
     val id: String? = null,
     val status: String? = null,
-)
+    val description: String? = null,
+    val progress: Float? = null,
+    val subTasks: List<String>? = null,
+    val error: String? = null,
+) {
+    fun toDomainOrNull(): StashJob? {
+        val normalizedId = id?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        val normalizedDescription = description?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        return StashJob(
+            id = normalizedId,
+            status = status?.toStashJobStatus() ?: StashJobStatus.Running,
+            description = normalizedDescription,
+            progress = progress?.coerceIn(0f, 1f),
+            subTasks = subTasks.orEmpty().mapNotNull { it.trim().takeIf(String::isNotEmpty) },
+            error = error?.trim()?.takeIf(String::isNotEmpty),
+        )
+    }
+}
 
 private data class ApiConfigGeneral(
     val createGalleriesFromFolders: Boolean? = null,

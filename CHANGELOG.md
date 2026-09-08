@@ -6,6 +6,28 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.11.2] - 2026-09-08
+
+### English
+
+- Added the Stash server job queue and live task progress to library settings.
+- Added a fullscreen landscape lock and collapsible Explore controls in landscape.
+
+### 한국어
+
+- 라이브러리 설정에 Stash 서버 작업 큐와 실시간 작업 진행률을 추가했습니다.
+- 전체화면 가로 고정과 가로 화면 Explore 검색·필터 접기 기능을 추가했습니다.
+
+### 简体中文
+
+- 在媒体库设置中添加了 Stash 服务器任务队列和实时任务进度。
+- 添加了全屏横屏锁定和横屏 Explore 搜索与筛选折叠功能。
+
+### 繁體中文
+
+- 在媒體庫設定中加入了 Stash 伺服器工作佇列與即時工作進度。
+- 加入了全螢幕橫向鎖定與橫向 Explore 搜尋及篩選折疊功能。
+
 ## [1.11.1] - 2026-09-07
 
 ### English
