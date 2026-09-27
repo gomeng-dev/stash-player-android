@@ -139,7 +139,8 @@ fun StashNavHost(
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
-    val savedProfile by settingsRepository.serverProfile.collectAsState(initial = null)
+    val savedProfile by settingsRepository.savedServerProfile.collectAsState(initial = null)
+    val runtimeProfile by settingsRepository.serverProfile.collectAsState(initial = null)
     val playbackOrientationMode by settingsRepository.playbackOrientationMode.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PLAYBACK_ORIENTATION_MODE,
     )
@@ -272,7 +273,7 @@ fun StashNavHost(
     }
 
     suspend fun ensurePlaylistTrailingItems(sceneId: String, minimumTrailingCount: Int) {
-        val activeProfile = savedProfile ?: return
+        val activeProfile = runtimeProfile ?: return
         var continuation = playbackQueueContinuation ?: return
         var queue = playbackQueue.withCurrent(sceneId)
         if (
@@ -633,7 +634,7 @@ fun StashNavHost(
                 GalleryPhotoViewerOverlay(
                     images = viewer.images,
                     initialIndex = viewer.initialIndex,
-                    serverProfile = savedProfile,
+                    serverProfile = runtimeProfile,
                     onDismiss = { activeGalleryPhotoViewer = null },
                     modifier = Modifier.fillMaxSize(),
                     onOpenLinkedGallery = { galleryId ->

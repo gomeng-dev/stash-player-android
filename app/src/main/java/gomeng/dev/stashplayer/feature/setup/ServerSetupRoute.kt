@@ -52,7 +52,7 @@ fun ServerSetupRoute(
 ) {
     val context = LocalContext.current
     val repository = remember(context) { StashSettingsRepository(context) }
-    val savedProfile by repository.serverProfile.collectAsState(initial = null)
+    val savedProfile by repository.savedServerProfile.collectAsState(initial = null)
     val biometricAppLockEnabled by repository.biometricAppLockEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_BIOMETRIC_APP_LOCK_ENABLED,
     )

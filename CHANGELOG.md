@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-09-27
+
+### English
+
+- Added an optional fallback Stash server URL that is used when the preferred LAN server cannot be reached.
+
+### 한국어
+
+- 기본 LAN 서버에 연결할 수 없을 때 사용하는 선택형 대체 Stash 서버 주소를 추가했습니다.
+
+### 简体中文
+
+- 添加了可选的备用 Stash 服务器 URL，在首选局域网服务器无法连接时使用。
+
+### 繁體中文
+
+- 新增選用的備用 Stash 伺服器 URL，當偏好的區域網路伺服器無法連線時使用。
+
 ## [1.11.2] - 2026-09-08
 
 ### English

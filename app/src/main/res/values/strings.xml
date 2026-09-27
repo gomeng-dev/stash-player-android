@@ -457,6 +457,8 @@
     <string name="settings_server_scan_force_rescan">변경되지 않은 파일도 강제 재스캔</string>
     <string name="settings_server_name_label">서버 이름</string>
     <string name="settings_server_url_label">서버 주소</string>
+    <string name="settings_fallback_server_url_label">대체 서버 주소 (선택)</string>
+    <string name="settings_fallback_server_url_description">기본 서버에 연결할 수 없을 때 사용합니다.</string>
     <string name="settings_api_key_label">API Key</string>
     <string name="settings_save_in_progress">저장 중...</string>
     <string name="settings_save_complete">저장 완료</string>

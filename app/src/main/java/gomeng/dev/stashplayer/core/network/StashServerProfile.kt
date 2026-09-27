@@ -21,6 +21,7 @@ enum class StashServerAuthMode(val persistedValue: String) {
 data class StashServerProfile(
     val name: String = "Home",
     val baseUrl: String = "",
+    val fallbackBaseUrl: String = "",
     val apiKey: String = "",
     val authMode: StashServerAuthMode = StashServerAuthMode.ApiKey,
     val sessionCookie: String = "",
@@ -30,17 +31,11 @@ data class StashServerProfile(
 ) {
     fun isConfigured(): Boolean = baseUrl.isNotBlank()
 
-    fun normalizedBaseUrl(): String {
-        val trimmed = baseUrl.trim().trimEnd('/')
-        if (trimmed.isBlank()) return ""
-        return if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-            trimmed
-        } else {
-            DEFAULT_SCHEME + trimmed
-        }
-    }
+    fun normalizedBaseUrl(): String = normalizeStashServerBaseUrl(baseUrl)
 
     fun graphQlUrl(): String = normalizedBaseUrl() + "/graphql"
+
+    fun normalizedFallbackBaseUrl(): String = normalizeStashServerBaseUrl(fallbackBaseUrl)
 
     fun absoluteUrl(url: String): String {
         val value = url.trim()
@@ -108,6 +103,21 @@ data class StashServerProfile(
 }
 
 fun persistStashServerAuthMode(mode: StashServerAuthMode): String = mode.persistedValue
+
+suspend fun resolveReachableStashServerProfile(
+    profile: StashServerProfile,
+    canConnect: suspend (StashServerProfile) -> Boolean,
+): StashServerProfile {
+    val fallbackBaseUrl = profile.normalizedFallbackBaseUrl()
+    if (fallbackBaseUrl.isBlank() || canConnect(profile)) return profile
+    return profile.copy(baseUrl = fallbackBaseUrl)
+}
+
+private fun normalizeStashServerBaseUrl(value: String): String {
+    val trimmed = value.trim().trimEnd('/')
+    if (trimmed.isBlank()) return ""
+    return if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) trimmed else DEFAULT_SCHEME + trimmed
+}
 
 fun stashServerAuthModeFromPersistedValue(value: String?): StashServerAuthMode =
     StashServerAuthMode.fromPersistedValue(value)

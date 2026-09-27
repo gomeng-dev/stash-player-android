@@ -87,7 +87,7 @@ fun StashPlayerAppRoot() {
     val recentAppsPrivacyEnabled by repository.recentAppsPrivacyEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_RECENT_APPS_PRIVACY_ENABLED,
     )
-    val savedProfile by repository.serverProfile.collectAsState(initial = null)
+    val savedProfile by repository.savedServerProfile.collectAsState(initial = null)
     val biometricAppLockEnabledState = repository.biometricAppLockEnabled.collectAsState(initial = null as Boolean?)
     val biometricAppLockEnabled = biometricAppLockEnabledState.value
     var appSessionUnlocked by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }

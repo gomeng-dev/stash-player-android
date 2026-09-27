@@ -457,6 +457,8 @@
     <string name="settings_server_scan_force_rescan">強制重新掃描未變更的檔案</string>
     <string name="settings_server_name_label">伺服器名稱</string>
     <string name="settings_server_url_label">伺服器URL</string>
+    <string name="settings_fallback_server_url_label">備用伺服器URL（選填）</string>
+    <string name="settings_fallback_server_url_description">主要伺服器無法連線時使用。</string>
     <string name="settings_api_key_label">API Key</string>
     <string name="settings_save_in_progress">正在儲存...</string>
     <string name="settings_save_complete">已儲存</string>

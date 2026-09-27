@@ -37,12 +37,18 @@ import gomeng.dev.stashplayer.core.model.stashImageSortOptions
 import gomeng.dev.stashplayer.core.model.STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
 import gomeng.dev.stashplayer.core.model.coerceShortsMaxDurationSeconds
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 private val Context.stashSettingsDataStore by preferencesDataStore(name = "stash_settings")
 
 class StashSettingsRepository(private val context: Context) {
-    val serverProfile: Flow<StashServerProfile?> = context.stashSettingsDataStore.data.map { prefs ->
+    val savedServerProfile: Flow<StashServerProfile?> = context.stashSettingsDataStore.data.map { prefs ->
         val baseUrl = prefs[Keys.BaseUrl].orEmpty()
         if (baseUrl.isBlank()) {
             null
@@ -50,6 +56,7 @@ class StashSettingsRepository(private val context: Context) {
             StashServerProfile(
                 name = prefs[Keys.Name].orEmpty().ifBlank { "Home" },
                 baseUrl = baseUrl,
+                fallbackBaseUrl = prefs[Keys.FallbackBaseUrl].orEmpty(),
                 apiKey = prefs[Keys.ApiKey].orEmpty(),
                 authMode = stashServerAuthModeFromPersistedValue(prefs[Keys.AuthMode]),
                 sessionCookie = prefs[Keys.SessionCookie].orEmpty(),
@@ -57,6 +64,24 @@ class StashSettingsRepository(private val context: Context) {
                 password = prefs[Keys.Password].orEmpty(),
                 allowInsecureLocalApiKey = prefs[Keys.AllowInsecureLocalApiKey] ?: false,
             )
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val serverProfile: Flow<StashServerProfile?> = savedServerProfile.flatMapLatest { profile ->
+        flow {
+            if (profile == null) {
+                emit(null)
+                return@flow
+            }
+            while (true) {
+                emit(
+                    resolveReachableStashServerProfile(profile) { preferred ->
+                        runCatching { StashGraphQlClient(preferred, fallbackProbeHttpClient).testConnection() }.isSuccess
+                    },
+                )
+                delay(FALLBACK_RECHECK_INTERVAL_MS)
+            }
         }
     }
 
@@ -174,6 +199,7 @@ class StashSettingsRepository(private val context: Context) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.Name] = profile.name.ifBlank { "Home" }
             prefs[Keys.BaseUrl] = profile.normalizedBaseUrl()
+            prefs[Keys.FallbackBaseUrl] = profile.normalizedFallbackBaseUrl()
             prefs[Keys.ApiKey] = profile.apiKey.trim()
             prefs[Keys.AuthMode] = persistStashServerAuthMode(profile.authMode)
             prefs[Keys.SessionCookie] = profile.sessionCookie.trim()
@@ -351,6 +377,7 @@ class StashSettingsRepository(private val context: Context) {
     private object Keys {
         val Name = stringPreferencesKey("server_name")
         val BaseUrl = stringPreferencesKey("server_base_url")
+        val FallbackBaseUrl = stringPreferencesKey("server_fallback_base_url")
         val ApiKey = stringPreferencesKey("server_api_key")
         val AuthMode = stringPreferencesKey("server_auth_mode")
         val SessionCookie = stringPreferencesKey("server_session_cookie")
@@ -389,6 +416,13 @@ class StashSettingsRepository(private val context: Context) {
     }
 
     companion object {
+        private val fallbackProbeHttpClient = OkHttpClient.Builder()
+            .callTimeout(1_500, TimeUnit.MILLISECONDS)
+            .connectTimeout(1_000, TimeUnit.MILLISECONDS)
+            .readTimeout(1_000, TimeUnit.MILLISECONDS)
+            .build()
+        private const val FALLBACK_RECHECK_INTERVAL_MS = 10_000L
+
         const val DEFAULT_PLAYER_DEBUG_OVERLAY_ENABLED = false
         const val DEFAULT_BIOMETRIC_APP_LOCK_ENABLED = false
         const val DEFAULT_RECENT_APPS_PRIVACY_ENABLED = false

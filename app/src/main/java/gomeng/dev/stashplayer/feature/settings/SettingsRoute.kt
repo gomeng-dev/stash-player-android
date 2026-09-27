@@ -801,11 +801,13 @@ private fun SettingsSectionCard(
 private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     val context = LocalContext.current
     val repository = remember(context) { StashSettingsRepository(context) }
-    val savedProfile by repository.serverProfile.collectAsState(initial = null)
+    val savedProfile by repository.savedServerProfile.collectAsState(initial = null)
+    val runtimeProfile by repository.serverProfile.collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
     var serverName by remember { mutableStateOf("Home") }
     var serverUrl by remember { mutableStateOf("") }
+    var fallbackServerUrl by remember { mutableStateOf("") }
     var apiKey by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -840,6 +842,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         savedProfile?.let {
             serverName = it.name
             serverUrl = it.baseUrl
+            fallbackServerUrl = it.fallbackBaseUrl
             apiKey = it.apiKey
             username = it.username
             password = it.password
@@ -850,6 +853,9 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 StashServerAuthMode.SessionCookie -> SettingsServerAuthModeOption.Password
             }
         }
+    }
+
+    LaunchedEffect(runtimeProfile) {
         createGalleriesFromFolders = null
         libraryPaths = emptyList()
         scanOptions = StashScanOptions()
@@ -858,7 +864,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         directoryErrorText = null
         serverLibraryStatusText = null
         serverLibraryErrorText = null
-        val activeProfile = savedProfile
+        val activeProfile = runtimeProfile
         if (activeProfile?.isConfigured() != true) {
             isServerLibraryLoading = false
             return@LaunchedEffect
@@ -877,8 +883,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         isServerLibraryLoading = false
     }
 
-    LaunchedEffect(savedProfile, jobQueueRefreshKey) {
-        val activeProfile = savedProfile
+    LaunchedEffect(runtimeProfile, jobQueueRefreshKey) {
+        val activeProfile = runtimeProfile
         if (activeProfile?.isConfigured() != true) {
             serverJobs = emptyList()
             jobQueueErrorText = null
@@ -900,7 +906,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
 
     fun startMetadataScan(paths: List<String>? = null) {
         coroutineScope.launch {
-            val activeProfile = savedProfile
+            val activeProfile = runtimeProfile
             if (activeProfile == null) {
                 serverLibraryStatusText = null
                 serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
@@ -929,7 +935,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         isServerLibrarySaving = true
         serverLibraryErrorText = null
         coroutineScope.launch {
-            runCatching { savedProfile?.let { StashGraphQlClient(it).setScanOptions(updated) } ?: error("No Stash server") }
+            runCatching { runtimeProfile?.let { StashGraphQlClient(it).setScanOptions(updated) } ?: error("No Stash server") }
                 .onFailure {
                     if (scanOptions == updated) scanOptions = previous
                     StashDebugLogBuffer.record("Settings", "Stash scan options save failed", it)
@@ -941,7 +947,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
 
     fun loadDirectory(path: String) {
         if (isDirectoryLoading) return
-        val activeProfile = savedProfile ?: return
+        val activeProfile = runtimeProfile ?: return
         isDirectoryLoading = true
         directoryErrorText = null
         coroutineScope.launch {
@@ -1098,6 +1104,14 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
+            OutlinedTextField(
+                value = fallbackServerUrl,
+                onValueChange = { fallbackServerUrl = it },
+                label = { Text(stringResource(R.string.settings_fallback_server_url_label)) },
+                supportingText = { Text(stringResource(R.string.settings_fallback_server_url_description)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
             SettingsServerAuthModeRow(
                 selected = authMode == SettingsServerAuthModeOption.LinkOnly,
                 label = R.string.setup_auth_mode_link_only_label,
@@ -1150,6 +1164,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                         val profile = buildSettingsServerProfile(
                             serverName = serverName,
                             serverUrl = serverUrl,
+                            fallbackServerUrl = fallbackServerUrl,
                             apiKey = apiKey,
                             username = username,
                             password = password,
@@ -1162,7 +1177,17 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                             errorText = context.getString(R.string.auto_kr_0532)
                             return@launch
                         }
-                        if (!canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey)) {
+                        if (
+                            !canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey) ||
+                            (
+                                profile.fallbackBaseUrl.isNotBlank() &&
+                                    !canAttemptStashCredentialTransport(
+                                        profile.fallbackBaseUrl,
+                                        profile.authMode,
+                                        profile.allowInsecureLocalApiKey,
+                                    )
+                            )
+                        ) {
                             statusText = null
                             errorText = context.getString(R.string.settings_insecure_auth_blocked)
                             return@launch
@@ -1210,6 +1235,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                         val profile = buildSettingsServerProfile(
                             serverName = serverName,
                             serverUrl = serverUrl,
+                            fallbackServerUrl = fallbackServerUrl,
                             apiKey = apiKey,
                             username = username,
                             password = password,
@@ -1222,7 +1248,17 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                             errorText = context.getString(R.string.auto_kr_0532)
                             return@launch
                         }
-                        if (!canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey)) {
+                        if (
+                            !canAttemptStashCredentialTransport(profile.baseUrl, profile.authMode, profile.allowInsecureLocalApiKey) ||
+                            (
+                                profile.fallbackBaseUrl.isNotBlank() &&
+                                    !canAttemptStashCredentialTransport(
+                                        profile.fallbackBaseUrl,
+                                        profile.authMode,
+                                        profile.allowInsecureLocalApiKey,
+                                    )
+                            )
+                        ) {
                             statusText = null
                             errorText = context.getString(R.string.settings_insecure_auth_blocked)
                             return@launch
@@ -1272,6 +1308,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                     coroutineScope.launch {
                         repository.clearServerProfile()
                         serverUrl = ""
+                        fallbackServerUrl = ""
                         apiKey = ""
                         username = ""
                         password = ""
@@ -1301,7 +1338,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         errorText = serverLibraryErrorText,
         onToggleCreateGalleries = { enabled ->
             coroutineScope.launch {
-                val activeProfile = savedProfile
+                val activeProfile = runtimeProfile
                 if (activeProfile == null) {
                     serverLibraryStatusText = null
                     serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
@@ -1355,7 +1392,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                     coroutineScope.launch {
                         recommendationStatusText = context.getString(R.string.settings_recommendation_testing)
                         recommendationStatusIsSuccess = true
-                        val activeProfile = savedProfile
+                        val activeProfile = runtimeProfile
                         if (activeProfile == null) {
                             recommendationStatusText = context.getString(R.string.settings_recommendation_no_stash_server)
                             recommendationStatusIsSuccess = false
@@ -1610,6 +1647,7 @@ private fun SettingsServerAuthModeOption.toServerAuthMode(): StashServerAuthMode
 private fun buildSettingsServerProfile(
     serverName: String,
     serverUrl: String,
+    fallbackServerUrl: String,
     apiKey: String,
     username: String,
     password: String,
@@ -1618,6 +1656,7 @@ private fun buildSettingsServerProfile(
 ): StashServerProfile = StashServerProfile(
     name = serverName,
     baseUrl = serverUrl,
+    fallbackBaseUrl = fallbackServerUrl,
     apiKey = if (authMode == SettingsServerAuthModeOption.ApiKey) apiKey else "",
     username = if (authMode == SettingsServerAuthModeOption.Password) username else "",
     password = if (authMode == SettingsServerAuthModeOption.Password) password else "",

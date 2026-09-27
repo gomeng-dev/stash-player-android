@@ -457,6 +457,8 @@
     <string name="settings_server_scan_force_rescan">强制重新扫描未更改的文件</string>
     <string name="settings_server_name_label">服务器名称</string>
     <string name="settings_server_url_label">服务器URL</string>
+    <string name="settings_fallback_server_url_label">备用服务器URL（可选）</string>
+    <string name="settings_fallback_server_url_description">主服务器无法连接时使用。</string>
     <string name="settings_api_key_label">手持者000</string>
     <string name="settings_save_in_progress">保存...</string>
     <string name="settings_save_complete">已保存</string>
