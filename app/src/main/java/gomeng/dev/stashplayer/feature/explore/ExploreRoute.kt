@@ -690,8 +690,8 @@ private fun ExploreContent(
     val totalCount = pageState.totalCount
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val showSupportingChrome = showExploreSupportingChrome(isLandscape)
-    var controlsExpanded by rememberSaveable(isLandscape) { mutableStateOf(defaultExploreControlsExpanded(isLandscape)) }
-    val showControls = !isLandscape || controlsExpanded
+    var controlsExpanded by rememberSaveable { mutableStateOf(defaultExploreControlsExpanded(isLandscape)) }
+    val showControls = controlsExpanded
     val visibleResultIds = results.map { it.id }
     var selectionState by remember { mutableStateOf(SceneSelectionState()) }
     var viewMode by remember { mutableStateOf(StashScenesViewMode.Grid) }
@@ -756,13 +756,11 @@ private fun ExploreContent(
             Text(stashString(R.string.navigation_explore_label), style = MaterialTheme.typography.headlineLarge)
         }
 
-        if (isLandscape) {
-            TextButton(
-                onClick = { controlsExpanded = !controlsExpanded },
-                modifier = Modifier.padding(horizontal = horizontalPadding),
-            ) {
-                Text(stashString(if (controlsExpanded) R.string.explore_hide_controls else R.string.explore_show_controls))
-            }
+        TextButton(
+            onClick = { controlsExpanded = !controlsExpanded },
+            modifier = Modifier.padding(horizontal = horizontalPadding),
+        ) {
+            Text(stashString(if (controlsExpanded) R.string.explore_hide_controls else R.string.explore_show_controls))
         }
 
         if (showControls) {

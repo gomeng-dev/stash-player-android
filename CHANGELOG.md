@@ -6,6 +6,24 @@ When bumping `versionName`, add a new section for the release version and summar
 
 ## [Unreleased]
 
+## [1.12.1] - 2026-10-02
+
+### English
+
+- Fixed Explore Show/Hide search and filters availability in portrait and landscape; the chosen state is preserved across rotation.
+
+### 한국어
+
+- 세로·가로 화면 모두에서 탐색 검색·필터 표시/숨기기를 사용할 수 있도록 수정하고, 회전 후에도 선택한 상태를 유지합니다.
+
+### 简体中文
+
+- 修复了探索页在竖屏和横屏下显示/隐藏搜索与筛选控件的问题，并在旋转后保留所选状态。
+
+### 繁體中文
+
+- 修正探索頁在直向及橫向畫面顯示/隱藏搜尋與篩選控制項的問題，並在旋轉後保留所選狀態。
+
 ## [1.12.0] - 2026-09-27
 
 ### English
