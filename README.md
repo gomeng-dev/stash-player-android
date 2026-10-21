@@ -99,7 +99,7 @@ The Images tab supports search, sort, filters, and full-screen browsing. In the 
 3. Open the APK and allow installs from your browser or file manager if Android asks.
 4. Launch **Stash Player** and connect it to your Stash server.
 
-Current public release: **v1.13.0**
+Current public release: **v1.13.1**
 
 Save frequently scanned folders as favorites in Settings → Server → folder selection. The scan settings list offers **Scan now** without reopening the picker, plus removal; favorites are stored locally per server/auth profile. Settings also introduces another app from the same developer on Google Play; a dismissible Home card appears from the fifth process launch.
 

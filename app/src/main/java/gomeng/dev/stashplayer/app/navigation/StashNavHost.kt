@@ -3,9 +3,8 @@ package gomeng.dev.stashplayer.app.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.net.Uri
+import gomeng.dev.stashplayer.core.ui.components.openSupportUrl
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.Home
@@ -715,10 +714,8 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 }
 
 private fun openExternalUrl(context: Context, url: String) {
-    runCatching {
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-    }.onFailure { throwable ->
-        StashDebugLogBuffer.record("Navigation", "External URL open failed", throwable)
+    if (openSupportUrl(context, url) != null) {
+        StashDebugLogBuffer.record("Navigation", "External URL open failed")
     }
 }
 

@@ -4,6 +4,13 @@ All notable changes to Stash Android Player are documented here.
 
 When bumping `versionName`, add a new section for the release version and summarize the changes since the previous version. The public release workflow uses the matching section for GitHub Release notes.
 
+## [1.13.1] - 2026-10-21
+
+- English: Fix Google Play links on Home and Settings, plus release/support links, when an explicit app language is selected. Open external URLs directly with the task flag required by the localized Android context; keep localized errors for unavailable or blocked handlers.
+- 한국어: 앱 언어를 직접 선택했을 때 홈·설정의 Google Play 및 릴리즈·지원 링크가 열리지 않는 문제를 수정했습니다. 언어 설정용 Android 컨텍스트에 필요한 태스크 플래그로 외부 URL을 열고, 처리 앱이 없거나 실행이 차단된 경우에만 기존 오류를 표시합니다.
+- 简体中文：修复手动选择应用语言后首页、设置中的 Google Play 及发布和支持链接无法打开的问题。使用本地化 Android 上下文所需的任务标志直接打开外部网址，仅在无可用处理应用或启动被阻止时显示原有错误。
+- 繁體中文：修正手動選擇應用程式語言後首頁、設定中的 Google Play 及版本和支援連結無法開啟的問題。使用本地化 Android 情境所需的工作旗標直接開啟外部網址，僅在無可用處理程式或啟動遭封鎖時顯示原有錯誤。
+
 ## [1.13.0] - 2026-10-21
 
 - English: Save frequently scanned folders as favorites in the folder picker, then scan one directly from the server scan settings without reopening the picker. Favorites stay scoped to the saved server/auth profile; invalid paths and duplicate submissions are blocked.

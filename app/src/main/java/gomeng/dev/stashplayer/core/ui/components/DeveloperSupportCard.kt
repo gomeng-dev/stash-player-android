@@ -1,6 +1,7 @@
 package gomeng.dev.stashplayer.core.ui.components
 
 import android.content.Context
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -81,10 +82,15 @@ internal fun DeveloperSupportCard(
 }
 
 internal fun openSupportUrl(context: Context, url: String): String? {
-    return runCatching {
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    return try {
+        // LocalContext may be a non-Activity createConfigurationContext for app language.
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
         null
-    }.getOrElse {
+    } catch (_: ActivityNotFoundException) {
+        context.getString(R.string.settings_support_link_open_failed)
+    } catch (_: SecurityException) {
         context.getString(R.string.settings_support_link_open_failed)
     }
 }
