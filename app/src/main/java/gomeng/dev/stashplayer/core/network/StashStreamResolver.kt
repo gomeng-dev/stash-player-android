@@ -1072,7 +1072,7 @@ internal fun buildMetadataScanVariables(
     options: StashScanOptions = StashScanOptions(),
     paths: List<String>? = null,
 ): Map<String, Any?> {
-    require(paths == null || (paths.isNotEmpty() && paths.all(String::isNotEmpty))) {
+    require(paths == null || (paths.isNotEmpty() && paths.all(::isValidStashScanPath))) {
         "Selective scan requires non-empty paths"
     }
     return mapOf(

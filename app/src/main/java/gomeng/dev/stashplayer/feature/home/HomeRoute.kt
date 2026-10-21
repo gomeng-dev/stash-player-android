@@ -48,6 +48,7 @@ import gomeng.dev.stashplayer.core.network.buildSimilarScenesRepository
 import gomeng.dev.stashplayer.core.network.StashGraphQlClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
+import gomeng.dev.stashplayer.core.ui.components.DeveloperSupportCard
 import gomeng.dev.stashplayer.core.ui.components.SceneCard
 import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashActionPill
@@ -79,6 +80,7 @@ fun HomeRoute(
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
+    val showDeveloperPromo by settingsRepository.homeDeveloperPromoVisible.collectAsState(initial = false)
     val profile by settingsRepository.serverProfile.collectAsState(initial = null)
     val queueScenes by localRepository.queueScenes.collectAsState(initial = emptyList())
     val watchLaterScenes by localRepository.watchLaterScenes.collectAsState(initial = emptyList())
@@ -164,6 +166,7 @@ fun HomeRoute(
     }
 
     HomeHubContent(
+        showDeveloperPromo = showDeveloperPromo,
         isFoldLikeLayout = isFoldLikeLayout,
         hubState = hubState,
         sections = sections,
@@ -192,6 +195,7 @@ private const val HOME_RECOMMENDATION_LIBRARY_CANDIDATE_PAGE_SIZE = 100
 
 @Composable
 private fun HomeHubContent(
+    showDeveloperPromo: Boolean,
     isFoldLikeLayout: Boolean,
     hubState: HomeHubState,
     sections: List<StashMainTabSection>,
@@ -234,6 +238,14 @@ private fun HomeHubContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(bottom = 92.dp, top = 14.dp),
     ) {
+        if (showDeveloperPromo) {
+            item(key = "developer_promo") {
+                DeveloperSupportCard(
+                    modifier = Modifier.padding(horizontal = horizontalPadding),
+                    dismissible = true,
+                )
+            }
+        }
         item {
             StashScreenHeader(
                 title = stashString(R.string.auto_kr_0001),

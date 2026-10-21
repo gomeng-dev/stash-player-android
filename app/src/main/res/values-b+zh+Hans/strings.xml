@@ -1139,4 +1139,17 @@
     <string name="player_orientation_hud_landscape">全屏横屏已锁定</string>
     <string name="explore_show_controls">显示搜索和筛选</string>
     <string name="explore_hide_controls">隐藏搜索和筛选</string>
+    <string name="developer_promo_title">支持开发者</string>
+    <string name="developer_promo_slogan">喜欢的视频，随心保存。</string>
+    <string name="developer_promo_disclosure">了解同一开发者的另一款应用。</string>
+    <string name="developer_promo_google_play">在 Google Play 查看</string>
+    <string name="developer_promo_dismiss">不再在首页显示</string>
+    <string name="developer_promo_dismiss_failed">无法保存隐藏设置，请重试。</string>
+    <string name="settings_scan_favorites_title">收藏的扫描文件夹</string>
+    <string name="settings_scan_favorites_empty">在文件夹选择器中添加收藏，即可在此直接扫描。</string>
+    <string name="settings_scan_favorite">添加收藏</string>
+    <string name="settings_scan_unfavorite">取消收藏</string>
+    <string name="settings_scan_favorite_scan">立即扫描</string>
+    <string name="settings_scan_favorite_failed">无法保存或加载文件夹收藏，请重试。</string>
+    <string name="settings_scan_invalid_path">请选择有效的绝对文件夹路径。</string>
 </resources>

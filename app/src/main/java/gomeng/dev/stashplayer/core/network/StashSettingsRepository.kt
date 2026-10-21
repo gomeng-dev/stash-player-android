@@ -48,6 +48,25 @@ import java.util.concurrent.TimeUnit
 private val Context.stashSettingsDataStore by preferencesDataStore(name = "stash_settings")
 
 class StashSettingsRepository(private val context: Context) {
+    fun scanFavorites(profile: StashServerProfile): Flow<List<String>> =
+        context.stashSettingsDataStore.data.map { StashScanFavorites.read(it, profile) }
+
+    suspend fun setScanFavorite(profile: StashServerProfile, path: String, favorite: Boolean) {
+        context.stashSettingsDataStore.edit { StashScanFavorites.set(it, profile, path, favorite) }
+    }
+
+    val homeDeveloperPromoVisible: Flow<Boolean> = context.stashSettingsDataStore.data.map {
+        DeveloperPromoPreferences.isHomeVisible(it)
+    }
+
+    suspend fun recordDeveloperPromoProcessLaunch() {
+        context.stashSettingsDataStore.edit { DeveloperPromoPreferences.recordProcessLaunch(it) }
+    }
+
+    suspend fun dismissHomeDeveloperPromo() {
+        context.stashSettingsDataStore.edit { DeveloperPromoPreferences.dismissHome(it) }
+    }
+
     val savedServerProfile: Flow<StashServerProfile?> = context.stashSettingsDataStore.data.map { prefs ->
         val baseUrl = prefs[Keys.BaseUrl].orEmpty()
         if (baseUrl.isBlank()) {

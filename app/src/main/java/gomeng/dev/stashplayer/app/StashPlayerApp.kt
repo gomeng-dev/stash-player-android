@@ -42,12 +42,27 @@ import gomeng.dev.stashplayer.core.ui.i18n.withStashAppLanguage
 import gomeng.dev.stashplayer.core.ui.theme.StashPlayerTheme
 import gomeng.dev.stashplayer.core.ui.theme.resolveStashDarkTheme
 import gomeng.dev.stashplayer.feature.security.BiometricAppLockGate
+import java.io.IOException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class StashPlayerApp : Application(), ImageLoaderFactory {
+    internal val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
     override fun onCreate() {
         super.onCreate()
         updateStashStringContext(this)
         StashDebugLogBuffer.initialize(this)
+        // Application is created once per process, unlike activities or Compose routes.
+        applicationScope.launch {
+            try {
+                StashSettingsRepository(this@StashPlayerApp).recordDeveloperPromoProcessLaunch()
+            } catch (_: IOException) {
+                StashDebugLogBuffer.record("DeveloperPromo", "Could not persist process launch")
+            }
+        }
         val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             StashDebugLogBuffer.record("Uncaught", "Thread ${thread.name}", throwable)

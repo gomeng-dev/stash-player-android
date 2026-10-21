@@ -1,10 +1,11 @@
 package gomeng.dev.stashplayer.feature.settings
 
+import gomeng.dev.stashplayer.core.ui.components.DeveloperSupportCard
+import gomeng.dev.stashplayer.core.ui.components.openSupportUrl
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -65,6 +66,8 @@ import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashPluginRecommendationStatusClient
 import gomeng.dev.stashplayer.core.network.StashServerProfile
 import gomeng.dev.stashplayer.core.network.StashScanOptions
+import gomeng.dev.stashplayer.core.network.StashScanFavorites
+import gomeng.dev.stashplayer.core.network.isValidStashScanPath
 import gomeng.dev.stashplayer.core.network.StashServerDirectory
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.core.network.StashStreamPreference
@@ -703,6 +706,7 @@ fun SettingsRoute(
 ) {
     SettingsScreenScaffold(isFoldLikeLayout = isFoldLikeLayout) {
         Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
+        DeveloperSupportCard()
         SettingsListCopy.sections.forEach { section ->
             SettingsSectionCard(
                 section = section,
@@ -821,7 +825,11 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var createGalleriesFromFolders by remember { mutableStateOf<Boolean?>(null) }
     var isServerLibraryLoading by remember { mutableStateOf(false) }
     var isServerLibrarySaving by remember { mutableStateOf(false) }
-    var isMetadataScanRunning by remember { mutableStateOf(false) }
+    var isMetadataScanRunning by remember(runtimeProfile) { mutableStateOf(false) }
+    var submittedScanJobId by remember(runtimeProfile) { mutableStateOf<String?>(null) }
+    var favoritePaths by remember(savedProfile) { mutableStateOf(emptyList<String>()) }
+    var favoritesReady by remember(savedProfile) { mutableStateOf(false) }
+    var isFavoriteSaving by remember { mutableStateOf(false) }
     var serverJobs by remember { mutableStateOf(emptyList<StashJob>()) }
     var isJobQueueLoading by remember { mutableStateOf(false) }
     var jobQueueErrorText by remember { mutableStateOf<String?>(null) }
@@ -837,6 +845,39 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     var serverLibraryStatusText by remember { mutableStateOf<String?>(null) }
     var serverLibraryErrorText by remember { mutableStateOf<String?>(null) }
     var showMetadataScanConfirm by remember { mutableStateOf(false) }
+    val profileReady = savedProfile != null && (runtimeProfile == savedProfile ||
+        runtimeProfile == savedProfile?.copy(baseUrl = savedProfile?.normalizedFallbackBaseUrl().orEmpty()))
+
+    LaunchedEffect(savedProfile) {
+        val profile = savedProfile ?: return@LaunchedEffect
+        try {
+            repository.scanFavorites(profile).collect {
+                favoritePaths = it
+                favoritesReady = true
+            }
+        } catch (_: java.io.IOException) {
+            serverLibraryErrorText = context.getString(R.string.settings_scan_favorite_failed)
+            favoritesReady = true
+        }
+    }
+
+    fun toggleScanFavorite(path: String) {
+        val profile = savedProfile ?: return
+        if (isFavoriteSaving || !favoritesReady || !profileReady) return
+        val favorite = path !in favoritePaths
+        isFavoriteSaving = true
+        coroutineScope.launch {
+            try {
+                repository.setScanFavorite(profile, path, favorite)
+            } catch (_: java.io.IOException) {
+                serverLibraryErrorText = context.getString(R.string.settings_scan_favorite_failed)
+            } catch (_: IllegalArgumentException) {
+                serverLibraryErrorText = context.getString(R.string.settings_scan_invalid_path)
+            } finally {
+                isFavoriteSaving = false
+            }
+        }
+    }
 
     LaunchedEffect(savedProfile) {
         savedProfile?.let {
@@ -860,6 +901,8 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         libraryPaths = emptyList()
         scanOptions = StashScanOptions()
         selectedScanPaths = emptyList()
+        showSelectiveScanDialog = false
+        showMetadataScanConfirm = false
         scannedDirectory = null
         directoryErrorText = null
         serverLibraryStatusText = null
@@ -893,9 +936,14 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
         val client = StashGraphQlClient(activeProfile)
         while (true) {
             isJobQueueLoading = serverJobs.isEmpty()
+            val pendingJob = submittedScanJobId
             runCatching { client.findJobQueue() }
                 .onSuccess {
                     serverJobs = it
+                    if (pendingJob != null && submittedScanJobId == pendingJob &&
+                        it.none { job -> job.id == pendingJob && job.status in listOf(StashJobStatus.Ready, StashJobStatus.Running, StashJobStatus.Stopping) }) {
+                        submittedScanJobId = null
+                    }
                     jobQueueErrorText = null
                 }
                 .onFailure { jobQueueErrorText = it.message ?: context.getString(R.string.settings_server_job_queue_failed) }
@@ -905,27 +953,32 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     }
 
     fun startMetadataScan(paths: List<String>? = null) {
+        if (!profileReady || isServerLibraryLoading || isServerLibrarySaving || createGalleriesFromFolders == null) return
+        if (!StashScanFavorites.canSubmit(isMetadataScanRunning, submittedScanJobId, isJobQueueLoading, jobQueueErrorText, serverJobs)) return
+        if (paths != null && (paths.isEmpty() || paths.any { !isValidStashScanPath(it) })) {
+            serverLibraryErrorText = context.getString(R.string.settings_scan_invalid_path)
+            return
+        }
+        val activeProfile = runtimeProfile ?: return
+        isMetadataScanRunning = true
         coroutineScope.launch {
-            val activeProfile = runtimeProfile
-            if (activeProfile == null) {
-                serverLibraryStatusText = null
-                serverLibraryErrorText = context.getString(R.string.settings_recommendation_no_stash_server)
-                return@launch
-            }
             isMetadataScanRunning = true
             serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_starting)
             serverLibraryErrorText = null
             runCatching { StashGraphQlClient(activeProfile).scanMetadata(scanOptions, paths) }
                 .onSuccess { jobId ->
+                    if (runtimeProfile != activeProfile) return@onSuccess
+                    submittedScanJobId = jobId
                     serverLibraryStatusText = context.getString(R.string.settings_server_metadata_scan_started, jobId)
                     jobQueueRefreshKey++
                 }
                 .onFailure {
+                    if (runtimeProfile != activeProfile) return@onFailure
                     StashDebugLogBuffer.record("Settings", "Stash metadata scan start failed", it)
                     serverLibraryStatusText = null
                     serverLibraryErrorText = it.message ?: context.getString(R.string.settings_server_metadata_scan_failed)
                 }
-            isMetadataScanRunning = false
+            if (runtimeProfile == activeProfile) isMetadataScanRunning = false
         }
     }
 
@@ -1005,6 +1058,9 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                                 TextButton(onClick = { selectedScanPaths = selectedScanPaths - path }) {
                                     Text(stringResource(R.string.settings_server_remove_scan_path))
                                 }
+                                TextButton(onClick = { toggleScanFavorite(path) }, enabled = favoritesReady && !isFavoriteSaving) {
+                                    Text(stringResource(if (path in favoritePaths) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+                                }
                             }
                         }
                     }
@@ -1017,6 +1073,9 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                             libraryPaths.forEach { path ->
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     Text(path, style = MaterialTheme.typography.bodySmall)
+                                    TextButton(onClick = { toggleScanFavorite(path) }, enabled = favoritesReady && !isFavoriteSaving) {
+                                        Text(stringResource(if (path in favoritePaths) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+                                    }
                                     TextButton(
                                         onClick = { loadDirectory(path) },
                                         enabled = !isDirectoryLoading,
@@ -1035,6 +1094,9 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                         }
                     } else {
                         Text(directory.path, style = MaterialTheme.typography.titleSmall)
+                        TextButton(onClick = { toggleScanFavorite(directory.path) }, enabled = favoritesReady && !isFavoriteSaving) {
+                            Text(stringResource(if (directory.path in favoritePaths) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+                        }
                         directory.parent?.let { parent ->
                             TextButton(
                                 onClick = { loadDirectory(parent) },
@@ -1324,13 +1386,18 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
     }
 
     ServerLibrarySettingsCard(
-        serverConfigured = savedProfile?.isConfigured() == true,
+        favoritePaths = favoritePaths,
+        favoritesReady = favoritesReady,
+        favoriteSaving = isFavoriteSaving,
+        onScanFavorite = { startMetadataScan(listOf(it)) },
+        onRemoveFavorite = ::toggleScanFavorite,
+        serverConfigured = profileReady && savedProfile?.isConfigured() == true,
         createGalleriesFromFolders = createGalleriesFromFolders,
         scanOptions = scanOptions,
         scanOptionsExpanded = scanOptionsExpanded,
         loading = isServerLibraryLoading,
         saving = isServerLibrarySaving,
-        scanning = isMetadataScanRunning,
+        scanning = !StashScanFavorites.canSubmit(isMetadataScanRunning, submittedScanJobId, isJobQueueLoading, jobQueueErrorText, serverJobs),
         jobs = serverJobs,
         jobQueueLoading = isJobQueueLoading,
         jobQueueErrorText = jobQueueErrorText,
@@ -1416,6 +1483,11 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
 
 @Composable
 private fun ServerLibrarySettingsCard(
+    favoritePaths: List<String>,
+    favoritesReady: Boolean,
+    favoriteSaving: Boolean,
+    onScanFavorite: (String) -> Unit,
+    onRemoveFavorite: (String) -> Unit,
     serverConfigured: Boolean,
     createGalleriesFromFolders: Boolean?,
     scanOptions: StashScanOptions,
@@ -1476,6 +1548,22 @@ private fun ServerLibrarySettingsCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.settings_server_selective_scan_button))
+            }
+            Text(stringResource(R.string.settings_scan_favorites_title), style = MaterialTheme.typography.titleSmall)
+            if (!favoritesReady) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            else if (favoritePaths.isEmpty()) Text(stringResource(R.string.settings_scan_favorites_empty))
+            favoritePaths.forEach { path ->
+                Column {
+                    Text(path, style = MaterialTheme.typography.bodySmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { onScanFavorite(path) }, enabled = controlsEnabled && !scanning) {
+                            Text(stringResource(R.string.settings_scan_favorite_scan))
+                        }
+                        TextButton(onClick = { onRemoveFavorite(path) }, enabled = !favoriteSaving) {
+                            Text(stringResource(R.string.settings_scan_unfavorite))
+                        }
+                    }
+                }
             }
             Text(stringResource(R.string.settings_server_job_queue_title), style = MaterialTheme.typography.titleSmall)
             when {
@@ -2337,15 +2425,6 @@ private fun SettingsLinkCard(
                 )
             }
         }
-    }
-}
-
-private fun openSupportUrl(context: Context, url: String): String? {
-    return runCatching {
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-        null
-    }.getOrElse {
-        context.getString(R.string.settings_support_link_open_failed)
     }
 }
 

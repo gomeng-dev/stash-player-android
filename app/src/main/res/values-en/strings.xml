@@ -1140,4 +1140,17 @@
     <string name="player_orientation_hud_landscape">Fullscreen landscape locked</string>
     <string name="explore_show_controls">Show search and filters</string>
     <string name="explore_hide_controls">Hide search and filters</string>
+    <string name="developer_promo_title">Support developer</string>
+    <string name="developer_promo_slogan">Your favorite videos. Saved your way.</string>
+    <string name="developer_promo_disclosure">Discover another app from the same developer.</string>
+    <string name="developer_promo_google_play">View on Google Play</string>
+    <string name="developer_promo_dismiss">Never show on Home again</string>
+    <string name="developer_promo_dismiss_failed">Could not save dismissal. Please try again.</string>
+    <string name="settings_scan_favorites_title">Favorite scan folders</string>
+    <string name="settings_scan_favorites_empty">Add favorites in the folder picker to scan them directly here.</string>
+    <string name="settings_scan_favorite">Add favorite</string>
+    <string name="settings_scan_unfavorite">Remove favorite</string>
+    <string name="settings_scan_favorite_scan">Scan now</string>
+    <string name="settings_scan_favorite_failed">Could not save or load folder favorites. Please try again.</string>
+    <string name="settings_scan_invalid_path">Select a valid absolute folder path.</string>
 </resources>

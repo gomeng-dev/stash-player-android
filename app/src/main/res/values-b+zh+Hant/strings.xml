@@ -1139,4 +1139,17 @@
     <string name="player_orientation_hud_landscape">全螢幕橫向已鎖定</string>
     <string name="explore_show_controls">顯示搜尋與篩選</string>
     <string name="explore_hide_controls">隱藏搜尋與篩選</string>
+    <string name="developer_promo_title">支持開發者</string>
+    <string name="developer_promo_slogan">喜歡的影片，隨心儲存。</string>
+    <string name="developer_promo_disclosure">認識同一開發者的另一款應用程式。</string>
+    <string name="developer_promo_google_play">在 Google Play 查看</string>
+    <string name="developer_promo_dismiss">不再於首頁顯示</string>
+    <string name="developer_promo_dismiss_failed">無法儲存隱藏設定，請重試。</string>
+    <string name="settings_scan_favorites_title">收藏的掃描資料夾</string>
+    <string name="settings_scan_favorites_empty">在資料夾選擇器中加入收藏，即可在此直接掃描。</string>
+    <string name="settings_scan_favorite">加入收藏</string>
+    <string name="settings_scan_unfavorite">取消收藏</string>
+    <string name="settings_scan_favorite_scan">立即掃描</string>
+    <string name="settings_scan_favorite_failed">無法儲存或載入資料夾收藏，請重試。</string>
+    <string name="settings_scan_invalid_path">請選擇有效的絕對資料夾路徑。</string>
 </resources>

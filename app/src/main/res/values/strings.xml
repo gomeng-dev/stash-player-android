@@ -1141,5 +1141,18 @@
     <string name="player_orientation_hud_landscape">전체화면 가로 고정</string>
     <string name="explore_show_controls">검색 및 필터 표시</string>
     <string name="explore_hide_controls">검색 및 필터 숨기기</string>
+    <string name="developer_promo_title">개발자 응원하기</string>
+    <string name="developer_promo_slogan">마음에 드는 영상, 원하는 대로 저장하세요.</string>
+    <string name="developer_promo_disclosure">같은 개발자가 만든 다른 앱을 소개합니다.</string>
+    <string name="developer_promo_google_play">Google Play에서 보기</string>
+    <string name="developer_promo_dismiss">홈에서 다시 보지 않기</string>
+    <string name="developer_promo_dismiss_failed">숨김 설정을 저장하지 못했습니다. 다시 시도해 주세요.</string>
+    <string name="settings_scan_favorites_title">자주 스캔하는 폴더</string>
+    <string name="settings_scan_favorites_empty">폴더 선택 화면에서 즐겨찾기를 추가하면 여기서 바로 스캔할 수 있습니다.</string>
+    <string name="settings_scan_favorite">즐겨찾기 추가</string>
+    <string name="settings_scan_unfavorite">즐겨찾기 해제</string>
+    <string name="settings_scan_favorite_scan">바로 스캔</string>
+    <string name="settings_scan_favorite_failed">폴더 즐겨찾기를 저장하거나 불러오지 못했습니다. 다시 시도해 주세요.</string>
+    <string name="settings_scan_invalid_path">유효한 절대 폴더 경로를 선택해 주세요.</string>
 </resources>
 

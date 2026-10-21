@@ -4,6 +4,18 @@ All notable changes to Stash Android Player are documented here.
 
 When bumping `versionName`, add a new section for the release version and summarize the changes since the previous version. The public release workflow uses the matching section for GitHub Release notes.
 
+## [1.13.0] - 2026-10-21
+
+- English: Save frequently scanned folders as favorites in the folder picker, then scan one directly from the server scan settings without reopening the picker. Favorites stay scoped to the saved server/auth profile; invalid paths and duplicate submissions are blocked.
+- 한국어: 폴더 선택 화면에서 자주 스캔하는 폴더를 즐겨찾기로 저장하고 서버 스캔 설정 목록에서 바로 스캔할 수 있습니다. 즐겨찾기는 서버·인증 프로필별로 보관하며 잘못된 경로와 중복 요청을 차단합니다.
+- 简体中文：在文件夹选择器中收藏常用扫描文件夹，然后直接从服务器扫描设置列表启动扫描，无需重新打开选择器。收藏按服务器及认证配置分别保存，并阻止无效路径和重复提交。
+- 繁體中文：在資料夾選擇器中收藏常用掃描資料夾，即可直接從伺服器掃描設定清單啟動掃描，無須重新開啟選擇器。收藏依伺服器及驗證設定分別儲存，並阻擋無效路徑與重複提交。
+
+- English: Add a transparent Google Play cross-promotion for another app from the same developer in Settings and, from the fifth process launch, at the top of Home. Dismissing Home permanently hides that card without removing Settings access.
+- 한국어: 설정에 같은 개발자의 다른 앱을 소개하는 Google Play 카드를 추가하고, 다섯 번째 프로세스 실행부터 홈 최상단에도 표시합니다. 홈에서 닫으면 다시 표시하지 않으며 설정 카드는 유지됩니다.
+- 简体中文：在设置中添加同一开发者另一款应用的 Google Play 推广卡，并从第五次进程启动起在首页顶部显示。关闭后首页不再显示，设置入口保留。
+- 繁體中文：在設定中新增同一開發者另一款應用程式的 Google Play 推廣卡，並從第五次程序啟動起顯示於首頁頂端。關閉後首頁不再顯示，設定入口保留。
+
 ## [1.12.2] - 2026-10-04
 
 ### English
