@@ -7,8 +7,8 @@ import okio.ByteString.Companion.encodeUtf8
 
 internal fun isValidStashScanPath(path: String): Boolean {
     val normalized = path.replace('\\', '/')
-    val absolute = normalized.startsWith('/') || Regex("^[A-Za-z]:/").containsMatchIn(normalized)
-    return path.isNotBlank() && absolute && path.none { it.isISOControl() } &&
+    // Stash roots may be server-relative (data/...), not Android filesystem paths.
+    return path.isNotBlank() && path.none { it.isISOControl() } &&
         normalized.split('/').none { it == "." || it == ".." }
 }
 

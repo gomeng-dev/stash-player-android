@@ -23,6 +23,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.Icon
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -747,6 +751,14 @@ fun SettingsDetailRoute(
 }
 
 @Composable
+private fun ScanFavoriteLabel(favorite: Boolean) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(if (favorite) Icons.Outlined.Star else Icons.Outlined.StarBorder, contentDescription = null)
+        Text(stringResource(if (favorite) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+    }
+}
+
+@Composable
 private fun SettingsScreenScaffold(
     isFoldLikeLayout: Boolean,
     content: @Composable ColumnScope.() -> Unit,
@@ -1059,7 +1071,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                                     Text(stringResource(R.string.settings_server_remove_scan_path))
                                 }
                                 TextButton(onClick = { toggleScanFavorite(path) }, enabled = favoritesReady && !isFavoriteSaving) {
-                                    Text(stringResource(if (path in favoritePaths) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+                                    ScanFavoriteLabel(path in favoritePaths)
                                 }
                             }
                         }
@@ -1074,7 +1086,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     Text(path, style = MaterialTheme.typography.bodySmall)
                                     TextButton(onClick = { toggleScanFavorite(path) }, enabled = favoritesReady && !isFavoriteSaving) {
-                                        Text(stringResource(if (path in favoritePaths) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+                                        ScanFavoriteLabel(path in favoritePaths)
                                     }
                                     TextButton(
                                         onClick = { loadDirectory(path) },
@@ -1095,7 +1107,7 @@ private fun ServerSettingsContent(onOpenOnboarding: () -> Unit) {
                     } else {
                         Text(directory.path, style = MaterialTheme.typography.titleSmall)
                         TextButton(onClick = { toggleScanFavorite(directory.path) }, enabled = favoritesReady && !isFavoriteSaving) {
-                            Text(stringResource(if (directory.path in favoritePaths) R.string.settings_scan_unfavorite else R.string.settings_scan_favorite))
+                            ScanFavoriteLabel(directory.path in favoritePaths)
                         }
                         directory.parent?.let { parent ->
                             TextButton(

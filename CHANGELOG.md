@@ -4,6 +4,15 @@ All notable changes to Stash Android Player are documented here.
 
 When bumping `versionName`, add a new section for the release version and summarize the changes since the previous version. The public release workflow uses the matching section for GitHub Release notes.
 
+## [Unreleased]
+
+## [1.13.2] - 2026-10-22
+
+- English: Fix scan-folder favorites and selective scans for server-relative library paths such as `data/...`, preserving the exact server path. Show an outlined/filled star next to the picker favorite action.
+- 한국어: `data/...`처럼 서버 상대 경로를 사용하는 폴더의 즐겨찾기 저장·조회 및 선택 스캔을 수정하고 서버 경로를 그대로 유지합니다. 폴더 선택 화면의 즐겨찾기 동작에 빈 별·채운 별을 표시합니다.
+- 简体中文：修复 `data/...` 等服务器相对路径的扫描文件夹收藏及选择性扫描，保留原始服务器路径，并在选择器收藏操作旁显示空心或实心星标。
+- 繁體中文：修正 `data/...` 等伺服器相對路徑的掃描資料夾收藏及選擇性掃描，保留原始伺服器路徑，並在選擇器收藏操作旁顯示空心或實心星號。
+
 ## [1.13.1] - 2026-10-21
 
 - English: Fix Google Play links on Home and Settings, plus release/support links, when an explicit app language is selected. Open external URLs directly with the task flag required by the localized Android context; keep localized errors for unavailable or blocked handlers.
