@@ -792,11 +792,10 @@
     <string name="auto_kr_0288">Volume %1$s%%</string>
     <string name="auto_kr_0289" formatted="false">Delete selected videos</string>
     <string name="auto_kr_0290">Delete %1$s selected videos from Stash.</string>
-    <string name="auto_kr_0291" formatted="false">This cannot be undone. To prevent accidental deletion, you must check the confirmation box below.</string>
-    <string name="auto_kr_0292" formatted="false">Like the Stash source deletion dialog, generated side files are deleted by default, while the actual video file is optional.</string>
+    <string name="auto_kr_0291" formatted="false">This cannot be undone. Check the selected videos and deletion options.</string>
+    <string name="auto_kr_0292" formatted="false">Original videos, funscripts and generated side files are deleted by default. Uncheck the option below to keep originals.</string>
     <string name="auto_kr_0293" formatted="false">Also delete actual video files and funscripts</string>
     <string name="auto_kr_0294" formatted="false">Delete generated side files</string>
-    <string name="auto_kr_0295" formatted="false">I understand this delete action cannot be undone.</string>
     <string name="auto_kr_0296" formatted="false">Cancel</string>
     <string name="auto_kr_0297" formatted="false">Deleting…</string>
     <string name="auto_kr_0298" formatted="false">Selected</string>
@@ -1153,4 +1152,6 @@
     <string name="settings_scan_favorite_scan">Scan now</string>
     <string name="settings_scan_favorite_failed">Could not save or load folder favorites. Please try again.</string>
     <string name="settings_scan_invalid_path">Select a valid absolute folder path.</string>
+    <string name="settings_skip_scene_delete_confirmation">Skip delete confirmation</string>
+    <string name="settings_skip_scene_delete_confirmation_description">Off by default. When enabled, tapping Delete immediately removes original videos, funscripts, generated files and scene records. This cannot be undone. Also applies to multi-selection.</string>
 </resources>

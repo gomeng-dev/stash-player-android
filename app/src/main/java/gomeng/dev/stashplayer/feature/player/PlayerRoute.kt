@@ -642,7 +642,6 @@ private fun RealPlayerRoute(
     val queueSceneIds by localRepository.queueSceneIds.collectAsState(initial = emptySet())
     var playlistDrawerOpen by remember { mutableStateOf(false) }
     var playlistDeleteConfirmation by remember { mutableStateOf(SceneBulkDeleteConfirmationState.Hidden) }
-    var pendingPlaylistDeleteSceneIds by remember { mutableStateOf<List<String>>(emptyList()) }
     val currentSceneCard = remember(stream, positionMs, durationMs, watchLaterSceneIds) {
         stream.toPlayerSceneCardModel(
             currentPositionMs = positionMs,
@@ -2103,15 +2102,13 @@ private fun RealPlayerRoute(
 
         SceneBulkDeleteConfirmationDialog(
             state = playlistDeleteConfirmation,
-            onConfirmationChange = { playlistDeleteConfirmation = playlistDeleteConfirmation.withConfirmation(it) },
             onDeleteFileChange = { playlistDeleteConfirmation = playlistDeleteConfirmation.withDeleteFile(it) },
             onDeleteGeneratedChange = { playlistDeleteConfirmation = playlistDeleteConfirmation.withDeleteGenerated(it) },
             onCancel = {
-                pendingPlaylistDeleteSceneIds = emptyList()
                 playlistDeleteConfirmation = playlistDeleteConfirmation.dismiss()
             },
             onDelete = {
-                val selectedIds = pendingPlaylistDeleteSceneIds
+                val selectedIds = playlistDeleteConfirmation.sceneIds
                 if (selectedIds.isEmpty()) {
                     playlistDeleteConfirmation = playlistDeleteConfirmation.dismiss()
                     return@SceneBulkDeleteConfirmationDialog
@@ -2137,7 +2134,6 @@ private fun RealPlayerRoute(
                         result = result,
                     )
                     onPlaybackQueueChange(cleanup.queue)
-                    pendingPlaylistDeleteSceneIds = emptyList()
                     playlistDeleteConfirmation = playlistDeleteConfirmation.dismiss()
                     hudText = result.koreanSummary
                     markPlayerInteraction()
@@ -2234,8 +2230,7 @@ private fun RealPlayerRoute(
                 onRequestDeleteScene = { item ->
                     markPlayerInteraction()
                     controlsVisible = true
-                    pendingPlaylistDeleteSceneIds = listOf(item.sceneId)
-                    playlistDeleteConfirmation = SceneBulkDeleteConfirmationState.open(1)
+                    playlistDeleteConfirmation = playlistDeleteConfirmation.request(listOf(item.sceneId))
                 },
             )
         }

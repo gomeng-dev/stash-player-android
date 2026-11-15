@@ -793,11 +793,10 @@
     <string name="auto_kr_0288">볼륨 %1$s%%</string>
     <string name="auto_kr_0289" formatted="false">선택한 영상 삭제</string>
     <string name="auto_kr_0290">선택한 %1$s개 영상을 Stash에서 삭제합니다.</string>
-    <string name="auto_kr_0291" formatted="false">이 작업은 되돌릴 수 없습니다. 실수 삭제를 막기 위해 아래 확인란을 체크해야 삭제할 수 있습니다.</string>
-    <string name="auto_kr_0292" formatted="false">Stash 원본 삭제창과 동일하게 생성된 보조 파일은 기본 삭제하고, 실제 영상 파일 삭제는 별도 선택합니다.</string>
+    <string name="auto_kr_0291" formatted="false">이 작업은 되돌릴 수 없습니다. 삭제할 영상과 옵션을 확인해 주세요.</string>
+    <string name="auto_kr_0292" formatted="false">원본 영상·funscript와 생성된 보조 파일을 기본으로 함께 삭제합니다. 원본을 유지하려면 아래 항목을 해제하세요.</string>
     <string name="auto_kr_0293" formatted="false">실제 영상 파일과 funscript도 삭제</string>
     <string name="auto_kr_0294" formatted="false">생성된 보조 파일 삭제</string>
-    <string name="auto_kr_0295" formatted="false">삭제가 되돌릴 수 없는 작업임을 이해했습니다.</string>
     <string name="auto_kr_0296" formatted="false">취소</string>
     <string name="auto_kr_0297" formatted="false">삭제 중…</string>
     <string name="auto_kr_0298" formatted="false">선택됨</string>
@@ -1154,5 +1153,7 @@
     <string name="settings_scan_favorite_scan">바로 스캔</string>
     <string name="settings_scan_favorite_failed">폴더 즐겨찾기를 저장하거나 불러오지 못했습니다. 다시 시도해 주세요.</string>
     <string name="settings_scan_invalid_path">유효한 절대 폴더 경로를 선택해 주세요.</string>
+    <string name="settings_skip_scene_delete_confirmation">삭제 확인 팝업 생략</string>
+    <string name="settings_skip_scene_delete_confirmation_description">기본값은 꺼짐입니다. 켜면 삭제를 누르는 즉시 원본 영상·funscript, 생성된 보조 파일과 영상 기록을 모두 삭제하며 되돌릴 수 없습니다. 여러 영상 선택에도 적용됩니다.</string>
 </resources>
 

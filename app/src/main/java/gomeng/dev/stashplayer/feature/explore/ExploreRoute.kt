@@ -716,12 +716,11 @@ private fun ExploreContent(
 
     SceneBulkDeleteConfirmationDialog(
         state = deleteConfirmation,
-        onConfirmationChange = { deleteConfirmation = deleteConfirmation.withConfirmation(it) },
         onDeleteFileChange = { deleteConfirmation = deleteConfirmation.withDeleteFile(it) },
         onDeleteGeneratedChange = { deleteConfirmation = deleteConfirmation.withDeleteGenerated(it) },
         onCancel = { deleteConfirmation = deleteConfirmation.dismiss() },
         onDelete = {
-            val selectedIds = selectionState.selectedSceneIds.toList()
+            val selectedIds = deleteConfirmation.sceneIds
             val deleteOptions = deleteConfirmation.deleteOptions
             deleteConfirmation = deleteConfirmation.deleting()
             scope.launch {
@@ -804,7 +803,7 @@ private fun ExploreContent(
                     onOpenScene(request.startSceneId, request.scenes, pageState.videoFilter.randomShuffle)
                 }
             },
-            onDeleteSelection = { deleteConfirmation = SceneBulkDeleteConfirmationState.open(selectionState.selectedCount) },
+            onDeleteSelection = { deleteConfirmation = deleteConfirmation.request(selectionState.selectedSceneIds) },
         )
         }
 

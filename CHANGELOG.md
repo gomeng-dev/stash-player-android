@@ -4,7 +4,12 @@ All notable changes to Stash Android Player are documented here.
 
 When bumping `versionName`, add a new section for the release version and summarize the changes since the previous version. The public release workflow uses the matching section for GitHub Release notes.
 
-## [Unreleased]
+## [1.13.3] - 2026-11-15
+
+- English: Delete from the confirmation dialog without an extra acknowledgement checkbox. Original videos/funscripts and generated files are checked by default. Add an off-by-default Interface option to skip the dialog and delete immediately, including original files. File deletion is irreversible; uncheck original-file deletion in the dialog to keep originals.
+- 한국어: 삭제 팝업의 별도 확인 체크를 없애고 원본 영상·funscript와 생성된 보조 파일 삭제를 기본 체크합니다. 인터페이스 설정에 기본값이 꺼진 팝업 생략 옵션을 추가했으며, 켜면 원본 파일까지 즉시 삭제합니다. 파일 삭제는 되돌릴 수 없으며, 원본을 보존하려면 팝업에서 원본 파일 삭제를 해제하세요.
+- 简体中文：删除弹窗无需额外确认勾选，默认勾选删除原始视频、funscript 和生成的辅助文件。在界面设置中添加默认关闭的跳过确认选项，开启后立即删除，包括原始文件。文件删除不可撤销；如需保留原始文件，请在弹窗中取消勾选原始文件删除。
+- 繁體中文：刪除視窗無須額外確認勾選，預設勾選刪除原始影片、funscript 和產生的輔助檔案。在介面設定中新增預設關閉的略過確認選項，啟用後立即刪除，包括原始檔案。檔案刪除無法復原；若要保留原始檔案，請在視窗中取消勾選原始檔案刪除。
 
 ## [1.13.2] - 2026-10-22
 

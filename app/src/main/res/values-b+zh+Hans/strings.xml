@@ -792,11 +792,10 @@
     <string name="auto_kr_0288">卷 %1$s%%</string>
     <string name="auto_kr_0289" formatted="false">删除选定的视频</string>
     <string name="auto_kr_0290">从 Stash 中删除 %1$s 选定的视频。</string>
-    <string name="auto_kr_0291" formatted="false">此操作无法撤消。为防止意外删除，您必须选中下面的确认框。</string>
-    <string name="auto_kr_0292" formatted="false">与 Stash 源删除对话框一样，默认情况下会删除生成的辅助文件，而实际的视频文件是可选的。</string>
+    <string name="auto_kr_0291" formatted="false">此操作无法撤消。请确认所选视频和删除选项。</string>
+    <string name="auto_kr_0292" formatted="false">默认删除原始视频、funscript 和生成的辅助文件。如需保留原始文件，请取消勾选下方选项。</string>
     <string name="auto_kr_0293" formatted="false">同时删除实际的视频文件和 funscript</string>
     <string name="auto_kr_0294" formatted="false">删除生成的副文件</string>
-    <string name="auto_kr_0295" formatted="false">我了解此删除操作无法撤消。</string>
     <string name="auto_kr_0296" formatted="false">取消</string>
     <string name="auto_kr_0297" formatted="false">正在删除...</string>
     <string name="auto_kr_0298" formatted="false">已选择</string>
@@ -1152,4 +1151,6 @@
     <string name="settings_scan_favorite_scan">立即扫描</string>
     <string name="settings_scan_favorite_failed">无法保存或加载文件夹收藏，请重试。</string>
     <string name="settings_scan_invalid_path">请选择有效的绝对文件夹路径。</string>
+    <string name="settings_skip_scene_delete_confirmation">跳过删除确认</string>
+    <string name="settings_skip_scene_delete_confirmation_description">默认关闭。开启后，点击删除会立即删除原始视频、funscript、生成的辅助文件和视频记录，且无法撤消。也适用于多选。</string>
 </resources>

@@ -143,7 +143,6 @@ fun ShortsRoute(
     var retryToken by remember { mutableIntStateOf(0) }
     var pagerScrollRequests by remember { mutableIntStateOf(-1) }
     var deleteConfirmation by remember { mutableStateOf(SceneBulkDeleteConfirmationState.Hidden) }
-    var deleteTargetSceneId by remember { mutableStateOf<String?>(null) }
     var deleteErrorMessage by remember { mutableStateOf<String?>(null) }
     val client = remember(activeProfile) { activeProfile?.let(::StashGraphQlClient) }
     val similarScenesRepository = remember(activeProfile) {
@@ -429,9 +428,8 @@ fun ShortsRoute(
                             }
                         },
                         onDelete = {
-                            deleteTargetSceneId = item.scene.id
                             deleteErrorMessage = null
-                            deleteConfirmation = SceneBulkDeleteConfirmationState.open(selectedCount = 1)
+                            deleteConfirmation = deleteConfirmation.request(listOf(item.scene.id))
                         },
                         onSeekTo = { targetMs ->
                             activeController?.player?.seekTo(targetMs)
@@ -505,15 +503,13 @@ fun ShortsRoute(
                 }
                 SceneBulkDeleteConfirmationDialog(
                     state = deleteConfirmation,
-                    onConfirmationChange = { deleteConfirmation = deleteConfirmation.withConfirmation(it) },
                     onDeleteFileChange = { deleteConfirmation = deleteConfirmation.withDeleteFile(it) },
                     onDeleteGeneratedChange = { deleteConfirmation = deleteConfirmation.withDeleteGenerated(it) },
                     onCancel = {
                         deleteConfirmation = deleteConfirmation.dismiss()
-                        deleteTargetSceneId = null
                     },
                     onDelete = {
-                        val sceneId = deleteTargetSceneId ?: return@SceneBulkDeleteConfirmationDialog
+                        val sceneId = deleteConfirmation.sceneIds.singleOrNull() ?: return@SceneBulkDeleteConfirmationDialog
                         val activeClient = client ?: return@SceneBulkDeleteConfirmationDialog
                         val deleteOptions = deleteConfirmation.deleteOptions
                         deleteConfirmation = deleteConfirmation.deleting()
@@ -525,7 +521,6 @@ fun ShortsRoute(
                                     throwable.message ?: stashString(R.string.shorts_delete_failed_message),
                                 )
                                 deleteConfirmation = deleteConfirmation.dismiss()
-                                deleteTargetSceneId = null
                                 return@launch
                             }
                             if (result.deletedSceneIds.isNotEmpty()) {
@@ -538,7 +533,6 @@ fun ShortsRoute(
                                     ?: stashString(R.string.shorts_delete_failed_message)
                             }
                             deleteConfirmation = deleteConfirmation.dismiss()
-                            deleteTargetSceneId = null
                         }
                     },
                 )

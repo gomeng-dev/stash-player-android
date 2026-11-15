@@ -116,6 +116,10 @@ class StashSettingsRepository(private val context: Context) {
         prefs[Keys.RecentAppsPrivacyEnabled] ?: DEFAULT_RECENT_APPS_PRIVACY_ENABLED
     }
 
+    val skipSceneDeleteConfirmation: Flow<Boolean> = context.stashSettingsDataStore.data.map { prefs ->
+        prefs[Keys.SkipSceneDeleteConfirmation] ?: DEFAULT_SKIP_SCENE_DELETE_CONFIRMATION
+    }
+
     val themeMode: Flow<StashThemeMode> = context.stashSettingsDataStore.data.map { prefs ->
         themeModeFromPersistedValue(prefs[Keys.ThemeMode])
     }
@@ -251,6 +255,12 @@ class StashSettingsRepository(private val context: Context) {
     suspend fun setRecentAppsPrivacyEnabled(enabled: Boolean) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.RecentAppsPrivacyEnabled] = enabled
+        }
+    }
+
+    suspend fun setSkipSceneDeleteConfirmation(enabled: Boolean) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.SkipSceneDeleteConfirmation] = enabled
         }
     }
 
@@ -406,6 +416,7 @@ class StashSettingsRepository(private val context: Context) {
         val PlayerDebugOverlayEnabled = booleanPreferencesKey("player_debug_overlay_enabled")
         val BiometricAppLockEnabled = booleanPreferencesKey("biometric_app_lock_enabled")
         val RecentAppsPrivacyEnabled = booleanPreferencesKey("recent_apps_privacy_enabled")
+        val SkipSceneDeleteConfirmation = booleanPreferencesKey("skip_scene_delete_confirmation")
         val ThemeMode = stringPreferencesKey("theme_mode")
         val AppLanguage = stringPreferencesKey("app_language")
         val AccentColor = stringPreferencesKey("accent_color")
@@ -445,6 +456,7 @@ class StashSettingsRepository(private val context: Context) {
         const val DEFAULT_PLAYER_DEBUG_OVERLAY_ENABLED = false
         const val DEFAULT_BIOMETRIC_APP_LOCK_ENABLED = false
         const val DEFAULT_RECENT_APPS_PRIVACY_ENABLED = false
+        const val DEFAULT_SKIP_SCENE_DELETE_CONFIRMATION = false
         val DEFAULT_THEME_MODE: StashThemeMode = StashThemeMode.default
         val DEFAULT_APP_LANGUAGE: StashAppLanguage = StashAppLanguage.default
         val DEFAULT_ACCENT_COLOR: StashAccentColor = StashAccentColor.default

@@ -792,11 +792,10 @@
     <string name="auto_kr_0288">體積%1$s%%</string>
     <string name="auto_kr_0289" formatted="false">刪除選定的視頻</string>
     <string name="auto_kr_0290">從 Stash 中刪除 %1$s 選定的影片。</string>
-    <string name="auto_kr_0291" formatted="false">此操作無法撤銷。為防止意外刪除，您必須選取下方的確認方塊。</string>
-    <string name="auto_kr_0292" formatted="false">與Stash來源刪除對話框一樣，預設刪除產生的輔助文件，而實際的視訊文件是可選的。</string>
+    <string name="auto_kr_0291" formatted="false">此操作無法撤銷。請確認所選影片與刪除選項。</string>
+    <string name="auto_kr_0292" formatted="false">預設刪除原始影片、funscript 和產生的輔助檔案。若要保留原始檔案，請取消勾選下方選項。</string>
     <string name="auto_kr_0293" formatted="false">同時刪除實際的影片檔和 funscript</string>
     <string name="auto_kr_0294" formatted="false">刪除產生的副文件</string>
-    <string name="auto_kr_0295" formatted="false">我了解此刪除操作無法撤銷。</string>
     <string name="auto_kr_0296" formatted="false">取消</string>
     <string name="auto_kr_0297" formatted="false">正在刪除...</string>
     <string name="auto_kr_0298" formatted="false">已選擇</string>
@@ -1152,4 +1151,6 @@
     <string name="settings_scan_favorite_scan">立即掃描</string>
     <string name="settings_scan_favorite_failed">無法儲存或載入資料夾收藏，請重試。</string>
     <string name="settings_scan_invalid_path">請選擇有效的絕對資料夾路徑。</string>
+    <string name="settings_skip_scene_delete_confirmation">略過刪除確認</string>
+    <string name="settings_skip_scene_delete_confirmation_description">預設關閉。啟用後，點選刪除會立即刪除原始影片、funscript、產生的輔助檔案和影片紀錄，且無法復原。也適用於多選。</string>
 </resources>

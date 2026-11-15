@@ -11,23 +11,50 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteConfirmationState
+import gomeng.dev.stashplayer.core.network.StashSettingsRepository
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
+import java.io.IOException
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun SceneBulkDeleteConfirmationDialog(
     state: SceneBulkDeleteConfirmationState,
-    onConfirmationChange: (Boolean) -> Unit,
     onDeleteFileChange: (Boolean) -> Unit,
     onDeleteGeneratedChange: (Boolean) -> Unit,
     onCancel: () -> Unit,
     onDelete: () -> Unit,
 ) {
     if (!state.isVisible) return
+
+    val context = LocalContext.current.applicationContext
+    val repository = remember(context) { StashSettingsRepository(context) }
+    // Snapshot the opt-in once per delete request; later setting changes cannot confirm an open dialog.
+    val skipConfirmation by produceState<Boolean?>(initialValue = null, repository) {
+        value = try {
+            repository.skipSceneDeleteConfirmation.first()
+        } catch (_: IOException) {
+            false
+        }
+    }
+    if (skipConfirmation == null) return
+    if (skipConfirmation == true) {
+        val latestOnDelete by rememberUpdatedState(onDelete)
+        LaunchedEffect(Unit) {
+            if (state.canDelete) latestOnDelete()
+        }
+        return
+    }
 
     AlertDialog(
         onDismissRequest = { if (!state.isDeleting) onCancel() },
@@ -60,18 +87,6 @@ fun SceneBulkDeleteConfirmationDialog(
                     text = stashString(R.string.auto_kr_0294),
                     onCheckedChange = onDeleteGeneratedChange,
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Checkbox(
-                        checked = state.isConfirmed,
-                        onCheckedChange = onConfirmationChange,
-                        enabled = !state.isDeleting,
-                    )
-                    Text(stashString(R.string.auto_kr_0295))
-                }
             }
         },
         dismissButton = {

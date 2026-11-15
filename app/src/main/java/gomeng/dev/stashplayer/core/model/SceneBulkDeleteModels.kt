@@ -4,15 +4,17 @@ import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 data class SceneBulkDeleteConfirmationState(
     val isVisible: Boolean = false,
-    val selectedCount: Int = 0,
-    val isConfirmed: Boolean = false,
+    val sceneIds: List<String> = emptyList(),
     val isDeleting: Boolean = false,
     val deleteOptions: StashSceneDeleteOptions = StashSceneDeleteOptions(),
 ) {
-    val canDelete: Boolean
-        get() = isVisible && selectedCount > 0 && isConfirmed && !isDeleting
+    val selectedCount: Int get() = sceneIds.size
 
-    fun withConfirmation(isConfirmed: Boolean): SceneBulkDeleteConfirmationState = copy(isConfirmed = isConfirmed)
+    val canDelete: Boolean
+        get() = isVisible && selectedCount > 0 && !isDeleting
+
+    fun request(sceneIds: Collection<String>): SceneBulkDeleteConfirmationState =
+        if (isVisible || isDeleting) this else open(sceneIds)
 
     fun withDeleteFile(deleteFile: Boolean): SceneBulkDeleteConfirmationState = copy(
         deleteOptions = deleteOptions.copy(deleteFile = deleteFile),
@@ -29,18 +31,15 @@ data class SceneBulkDeleteConfirmationState(
     companion object {
         val Hidden = SceneBulkDeleteConfirmationState()
 
-        fun open(selectedCount: Int): SceneBulkDeleteConfirmationState = SceneBulkDeleteConfirmationState(
-            isVisible = selectedCount > 0,
-            selectedCount = selectedCount.coerceAtLeast(0),
-            isConfirmed = false,
-            isDeleting = false,
-            deleteOptions = StashSceneDeleteOptions(),
-        )
+        fun open(sceneIds: Collection<String>): SceneBulkDeleteConfirmationState {
+            val ids = sceneIds.filter { it.isNotBlank() }.distinct()
+            return SceneBulkDeleteConfirmationState(isVisible = ids.isNotEmpty(), sceneIds = ids)
+        }
     }
 }
 
 data class StashSceneDeleteOptions(
-    val deleteFile: Boolean = false,
+    val deleteFile: Boolean = true,
     val deleteGenerated: Boolean = true,
 )
 
