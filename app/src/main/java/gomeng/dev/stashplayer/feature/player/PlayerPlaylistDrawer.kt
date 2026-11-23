@@ -87,6 +87,7 @@ import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
 import gomeng.dev.stashplayer.core.ui.designsystem.StashAlpha
 import gomeng.dev.stashplayer.core.ui.designsystem.StashBottomSheetContainer
 import gomeng.dev.stashplayer.core.ui.designsystem.StashRadii
+import gomeng.dev.stashplayer.core.ui.designsystem.StashGhostButton
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSheetHeader
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSheetOptionRow
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSpacing
@@ -104,6 +105,8 @@ fun PlayerPlaylistDrawer(
     shuffleEnabled: Boolean,
     serverProfile: StashServerProfile?,
     onDismiss: () -> Unit,
+    onSave: (() -> Unit)?,
+    saving: Boolean,
     onSelectScene: (String) -> Unit,
     onReorderScene: (String, Int) -> Unit = { _, _ -> },
     onRemoveScene: (PlayerPlaylistUiItem) -> Unit = {},
@@ -161,6 +164,13 @@ fun PlayerPlaylistDrawer(
                 subtitle = stashString(R.string.auto_kr_0466),
                 contentDescription = stashString(R.string.auto_kr_0467),
             )
+            if (onSave != null) {
+                StashGhostButton(
+                    text = stashString(R.string.saved_queues_save),
+                    onClick = onSave,
+                    enabled = items.isNotEmpty() && !saving,
+                )
+            }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()

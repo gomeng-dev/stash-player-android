@@ -4,6 +4,20 @@ All notable changes to Stash Android Player are documented here.
 
 When bumping `versionName`, add a new section for the release version and summarize the changes since the previous version. The public release workflow uses the matching section for GitHub Release notes.
 
+## [Unreleased]
+
+- English: Nothing yet.
+- 한국어: 아직 없습니다.
+- 简体中文：暂无。
+- 繁體中文：暫無。
+
+## [1.14.0] - 2026-11-23
+
+- English: Save up to 10 full playback queues and resume each from the Queue tab without opening another screen. Back out of fullscreen with one edge swipe. The search box shows the latest 50 searches plus favorites, which are not counted toward the limit.
+- 한국어: 재생 대기열 전체를 최대 10개까지 저장하고, 별도 화면 없이 재생 대기열 탭에서 바로 이어 볼 수 있습니다. 전체화면에서 가장자리 스와이프 한 번으로 뒤로 갈 수 있습니다. 검색창에 최근 검색어 50개와 별도 한도 없이 즐겨찾기한 검색어를 표시합니다.
+- 简体中文：最多保存 10 个完整播放队列，直接从队列选项卡继续播放，无需打开其他页面。全屏下从边缘滑动一次即可返回。搜索框显示最近 50 条搜索词，收藏不计入上限。
+- 繁體中文：最多儲存 10 個完整播放佇列，直接從佇列分頁繼續播放，無須開啟其他畫面。全螢幕下從邊緣滑動一次即可返回。搜尋框顯示最近 50 筆搜尋詞，收藏不計入上限。
+
 ## [1.13.3] - 2026-11-15
 
 - English: Delete from the confirmation dialog without an extra acknowledgement checkbox. Original videos/funscripts and generated files are checked by default. Add an off-by-default Interface option to skip the dialog and delete immediately, including original files. File deletion is irreversible; uncheck original-file deletion in the dialog to keep originals.

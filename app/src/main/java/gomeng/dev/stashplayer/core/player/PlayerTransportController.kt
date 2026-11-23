@@ -109,11 +109,12 @@ object PlayerTransportController {
         debugSurfaceOpen: Boolean = false,
         infoDrawerExpanded: Boolean,
         controlsVisible: Boolean,
+        fullscreenActive: Boolean = false,
     ): PlayerBackAction = when {
         playbackOptionsOpen -> PlayerBackAction.DismissPlaybackOptions
         playlistDrawerOpen -> PlayerBackAction.DismissPlaylistDrawer
         debugSurfaceOpen -> PlayerBackAction.DismissDebugSurface
-        controlsVisible -> PlayerBackAction.HideControls
+        controlsVisible && !fullscreenActive -> PlayerBackAction.HideControls
         else -> PlayerBackAction.ExitPlayer
     }
 }

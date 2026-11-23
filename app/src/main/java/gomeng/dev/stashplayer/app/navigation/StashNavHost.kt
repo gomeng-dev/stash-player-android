@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -77,6 +78,7 @@ import gomeng.dev.stashplayer.core.network.AppUpdateChecker
 import gomeng.dev.stashplayer.core.network.AppUpdateNotice
 import gomeng.dev.stashplayer.core.network.StashLoginClient
 import gomeng.dev.stashplayer.core.network.StashSettingsRepository
+import gomeng.dev.stashplayer.core.network.localStorageScope
 import gomeng.dev.stashplayer.core.network.passwordSessionStartupRefreshKey
 import gomeng.dev.stashplayer.core.network.shouldRefreshPasswordSessionOnStartup
 import gomeng.dev.stashplayer.core.player.PlaybackOrientationMode
@@ -95,7 +97,13 @@ import gomeng.dev.stashplayer.feature.settings.SettingsDetailRoute
 import gomeng.dev.stashplayer.feature.settings.SettingsRoute
 import gomeng.dev.stashplayer.feature.settings.SettingsSection
 import gomeng.dev.stashplayer.feature.setup.ServerSetupRoute
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import java.io.IOException
+
+private const val SAVED_QUEUE_ID_KEY = "savedQueueId"
+private const val SAVED_QUEUE_POSITION_KEY = "savedQueuePosition"
 
 private enum class TopLevelDestination(
     val route: String,
@@ -146,6 +154,7 @@ fun StashNavHost(
     val favoriteSceneIds by localRepository.favoriteSceneIds.collectAsState(initial = emptySet())
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val updateChecker = remember { AppUpdateChecker() }
     val topLevelDestinations = TopLevelDestination.entries
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -242,6 +251,23 @@ fun StashNavHost(
             }
     }
 
+    fun openQueuedPlayback(
+        queue: PlayerPlaybackQueue,
+        sceneId: String,
+        continuation: PlayerPlaybackQueueContinuation? = null,
+    ) {
+        updatePlaybackQueue(queue)
+        val presentation = resolvePlayerPresentationLaunchStateForOpenedScene(
+            openedFromActivePlayer = isPlayerRoute(currentRoute),
+            currentMode = playerPresentationMode,
+            currentLandscapeAutoFullscreen = playerLandscapeAutoFullscreen,
+        )
+        playerPresentationMode = presentation.mode
+        playerLandscapeAutoFullscreen = presentation.landscapeAutoFullscreen
+        playbackQueueContinuation = continuation
+        navController.navigate(playerRouteForScene(sceneId))
+    }
+
     fun openPlaybackQueueScene(
         sceneId: String,
         scenes: List<SceneCardModel>,
@@ -259,16 +285,12 @@ fun StashNavHost(
                 randomShuffle = shouldApplyPlayerShuffle(randomShuffle, continuation),
             )
         }
-        updatePlaybackQueue(nextQueue)
-        val presentation = resolvePlayerPresentationLaunchStateForOpenedScene(
-            openedFromActivePlayer = isPlayerRoute(currentRoute),
-            currentMode = playerPresentationMode,
-            currentLandscapeAutoFullscreen = playerLandscapeAutoFullscreen,
-        )
-        playerPresentationMode = presentation.mode
-        playerLandscapeAutoFullscreen = presentation.landscapeAutoFullscreen
-        playbackQueueContinuation = continuation
-        navController.navigate(playerRouteForScene(sceneId))
+        openQueuedPlayback(nextQueue, sceneId, continuation)
+    }
+
+    suspend fun saveQueueCopy(queue: PlayerPlaybackQueue, positionMs: Long): Boolean {
+        val profile = savedProfile ?: throw IOException()
+        return localRepository.savePlaybackQueueCopy(profile, queue, positionMs)
     }
 
     suspend fun ensurePlaylistTrailingItems(sceneId: String, minimumTrailingCount: Int) {
@@ -338,6 +360,7 @@ fun StashNavHost(
     }
 
     fun replaceCurrentPlayerScene(sceneId: String) {
+        val savedQueueId = navController.currentBackStackEntry?.savedStateHandle?.get<String>(SAVED_QUEUE_ID_KEY)
         val presentation = resolvePlayerPresentationLaunchStateForOpenedScene(
             openedFromActivePlayer = true,
             currentMode = playerPresentationMode,
@@ -349,6 +372,7 @@ fun StashNavHost(
             popUpTo("player/{sceneId}") { inclusive = true }
             launchSingleTop = true
         }
+        navController.currentBackStackEntry?.savedStateHandle?.set(SAVED_QUEUE_ID_KEY, savedQueueId)
     }
 
     fun exitPlayer() {
@@ -570,6 +594,17 @@ fun StashNavHost(
                         QueueRoute(
                             isFoldLikeLayout = isFoldLikeLayout,
                             currentSceneId = playbackQueue.currentSceneId,
+                            savedProfile = savedProfile,
+                            onResumeSavedQueue = { saved ->
+                                val sceneId = saved.queue.currentSceneId
+                                if (sceneId != null) {
+                                    openQueuedPlayback(saved.queue, sceneId)
+                                    navController.currentBackStackEntry?.savedStateHandle?.apply {
+                                        set(SAVED_QUEUE_ID_KEY, saved.id)
+                                        set(SAVED_QUEUE_POSITION_KEY, saved.positionMs)
+                                    }
+                                }
+                            },
                             onOpenScene = { sceneId, scenes, randomShuffle ->
                                 openPlaybackQueueScene(
                                     sceneId = sceneId,
@@ -607,8 +642,26 @@ fun StashNavHost(
                         }
                     }
                     composable("player/{sceneId}") { backStackEntry ->
+                        val sceneId = backStackEntry.arguments?.getString("sceneId") ?: "demo"
+                        val savedQueueId = backStackEntry.savedStateHandle.get<String>(SAVED_QUEUE_ID_KEY)
+                            ?.takeIf { it.startsWith("queue_${savedProfile?.localStorageScope()}_") }
                         PlayerRoute(
-                            sceneId = backStackEntry.arguments?.getString("sceneId") ?: "demo",
+                            sceneId = sceneId,
+                            resumePlaylistPositionMs = savedQueueId?.let {
+                                backStackEntry.savedStateHandle.get<Long>(SAVED_QUEUE_POSITION_KEY)
+                            },
+                            onSavePlaylist = if (savedProfile != null) ::saveQueueCopy else null,
+                            onPlaylistCheckpoint = savedQueueId?.let { id ->
+                                { positionMs ->
+                                    scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                        try {
+                                            localRepository.updateSavedPlaybackQueuePosition(id, sceneId, positionMs)
+                                        } catch (_: IOException) {
+                                            StashDebugLogBuffer.record("Player", "Saved queue checkpoint failed")
+                                        }
+                                    }
+                                }
+                            },
                             isFoldLikeLayout = isFoldLikeLayout,
                             playbackQueue = playbackQueue,
                             initialPresentationMode = playerPresentationMode,

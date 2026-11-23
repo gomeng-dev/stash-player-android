@@ -1,5 +1,6 @@
 package gomeng.dev.stashplayer.core.network
 
+import okio.ByteString.Companion.encodeUtf8
 import java.net.URI
 import java.net.URLEncoder
 
@@ -100,6 +101,17 @@ data class StashServerProfile(
     }
 
     private fun String.redactedCredentialLabel(): String = if (isBlank()) "" else "[REDACTED]"
+}
+
+// Use the saved primary profile, not a temporarily reachable fallback endpoint.
+internal fun StashServerProfile.localStorageScope(): String {
+    val identity = when (authMode) {
+        StashServerAuthMode.None -> ""
+        StashServerAuthMode.ApiKey -> apiKey
+        StashServerAuthMode.SessionCookie -> username.ifBlank { sessionCookie }
+    }
+    return listOf(normalizedBaseUrl(), authMode.persistedValue, identity)
+        .joinToString { "${it.length}:$it" }.encodeUtf8().sha256().hex()
 }
 
 fun persistStashServerAuthMode(mode: StashServerAuthMode): String = mode.persistedValue

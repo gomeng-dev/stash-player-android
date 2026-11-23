@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.automirrored.outlined.ViewList
@@ -28,10 +31,14 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +51,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import gomeng.dev.stashplayer.core.local.RecentSearchTerm
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 
@@ -107,6 +118,9 @@ fun <T> StashScenesToolbar(
     searchValue: String? = null,
     onSearchChange: ((String) -> Unit)? = null,
     onClearSearch: (() -> Unit)? = null,
+    recentSearchTerms: List<RecentSearchTerm> = emptyList(),
+    onSubmitSearch: ((String) -> Unit)? = null,
+    onSearchFavoriteChange: (RecentSearchTerm) -> Unit = {},
     sortDirectionLabel: String? = null,
     onToggleSortDirection: (() -> Unit)? = null,
     pageSizeValue: String? = null,
@@ -141,6 +155,9 @@ fun <T> StashScenesToolbar(
                     enabled = isConfigured,
                     onValueChange = onSearchChange,
                     onClear = onClearSearch,
+                    recentSearchTerms = recentSearchTerms,
+                    onSubmit = onSubmitSearch,
+                    onFavoriteChange = onSearchFavoriteChange,
                 )
             }
             Row(
@@ -460,6 +477,7 @@ private fun StashSortDirection.galleryDirectionLabel(): String = when (this) {
     StashSortDirection.Asc -> stashString(R.string.auto_kr_0423)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StashDiscoverySearchInput(
     value: String,
@@ -467,26 +485,72 @@ fun StashDiscoverySearchInput(
     onValueChange: (String) -> Unit,
     onClear: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    recentSearchTerms: List<RecentSearchTerm> = emptyList(),
+    onSubmit: ((String) -> Unit)? = null,
+    onFavoriteChange: (RecentSearchTerm) -> Unit = {},
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .widthIn(min = 220.dp),
-        enabled = enabled,
-        singleLine = true,
-        label = { Text(stashString(R.string.auto_kr_0003)) },
-        placeholder = { Text(stashString(R.string.auto_kr_0402)) },
-        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-        trailingIcon = {
-            if (value.isNotEmpty() && onClear != null) {
-                IconButton(onClick = onClear) {
-                    Icon(Icons.Outlined.Clear, contentDescription = stashString(R.string.auto_kr_0403))
+    var expanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    fun submit(query: String) {
+        expanded = false
+        onSubmit?.invoke(query)
+        focusManager.clearFocus()
+    }
+
+    ExposedDropdownMenuBox(
+        modifier = modifier,
+        expanded = expanded && enabled && recentSearchTerms.isNotEmpty(),
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                expanded = false
+                onValueChange(it)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(min = 220.dp)
+                .then(if (onSubmit != null) Modifier.menuAnchor(MenuAnchorType.PrimaryEditable, enabled) else Modifier),
+            enabled = enabled,
+            singleLine = true,
+            label = { Text(stashString(R.string.auto_kr_0003)) },
+            placeholder = { Text(stashString(R.string.auto_kr_0402)) },
+            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+            trailingIcon = {
+                if (value.isNotEmpty() && onClear != null) {
+                    IconButton(onClick = onClear) {
+                        Icon(Icons.Outlined.Clear, contentDescription = stashString(R.string.auto_kr_0403))
+                    }
                 }
+            },
+            keyboardOptions = if (onSubmit != null) KeyboardOptions(imeAction = ImeAction.Search) else KeyboardOptions.Default,
+            keyboardActions = if (onSubmit != null) KeyboardActions(onSearch = { submit(value) }) else KeyboardActions.Default,
+        )
+        ExposedDropdownMenu(
+            expanded = expanded && enabled && recentSearchTerms.isNotEmpty(),
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = 320.dp),
+        ) {
+            recentSearchTerms.forEach { term ->
+                DropdownMenuItem(
+                    text = { Text(term.query, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    onClick = { submit(term.query) },
+                    trailingIcon = {
+                        IconButton(onClick = { onFavoriteChange(term) }) {
+                            Icon(
+                                if (term.favorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                contentDescription = stashString(
+                                    if (term.favorite) R.string.search_history_unfavorite else R.string.search_history_favorite,
+                                    term.query,
+                                ),
+                            )
+                        }
+                    },
+                )
             }
-        },
-    )
+        }
+    }
 }
 
 @Composable

@@ -1155,5 +1155,20 @@
     <string name="settings_scan_invalid_path">유효한 절대 폴더 경로를 선택해 주세요.</string>
     <string name="settings_skip_scene_delete_confirmation">삭제 확인 팝업 생략</string>
     <string name="settings_skip_scene_delete_confirmation_description">기본값은 꺼짐입니다. 켜면 삭제를 누르는 즉시 원본 영상·funscript, 생성된 보조 파일과 영상 기록을 모두 삭제하며 되돌릴 수 없습니다. 여러 영상 선택에도 적용됩니다.</string>
+    <string name="saved_queues_save">대기열 전체 저장</string>
+    <string name="saved_queues_saved">대기열을 저장했습니다.</string>
+    <string name="saved_queues_save_failed">대기열을 저장하지 못했습니다.</string>
+    <string name="saved_queues_limit_reached">대기열은 최대 %1$d개까지 저장할 수 있습니다. 저장된 대기열을 하나 제거한 뒤 다시 시도하세요.</string>
+    <string name="saved_queues_capacity">%1$d / %2$d</string>
+    <string name="saved_queues_title">저장된 대기열</string>
+    <string name="saved_queues_empty">재생 중 대기열을 저장하면 여기에 표시됩니다.</string>
+    <string name="saved_queues_load_failed">저장된 대기열을 불러오지 못했습니다.</string>
+    <string name="saved_queues_row_detail">영상 %1$d개 · %2$s</string>
+    <string name="saved_queues_remove">저장된 대기열 제거</string>
+    <string name="saved_queues_remove_prompt">저장한 목록만 제거하며 영상은 삭제하지 않습니다.</string>
+    <string name="saved_queues_remove_failed">저장된 대기열을 제거하지 못했습니다.</string>
+    <string name="search_history_favorite">즐겨찾기에 추가: %1$s</string>
+    <string name="search_history_unfavorite">즐겨찾기에서 제거: %1$s</string>
+    <string name="search_history_write_failed">검색 기록을 저장하지 못했습니다.</string>
 </resources>
 

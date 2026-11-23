@@ -64,7 +64,10 @@ import gomeng.dev.stashplayer.core.discovery.open
 import gomeng.dev.stashplayer.core.discovery.startTagOptionsRequest
 import gomeng.dev.stashplayer.core.discovery.toFilterSheetVisibility
 import gomeng.dev.stashplayer.core.discovery.withTagOptionsQuery
+import gomeng.dev.stashplayer.core.local.RecentSearchTerm
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
+import java.io.IOException
+import kotlinx.coroutines.flow.catch
 import gomeng.dev.stashplayer.core.local.appliedFilterState
 import gomeng.dev.stashplayer.core.local.applyLocalFavoriteFilter
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteConfirmationState
@@ -169,6 +172,9 @@ fun ExploreRoute(
     val savedVideoFilters by localRepository.savedVideoFilters.collectAsState(initial = emptyList())
     val persistedExploreFilterState by localRepository.persistedExploreFilterState.collectAsState(initial = null)
     val recentExploreFilters by localRepository.recentExploreVideoFilters.collectAsState(initial = emptyList())
+    val recentSearchTerms by remember(localRepository) {
+        localRepository.recentSearchTerms.catch { if (it is IOException) emit(emptyList()) else throw it }
+    }.collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     var inputText by routeState::inputText
     var pageState by routeState::pageState
@@ -300,12 +306,31 @@ fun ExploreRoute(
         }
     }
 
-    LaunchedEffect(inputText) {
-        delay(SEARCH_DEBOUNCE_MS)
-        val normalizedQuery = normalizeStashDiscoveryQuery(inputText)
-        if (normalizedQuery != pageState.query) {
+    fun saveSearchTerm(query: String, favorite: Boolean? = null) {
+        if (query.isBlank()) return
+        scope.launch {
+            try {
+                localRepository.recordSearchTerm(query, favorite)
+            } catch (_: IOException) {
+                snackbarHostState.showSnackbar(stashString(R.string.search_history_write_failed))
+            }
+        }
+    }
+
+    fun submitSearch(text: String, explicit: Boolean = false) {
+        val query = normalizeStashDiscoveryQuery(text)
+        val changed = query != pageState.query
+        if (changed) {
             requestSerial += 1L
-            pageState = pageState.withQuery(normalizedQuery)
+            pageState = pageState.withQuery(query)
+        }
+        if (changed || explicit) saveSearchTerm(query)
+    }
+
+    LaunchedEffect(inputText, didApplyPersistedExploreState) {
+        if (didApplyPersistedExploreState) {
+            delay(SEARCH_DEBOUNCE_MS)
+            submitSearch(inputText)
         }
     }
 
@@ -466,6 +491,12 @@ fun ExploreRoute(
         isFoldLikeLayout = isFoldLikeLayout,
         inputText = inputText,
         onInputTextChange = { inputText = it },
+        recentSearchTerms = recentSearchTerms,
+        onSubmitSearch = { query ->
+            inputText = query
+            submitSearch(query, explicit = true)
+        },
+        onSearchFavoriteChange = { term -> saveSearchTerm(term.query, !term.favorite) },
         onClearInput = {
             inputText = ""
             requestSerial += 1L
@@ -634,6 +665,9 @@ private fun ExploreContent(
     isFoldLikeLayout: Boolean,
     inputText: String,
     onInputTextChange: (String) -> Unit,
+    recentSearchTerms: List<RecentSearchTerm>,
+    onSubmitSearch: (String) -> Unit,
+    onSearchFavoriteChange: (RecentSearchTerm) -> Unit,
     onClearInput: () -> Unit,
     sortOptions: List<StashExploreSortOption>,
     pageSizeOptions: List<Int>,
@@ -769,6 +803,9 @@ private fun ExploreContent(
             searchValue = inputText,
             onSearchChange = onInputTextChange,
             onClearSearch = onClearInput,
+            recentSearchTerms = recentSearchTerms,
+            onSubmitSearch = onSubmitSearch,
+            onSearchFavoriteChange = onSearchFavoriteChange,
             sortValue = pageState.sortOption.label,
             sortOptions = sortOptions,
             sortOptionLabel = { it.label },

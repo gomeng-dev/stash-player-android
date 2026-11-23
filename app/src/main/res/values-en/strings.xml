@@ -1154,4 +1154,19 @@
     <string name="settings_scan_invalid_path">Select a valid absolute folder path.</string>
     <string name="settings_skip_scene_delete_confirmation">Skip delete confirmation</string>
     <string name="settings_skip_scene_delete_confirmation_description">Off by default. When enabled, tapping Delete immediately removes original videos, funscripts, generated files and scene records. This cannot be undone. Also applies to multi-selection.</string>
+    <string name="saved_queues_save">Save entire queue</string>
+    <string name="saved_queues_saved">Queue saved.</string>
+    <string name="saved_queues_save_failed">Could not save the queue.</string>
+    <string name="saved_queues_limit_reached">You can save up to %1$d queues. Remove a saved queue and try again.</string>
+    <string name="saved_queues_capacity">%1$d / %2$d</string>
+    <string name="saved_queues_title">Saved queues</string>
+    <string name="saved_queues_empty">Queues you save during playback appear here.</string>
+    <string name="saved_queues_load_failed">Could not load saved queues.</string>
+    <string name="saved_queues_row_detail">%1$d videos · %2$s</string>
+    <string name="saved_queues_remove">Remove saved queue</string>
+    <string name="saved_queues_remove_prompt">Only the saved queue is removed. Your videos are not deleted.</string>
+    <string name="saved_queues_remove_failed">Could not remove the saved queue.</string>
+    <string name="search_history_favorite">Favorite search: %1$s</string>
+    <string name="search_history_unfavorite">Unfavorite search: %1$s</string>
+    <string name="search_history_write_failed">Could not save search history.</string>
 </resources>

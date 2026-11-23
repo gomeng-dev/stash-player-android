@@ -44,7 +44,12 @@ import gomeng.dev.stashplayer.core.model.toRecentGalleryFilterSnapshot
 import gomeng.dev.stashplayer.core.model.toRecentImageFilterSnapshot
 import gomeng.dev.stashplayer.core.model.withSavedFilterReference
 import gomeng.dev.stashplayer.core.model.withGeneratedStashRandomShuffleSeedIfNeeded
+import gomeng.dev.stashplayer.core.network.StashServerProfile
+import gomeng.dev.stashplayer.core.network.localStorageScope
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
+import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import gomeng.dev.stashplayer.R
@@ -54,6 +59,18 @@ private val LOCAL_DATABASE_NAME = "stash-local-library.db"
 private val LOCAL_RECENT_FILTER_LIMIT = 5
 
 private val Context.stashLocalFilterDataStore by preferencesDataStore(name = "stash_local_filter_state")
+
+// ponytail: DataStore rewrites the file on edits; move snapshots to Room if large libraries make this noticeable.
+private val Context.savedPlaybackQueuesDataStore by preferencesDataStore(name = "stash_saved_playback_queues")
+
+private fun StashServerProfile.savedPlaybackQueuesPrefix() = "queue_${localStorageScope()}_"
+
+data class SavedPlaybackQueue(
+    val id: String,
+    val savedAt: Long,
+    val queue: PlayerPlaybackQueue,
+    val positionMs: Long,
+)
 
 enum class LocalSceneListType(val id: String, val label: String) {
     Queue("queue", stashString(R.string.auto_kr_0004)),
@@ -389,6 +406,18 @@ class StashLocalLibraryRepository(context: Context) {
     val persistedPlaybackQueue: Flow<PlayerPlaybackQueue?> = appContext.stashLocalFilterDataStore.data.map { prefs ->
         deserializePlayerPlaybackQueue(prefs[LocalFilterKeys.PlaybackQueue].orEmpty())
     }
+    val recentSearchTerms: Flow<List<RecentSearchTerm>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
+        decodeRecentSearchTerms(prefs[LocalFilterKeys.SearchTerms].orEmpty())
+    }
+
+    suspend fun recordSearchTerm(query: String, favorite: Boolean? = null) {
+        appContext.stashLocalFilterDataStore.edit { prefs ->
+            val key = LocalFilterKeys.SearchTerms
+            prefs[key] = decodeRecentSearchTerms(prefs[key].orEmpty())
+                .recordSearchTerm(query, favorite).encodeRecentSearchTerms()
+        }
+    }
+
     val recentBrowseVideoFilters: Flow<List<StashVideoFilterState>> = appContext.stashLocalFilterDataStore.data.map { prefs ->
         prefs[LocalFilterKeys.RecentBrowse]
             .orEmpty()
@@ -624,6 +653,43 @@ class StashLocalLibraryRepository(context: Context) {
         }
     }
 
+    fun savedPlaybackQueues(profile: StashServerProfile): Flow<List<SavedPlaybackQueue>> {
+        val prefix = profile.savedPlaybackQueuesPrefix()
+        return appContext.savedPlaybackQueuesDataStore.data.map { prefs ->
+            prefs.asMap().mapNotNull { (key, value) ->
+                if (!key.name.startsWith(prefix) || value !is String) return@mapNotNull null
+                val savedAt = key.name.removePrefix(prefix).substringBefore('-').toLongOrNull()
+                    ?: return@mapNotNull null
+                val (queue, positionMs) = deserializeSavedPlaybackQueue(value) ?: return@mapNotNull null
+                SavedPlaybackQueue(key.name, savedAt, queue, positionMs)
+            }.sortedByDescending { it.savedAt }
+        }.flowOn(Dispatchers.Default)
+    }
+
+    suspend fun savePlaybackQueueCopy(profile: StashServerProfile, queue: PlayerPlaybackQueue, positionMs: Long): Boolean {
+        val prefix = profile.savedPlaybackQueuesPrefix()
+        val key = stringPreferencesKey("$prefix${System.currentTimeMillis()}-${UUID.randomUUID()}")
+        return appContext.savedPlaybackQueuesDataStore.edit { prefs ->
+            val serialized = serializeSavedPlaybackQueue(queue, positionMs)
+            require(serialized.isNotEmpty())
+            prefs.saveQueueCopy(prefix, key, serialized)
+        }[key] != null
+    }
+
+    suspend fun updateSavedPlaybackQueuePosition(id: String, sceneId: String, positionMs: Long) {
+        val key = stringPreferencesKey(id)
+        appContext.savedPlaybackQueuesDataStore.edit { prefs ->
+            val (queue, _) = prefs[key]?.let(::deserializeSavedPlaybackQueue) ?: return@edit
+            if (queue.items.any { it.sceneId == sceneId }) {
+                prefs[key] = serializeSavedPlaybackQueue(queue.withCurrent(sceneId), positionMs)
+            }
+        }
+    }
+
+    suspend fun deleteSavedPlaybackQueue(id: String) {
+        appContext.savedPlaybackQueuesDataStore.edit { it.remove(stringPreferencesKey(id)) }
+    }
+
     suspend fun saveBrowseFilterState(state: StashPersistedBrowseFilterState) {
         appContext.stashLocalFilterDataStore.edit { prefs ->
             prefs[LocalFilterKeys.Browse] = state.serializeForStorage()
@@ -698,6 +764,7 @@ class StashLocalLibraryRepository(context: Context) {
     private object LocalFilterKeys {
         val Browse = stringPreferencesKey("browse_filter_state")
         val Search = stringPreferencesKey("search_filter_state")
+        val SearchTerms = stringPreferencesKey("recent_search_terms")
         val Explore = stringPreferencesKey("explore_filter_state")
         val RecentBrowse = stringPreferencesKey("recent_browse_filter_state")
         val RecentSearch = stringPreferencesKey("recent_search_filter_state")

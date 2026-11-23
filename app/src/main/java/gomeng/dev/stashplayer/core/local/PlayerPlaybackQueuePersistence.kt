@@ -1,5 +1,7 @@
 package gomeng.dev.stashplayer.core.local
 
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
 import gomeng.dev.stashplayer.core.player.PlayerPlaybackQueue
 import gomeng.dev.stashplayer.core.player.PlayerQueueItem
 import java.net.URLDecoder
@@ -9,6 +11,25 @@ import java.nio.charset.StandardCharsets
 private const val PLAYER_QUEUE_SNAPSHOT_VERSION = "1"
 private const val VALUE_PREFIX = "v"
 private const val NULL_VALUE = "n"
+
+internal const val SAVED_PLAYBACK_QUEUE_LIMIT = 10
+
+internal fun MutablePreferences.saveQueueCopy(prefix: String, key: Preferences.Key<String>, snapshot: String) {
+    if (asMap().keys.count { it.name.startsWith(prefix) } < SAVED_PLAYBACK_QUEUE_LIMIT) this[key] = snapshot
+}
+
+internal fun serializeSavedPlaybackQueue(queue: PlayerPlaybackQueue, positionMs: Long): String {
+    val first = queue.items.firstOrNull() ?: return ""
+    val hasCurrent = queue.items.any { it.sceneId == queue.currentSceneId }
+    val snapshot = serializePlayerPlaybackQueue(if (hasCurrent) queue else queue.withCurrent(first.sceneId))
+    return "${if (hasCurrent) positionMs.coerceAtLeast(0) else 0}\n$snapshot"
+}
+
+internal fun deserializeSavedPlaybackQueue(serialized: String): Pair<PlayerPlaybackQueue, Long>? {
+    val positionMs = serialized.substringBefore('\n').toLongOrNull()?.takeIf { it >= 0 } ?: return null
+    val queue = deserializePlayerPlaybackQueue(serialized.substringAfter('\n', "")) ?: return null
+    return queue to positionMs
+}
 
 fun serializePlayerPlaybackQueue(queue: PlayerPlaybackQueue): String {
     val items = queue.items.distinctBy { it.sceneId }

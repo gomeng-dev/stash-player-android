@@ -3,7 +3,6 @@ package gomeng.dev.stashplayer.core.network
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringSetPreferencesKey
-import okio.ByteString.Companion.encodeUtf8
 
 internal fun isValidStashScanPath(path: String): Boolean {
     val normalized = path.replace('\\', '/')
@@ -17,17 +16,8 @@ internal object StashScanFavorites {
         !running && pendingJob == null && !queueLoading && queueError == null &&
             jobs.none { it.status in listOf(StashJobStatus.Ready, StashJobStatus.Running, StashJobStatus.Stopping) }
 
-    // Use the saved primary profile, not the currently reachable fallback endpoint.
-    fun key(profile: StashServerProfile): Preferences.Key<Set<String>> {
-        val identity = when (profile.authMode) {
-            StashServerAuthMode.None -> ""
-            StashServerAuthMode.ApiKey -> profile.apiKey
-            StashServerAuthMode.SessionCookie -> profile.username.ifBlank { profile.sessionCookie }
-        }
-        val scope = listOf(profile.normalizedBaseUrl(), profile.authMode.persistedValue, identity)
-            .joinToString { "${it.length}:$it" }.encodeUtf8().sha256().hex()
-        return stringSetPreferencesKey("scan_favorites_$scope")
-    }
+    fun key(profile: StashServerProfile): Preferences.Key<Set<String>> =
+        stringSetPreferencesKey("scan_favorites_${profile.localStorageScope()}")
 
     fun read(prefs: Preferences, profile: StashServerProfile): List<String> =
         prefs[key(profile)].orEmpty().filter(::isValidStashScanPath).sorted()

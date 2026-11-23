@@ -1153,4 +1153,19 @@
     <string name="settings_scan_invalid_path">請選擇有效的絕對資料夾路徑。</string>
     <string name="settings_skip_scene_delete_confirmation">略過刪除確認</string>
     <string name="settings_skip_scene_delete_confirmation_description">預設關閉。啟用後，點選刪除會立即刪除原始影片、funscript、產生的輔助檔案和影片紀錄，且無法復原。也適用於多選。</string>
+    <string name="saved_queues_save">儲存整個佇列</string>
+    <string name="saved_queues_saved">已儲存佇列。</string>
+    <string name="saved_queues_save_failed">無法儲存佇列。</string>
+    <string name="saved_queues_limit_reached">最多可儲存 %1$d 個佇列。請移除一個已儲存的佇列後再試。</string>
+    <string name="saved_queues_capacity">%1$d / %2$d</string>
+    <string name="saved_queues_title">已儲存的佇列</string>
+    <string name="saved_queues_empty">播放期間儲存的佇列會顯示在這裡。</string>
+    <string name="saved_queues_load_failed">無法載入已儲存的佇列。</string>
+    <string name="saved_queues_row_detail">%1$d 部影片 · %2$s</string>
+    <string name="saved_queues_remove">移除已儲存的佇列</string>
+    <string name="saved_queues_remove_prompt">只會移除儲存的佇列，不會刪除影片。</string>
+    <string name="saved_queues_remove_failed">無法移除已儲存的佇列。</string>
+    <string name="search_history_favorite">收藏搜尋詞：%1$s</string>
+    <string name="search_history_unfavorite">取消收藏搜尋詞：%1$s</string>
+    <string name="search_history_write_failed">無法儲存搜尋記錄。</string>
 </resources>

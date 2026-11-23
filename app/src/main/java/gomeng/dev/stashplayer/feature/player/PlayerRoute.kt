@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +63,7 @@ import androidx.media3.session.MediaSession
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import gomeng.dev.stashplayer.core.debug.StashDebugLogBuffer
+import gomeng.dev.stashplayer.core.local.SAVED_PLAYBACK_QUEUE_LIMIT
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteConfirmationState
 import gomeng.dev.stashplayer.core.model.SceneBulkDeleteResult
@@ -187,6 +189,7 @@ import gomeng.dev.stashplayer.core.player.subtitleTrackLanguageCode
 import gomeng.dev.stashplayer.core.player.toPlayerSceneCardModel
 import gomeng.dev.stashplayer.core.ui.components.SceneBulkDeleteConfirmationDialog
 import kotlinx.coroutines.CancellationException
+import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -267,6 +270,9 @@ fun PlayerRoute(
     onOpenSettings: () -> Unit = {},
     onExitPlayer: () -> Unit = {},
     onPlaylistDrawerOpen: suspend (String, Int) -> Unit = { _, _ -> },
+    resumePlaylistPositionMs: Long? = null,
+    onSavePlaylist: (suspend (PlayerPlaybackQueue, Long) -> Boolean)? = null,
+    onPlaylistCheckpoint: ((Long) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
@@ -384,6 +390,9 @@ fun PlayerRoute(
             onExitPlayer = onExitPlayer,
             onRefreshStream = { streamLoadRetryKey += 1L },
             onPlaylistDrawerOpen = onPlaylistDrawerOpen,
+            resumePlaylistPositionMs = resumePlaylistPositionMs,
+            onSavePlaylist = onSavePlaylist,
+            onPlaylistCheckpoint = onPlaylistCheckpoint,
         )
     }
 }
@@ -419,6 +428,9 @@ private fun RealPlayerRoute(
     onExitPlayer: () -> Unit,
     onRefreshStream: () -> Unit,
     onPlaylistDrawerOpen: suspend (String, Int) -> Unit,
+    resumePlaylistPositionMs: Long?,
+    onSavePlaylist: (suspend (PlayerPlaybackQueue, Long) -> Boolean)?,
+    onPlaylistCheckpoint: ((Long) -> Unit)?,
 ) {
     val context = LocalContext.current
     val settingsRepository = remember(context) { StashSettingsRepository(context) }
@@ -427,6 +439,7 @@ private fun RealPlayerRoute(
     val localRepository = remember(context) { StashLocalLibraryRepository(context) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
+    val latestPlaylistCheckpoint by rememberUpdatedState(onPlaylistCheckpoint)
     val activity = remember(context, localView) { context.findActivity() ?: localView.context.findActivity() }
     val baseResolvedCandidates = stream.resolvedCandidates.ifEmpty {
         listOf(
@@ -558,7 +571,7 @@ private fun RealPlayerRoute(
     var playerGestureExclusionBounds by remember { mutableStateOf<PlayerGestureExclusionBounds?>(null) }
     var playerGesturesSuspendedByModalSurface by remember { mutableStateOf(false) }
     var lastControlInteractionAtMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var positionMs by remember { mutableLongStateOf(stream.startPositionMs) }
+    var positionMs by remember { mutableLongStateOf(resumePlaylistPositionMs ?: stream.startPositionMs) }
     var durationMs by remember { mutableLongStateOf(0L) }
     var isPlaying by remember { mutableStateOf(false) }
     var playbackStatus by remember(stream) { mutableStateOf(PlayerPlaybackUiStatus.Loading) }
@@ -641,6 +654,7 @@ private fun RealPlayerRoute(
     val watchLaterSceneIds by localRepository.watchLaterSceneIds.collectAsState(initial = emptySet())
     val queueSceneIds by localRepository.queueSceneIds.collectAsState(initial = emptySet())
     var playlistDrawerOpen by remember { mutableStateOf(false) }
+    var playlistSaving by remember { mutableStateOf(false) }
     var playlistDeleteConfirmation by remember { mutableStateOf(SceneBulkDeleteConfirmationState.Hidden) }
     val currentSceneCard = remember(stream, positionMs, durationMs, watchLaterSceneIds) {
         stream.toPlayerSceneCardModel(
@@ -763,13 +777,15 @@ private fun RealPlayerRoute(
     var autoAdvanceArmed by remember(stream) { mutableStateOf(false) }
     var playbackPrepared by remember(stream) { mutableStateOf(false) }
     val resolvedResumeStartPositionMs = remember(stream) {
-        resolvePlayerResumeStartPositionMs(
+        resumePlaylistPositionMs?.takeUnless { position ->
+            stream.durationSeconds?.let { it > 0.0 && position / 1000.0 >= it } == true
+        } ?: if (resumePlaylistPositionMs != null) 0L else resolvePlayerResumeStartPositionMs(
             startPositionMs = stream.startPositionMs,
             durationSeconds = stream.durationSeconds,
         )
     }
     val shouldShowResumePrompt = remember(stream) {
-        shouldPromptForPlayerResumePosition(
+        resumePlaylistPositionMs == null && shouldPromptForPlayerResumePosition(
             startPositionMs = stream.startPositionMs,
             durationSeconds = stream.durationSeconds,
         )
@@ -795,6 +811,7 @@ private fun RealPlayerRoute(
                 playlistDrawerOpen = false,
                 infoDrawerExpanded = infoDrawerState == PlayerInfoDrawerState.Expanded,
                 controlsVisible = controlsVisible && !locked,
+                fullscreenActive = fullscreenPlayerActive,
             )
         ) {
             PlayerBackAction.DismissPlaybackOptions -> Unit
@@ -960,6 +977,9 @@ private fun RealPlayerRoute(
         val nowMs = System.currentTimeMillis()
         val currentPositionMs = controller.player.currentPosition.coerceAtLeast(0L)
         val currentDurationMs = controller.player.duration.takeIf { it > 0L } ?: durationMs
+        if (playbackPrepared && currentDurationMs > 0 && seekPreviewState.preview == null) {
+            latestPlaylistCheckpoint?.invoke(currentPositionMs.coerceAtMost(currentDurationMs))
+        }
         val decision = PlayerResumeSyncPolicy.resolveResumeSave(
             state = resumeSaveState,
             reason = reason,
@@ -1467,7 +1487,7 @@ private fun RealPlayerRoute(
             SimilarVideosRecommendationSource.GraphQlFallback -> stashString(R.string.auto_kr_0033)
         },
     )
-    val playlistItems = if (canShowPlayerPlaylistAction(playbackQueue)) {
+    val playlistItems = if (playlistDrawerOpen || canShowPlayerPlaylistAction(playbackQueue)) {
         buildPlayerPlaylistUiItems(playbackQueue.withCurrent(sceneId))
     } else {
         emptyList()
@@ -2221,6 +2241,29 @@ private fun RealPlayerRoute(
                 shuffleEnabled = playbackQueue.shuffleEnabled,
                 serverProfile = profile,
                 onDismiss = { playlistDrawerOpen = false },
+                onSave = onSavePlaylist?.let { save ->
+                    {
+                        if (!playlistSaving) {
+                            val position = if (playbackPrepared) controller.player.currentPosition else positionMs
+                            playlistSaving = true
+                            scope.launch {
+                                try {
+                                    hudText = if (save(playbackQueue, position)) {
+                                        stashString(R.string.saved_queues_saved)
+                                    } else {
+                                        stashString(R.string.saved_queues_limit_reached, SAVED_PLAYBACK_QUEUE_LIMIT)
+                                    }
+                                } catch (_: IOException) {
+                                    hudText = stashString(R.string.saved_queues_save_failed)
+                                } finally {
+                                    playlistSaving = false
+                                }
+                            }
+                            playlistDrawerOpen = false
+                        }
+                    }
+                },
+                saving = playlistSaving,
                 onSelectScene = { selectedSceneId ->
                     playlistDrawerOpen = false
                     selectPlaylistScene(selectedSceneId)

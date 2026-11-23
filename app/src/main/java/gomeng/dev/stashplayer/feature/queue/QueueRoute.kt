@@ -8,7 +8,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -17,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import gomeng.dev.stashplayer.core.local.SAVED_PLAYBACK_QUEUE_LIMIT
+import gomeng.dev.stashplayer.core.local.SavedPlaybackQueue
 import gomeng.dev.stashplayer.core.local.StashLocalLibraryRepository
 import gomeng.dev.stashplayer.core.local.localPlaybackHistoryDisplayLimit
 import gomeng.dev.stashplayer.core.local.queueClearUndoFeedback
@@ -43,8 +52,14 @@ import gomeng.dev.stashplayer.core.ui.designsystem.StashListMediaRow
 import gomeng.dev.stashplayer.core.ui.designsystem.StashScreenHeader
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeader
 import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeaderModel
+import gomeng.dev.stashplayer.core.ui.designsystem.StashSectionHeaderV2
 import gomeng.dev.stashplayer.core.ui.components.rememberStashThumbnailModel
+import java.io.IOException
+import java.text.DateFormat
+import java.util.Date
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
@@ -53,6 +68,8 @@ import gomeng.dev.stashplayer.core.ui.i18n.stashString
 fun QueueRoute(
     isFoldLikeLayout: Boolean,
     currentSceneId: String?,
+    savedProfile: StashServerProfile?,
+    onResumeSavedQueue: (SavedPlaybackQueue) -> Unit,
     onOpenScene: (String, List<SceneCardModel>, Boolean) -> Unit,
     onOpenBrowse: () -> Unit,
     onOpenExplore: () -> Unit,
@@ -68,6 +85,39 @@ fun QueueRoute(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val queueListState = rememberLazyListState()
+    var savedQueueToDelete by remember(savedProfile) { mutableStateOf<SavedPlaybackQueue?>(null) }
+    val savedQueues = key(savedProfile) {
+        savedProfile?.let { profile ->
+            val flow = remember(repository, profile) {
+                repository.savedPlaybackQueues(profile)
+                    .map<List<SavedPlaybackQueue>, List<SavedPlaybackQueue>?> { it }
+                    .catch { if (it is IOException) emit(null) else throw it }
+            }
+            flow.collectAsState(initial = emptyList()).value
+        } ?: if (savedProfile == null) emptyList() else null
+    }
+    savedQueueToDelete?.let { saved ->
+        AlertDialog(
+            onDismissRequest = { savedQueueToDelete = null },
+            title = { Text(stashString(R.string.saved_queues_remove)) },
+            text = { Text(stashString(R.string.saved_queues_remove_prompt)) },
+            dismissButton = {
+                TextButton(onClick = { savedQueueToDelete = null }) { Text(stashString(android.R.string.cancel)) }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    savedQueueToDelete = null
+                    scope.launch {
+                        try {
+                            repository.deleteSavedPlaybackQueue(saved.id)
+                        } catch (_: IOException) {
+                            snackbarHostState.showSnackbar(stashString(R.string.saved_queues_remove_failed))
+                        }
+                    }
+                }) { Text(stashString(R.string.saved_queues_remove)) }
+            },
+        )
+    }
     var playbackHistoryExpanded by remember { mutableStateOf(false) }
     val playbackHistoryOverview = buildPlaybackHistoryOverviewModel(
         historyCount = playbackHistoryScenes.size,
@@ -183,6 +233,41 @@ fun QueueRoute(
             StashScreenHeader(
                 title = stashString(R.string.auto_kr_0004),
             )
+        }
+
+        if (savedProfile != null) {
+            item {
+                StashSectionHeaderV2(
+                    title = stashString(R.string.saved_queues_title),
+                    countLabel = savedQueues?.let {
+                        stashString(R.string.saved_queues_capacity, it.size, SAVED_PLAYBACK_QUEUE_LIMIT)
+                    },
+                )
+            }
+            if (savedQueues.isNullOrEmpty()) {
+                item {
+                    Text(
+                        stashString(if (savedQueues == null) R.string.saved_queues_load_failed else R.string.saved_queues_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            items(savedQueues.orEmpty(), key = { it.id }) { saved ->
+                val first = saved.queue.items.first()
+                val thumbnail = rememberStashThumbnailModel(first.thumbnailUrl, serverProfile)
+                val dateLabel = remember(saved.savedAt) { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(saved.savedAt)) }
+                StashListMediaRow(
+                    title = first.title,
+                    subtitle = stashString(R.string.saved_queues_row_detail, saved.queue.items.size, dateLabel),
+                    thumbnailModel = thumbnail,
+                    onClick = { onResumeSavedQueue(saved) },
+                ) {
+                    IconButton(onClick = { savedQueueToDelete = saved }) {
+                        Icon(Icons.Outlined.Delete, contentDescription = stashString(R.string.saved_queues_remove))
+                    }
+                }
+            }
         }
 
         item {
