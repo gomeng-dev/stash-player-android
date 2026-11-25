@@ -1160,6 +1160,8 @@
     <string name="saved_queues_save_failed">대기열을 저장하지 못했습니다.</string>
     <string name="saved_queues_limit_reached">대기열은 최대 %1$d개까지 저장할 수 있습니다. 저장된 대기열을 하나 제거한 뒤 다시 시도하세요.</string>
     <string name="saved_queues_capacity">%1$d / %2$d</string>
+    <string name="settings_resume_playback_title">영상 이어보기</string>
+    <string name="settings_resume_playback_description">끄면 영상을 다시 열 때 처음부터 재생합니다. 시청 기록은 계속 저장됩니다.</string>
     <string name="saved_queues_title">저장된 대기열</string>
     <string name="saved_queues_empty">재생 중 대기열을 저장하면 여기에 표시됩니다.</string>
     <string name="saved_queues_load_failed">저장된 대기열을 불러오지 못했습니다.</string>

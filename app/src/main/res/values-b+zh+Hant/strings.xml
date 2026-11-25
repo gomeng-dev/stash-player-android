@@ -1158,6 +1158,8 @@
     <string name="saved_queues_save_failed">無法儲存佇列。</string>
     <string name="saved_queues_limit_reached">最多可儲存 %1$d 個佇列。請移除一個已儲存的佇列後再試。</string>
     <string name="saved_queues_capacity">%1$d / %2$d</string>
+    <string name="settings_resume_playback_title">繼續播放影片</string>
+    <string name="settings_resume_playback_description">關閉後，再次開啟影片時將從頭播放。觀看進度仍會儲存。</string>
     <string name="saved_queues_title">已儲存的佇列</string>
     <string name="saved_queues_empty">播放期間儲存的佇列會顯示在這裡。</string>
     <string name="saved_queues_load_failed">無法載入已儲存的佇列。</string>

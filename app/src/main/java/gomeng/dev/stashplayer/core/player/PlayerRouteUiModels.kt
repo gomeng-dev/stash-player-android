@@ -25,7 +25,15 @@ data class PlayerPictureInPictureAspectRatio(
 fun resolvePlayerResumeStartPositionMs(
     startPositionMs: Long,
     durationSeconds: Double?,
+    savedQueuePositionMs: Long? = null,
+    resumeEnabled: Boolean = true,
 ): Long {
+    if (!resumeEnabled) return 0L
+    if (savedQueuePositionMs != null) {
+        return savedQueuePositionMs.takeUnless { position ->
+            durationSeconds?.let { it > 0.0 && position / 1000.0 >= it } == true
+        }?.coerceAtLeast(0L) ?: 0L
+    }
     val durationMs = ((durationSeconds ?: 0.0) * 1000.0).toLong().coerceAtLeast(0L)
     return if (isPlayerWatchedAtPosition(positionMs = startPositionMs, durationMs = durationMs)) {
         0L

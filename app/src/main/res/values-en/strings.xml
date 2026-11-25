@@ -1159,6 +1159,8 @@
     <string name="saved_queues_save_failed">Could not save the queue.</string>
     <string name="saved_queues_limit_reached">You can save up to %1$d queues. Remove a saved queue and try again.</string>
     <string name="saved_queues_capacity">%1$d / %2$d</string>
+    <string name="settings_resume_playback_title">Resume video playback</string>
+    <string name="settings_resume_playback_description">When off, videos start from the beginning when reopened. Watch progress is still saved.</string>
     <string name="saved_queues_title">Saved queues</string>
     <string name="saved_queues_empty">Queues you save during playback appear here.</string>
     <string name="saved_queues_load_failed">Could not load saved queues.</string>

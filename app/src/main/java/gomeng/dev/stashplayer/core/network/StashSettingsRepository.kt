@@ -152,6 +152,10 @@ class StashSettingsRepository(private val context: Context) {
         prefs[Keys.BackgroundPlaybackEnabled] ?: DEFAULT_BACKGROUND_PLAYBACK_ENABLED
     }
 
+    val resumePlaybackEnabled: Flow<Boolean> = context.stashSettingsDataStore.data.map { prefs ->
+        prefs[Keys.ResumePlaybackEnabled] ?: DEFAULT_RESUME_PLAYBACK_ENABLED
+    }
+
     val pictureInPictureEnabled: Flow<Boolean> = context.stashSettingsDataStore.data.map { prefs ->
         prefs[Keys.PictureInPictureEnabled] ?: DEFAULT_PICTURE_IN_PICTURE_ENABLED
     }
@@ -312,6 +316,12 @@ class StashSettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setResumePlaybackEnabled(enabled: Boolean) {
+        context.stashSettingsDataStore.edit { prefs ->
+            prefs[Keys.ResumePlaybackEnabled] = enabled
+        }
+    }
+
     suspend fun setPictureInPictureEnabled(enabled: Boolean) {
         context.stashSettingsDataStore.edit { prefs ->
             prefs[Keys.PictureInPictureEnabled] = enabled
@@ -425,6 +435,7 @@ class StashSettingsRepository(private val context: Context) {
         val PlaybackEndAction = stringPreferencesKey("playback_end_action")
         val FastPlaybackHoldSpeed = stringPreferencesKey("fast_playback_hold_speed")
         val BackgroundPlaybackEnabled = booleanPreferencesKey("background_playback_enabled")
+        val ResumePlaybackEnabled = booleanPreferencesKey("resume_playback_enabled")
         val PictureInPictureEnabled = booleanPreferencesKey("picture_in_picture_enabled")
         val ShortsMaxDurationSeconds = intPreferencesKey("shorts_max_duration_seconds")
         val PlaybackOrientationMode = stringPreferencesKey("playback_orientation_mode")
@@ -465,6 +476,7 @@ class StashSettingsRepository(private val context: Context) {
         val DEFAULT_PLAYBACK_END_ACTION: PlaybackEndAction = PlaybackEndAction.default
         val DEFAULT_FAST_PLAYBACK_HOLD_SPEED: FastPlaybackHoldSpeedPreference = FastPlaybackHoldSpeedPreference.default
         const val DEFAULT_BACKGROUND_PLAYBACK_ENABLED = false
+        const val DEFAULT_RESUME_PLAYBACK_ENABLED = true
         const val DEFAULT_PICTURE_IN_PICTURE_ENABLED = false
         const val DEFAULT_SHORTS_MAX_DURATION_SECONDS = STASH_SHORTS_DEFAULT_MAX_DURATION_SECONDS
         val DEFAULT_PLAYBACK_ORIENTATION_MODE: PlaybackOrientationMode = PlaybackOrientationMode.default

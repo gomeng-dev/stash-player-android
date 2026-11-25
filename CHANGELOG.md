@@ -11,6 +11,13 @@ When bumping `versionName`, add a new section for the release version and summar
 - 简体中文：暂无。
 - 繁體中文：暫無。
 
+## [1.14.1] - 2026-11-25
+
+- English: Turn off Resume video playback in Settings → Playback to start videos from the beginning without clearing watch progress.
+- 한국어: 설정 → 재생에서 영상 이어보기를 끄면 시청 기록은 유지하고 영상을 처음부터 재생할 수 있습니다.
+- 简体中文：在设置 → 播放中关闭继续播放视频，从头播放而不清除观看进度。
+- 繁體中文：在設定 → 播放中關閉繼續播放影片，從頭播放而不清除觀看進度。
+
 ## [1.14.0] - 2026-11-23
 
 - English: Save up to 10 full playback queues and resume each from the Queue tab without opening another screen. Back out of fullscreen with one edge swipe. The search box shows the latest 50 searches plus favorites, which are not counted toward the limit.

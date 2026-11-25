@@ -292,6 +292,7 @@ fun PlayerRoute(
     val backgroundPlaybackEnabled by settingsRepository.backgroundPlaybackEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_BACKGROUND_PLAYBACK_ENABLED,
     )
+    val resumePlaybackEnabled by settingsRepository.resumePlaybackEnabled.collectAsState(initial = null)
     val pictureInPictureEnabled by settingsRepository.pictureInPictureEnabled.collectAsState(
         initial = StashSettingsRepository.DEFAULT_PICTURE_IN_PICTURE_ENABLED,
     )
@@ -351,6 +352,7 @@ fun PlayerRoute(
         }
     }
 
+    val resumeEnabled = resumePlaybackEnabled
     when {
         loadError != null -> PlayerActionMessage(
             message = stashString(R.string.auto_kr_0471, loadError),
@@ -359,7 +361,7 @@ fun PlayerRoute(
             secondaryActionLabel = stashString(R.string.auto_kr_0270),
             onSecondaryAction = onOpenSettings,
         )
-        stream == null -> PlayerLoadingMessage(stashString(R.string.auto_kr_0472))
+        stream == null || resumeEnabled == null -> PlayerLoadingMessage(stashString(R.string.auto_kr_0472))
         else -> RealPlayerRoute(
             sceneId = sceneId,
             stream = stream!!,
@@ -391,6 +393,7 @@ fun PlayerRoute(
             onRefreshStream = { streamLoadRetryKey += 1L },
             onPlaylistDrawerOpen = onPlaylistDrawerOpen,
             resumePlaylistPositionMs = resumePlaylistPositionMs,
+            resumeEnabled = resumeEnabled,
             onSavePlaylist = onSavePlaylist,
             onPlaylistCheckpoint = onPlaylistCheckpoint,
         )
@@ -429,6 +432,7 @@ private fun RealPlayerRoute(
     onRefreshStream: () -> Unit,
     onPlaylistDrawerOpen: suspend (String, Int) -> Unit,
     resumePlaylistPositionMs: Long?,
+    resumeEnabled: Boolean,
     onSavePlaylist: (suspend (PlayerPlaybackQueue, Long) -> Boolean)?,
     onPlaylistCheckpoint: ((Long) -> Unit)?,
 ) {
@@ -571,7 +575,15 @@ private fun RealPlayerRoute(
     var playerGestureExclusionBounds by remember { mutableStateOf<PlayerGestureExclusionBounds?>(null) }
     var playerGesturesSuspendedByModalSurface by remember { mutableStateOf(false) }
     var lastControlInteractionAtMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var positionMs by remember { mutableLongStateOf(resumePlaylistPositionMs ?: stream.startPositionMs) }
+    val resolvedResumeStartPositionMs = remember(stream) {
+        resolvePlayerResumeStartPositionMs(
+            startPositionMs = stream.startPositionMs,
+            durationSeconds = stream.durationSeconds,
+            savedQueuePositionMs = resumePlaylistPositionMs,
+            resumeEnabled = resumeEnabled,
+        )
+    }
+    var positionMs by remember(stream) { mutableLongStateOf(resolvedResumeStartPositionMs) }
     var durationMs by remember { mutableLongStateOf(0L) }
     var isPlaying by remember { mutableStateOf(false) }
     var playbackStatus by remember(stream) { mutableStateOf(PlayerPlaybackUiStatus.Loading) }
@@ -776,20 +788,8 @@ private fun RealPlayerRoute(
     var repeatedFromSceneId by remember(sceneId) { mutableStateOf<String?>(null) }
     var autoAdvanceArmed by remember(stream) { mutableStateOf(false) }
     var playbackPrepared by remember(stream) { mutableStateOf(false) }
-    val resolvedResumeStartPositionMs = remember(stream) {
-        resumePlaylistPositionMs?.takeUnless { position ->
-            stream.durationSeconds?.let { it > 0.0 && position / 1000.0 >= it } == true
-        } ?: if (resumePlaylistPositionMs != null) 0L else resolvePlayerResumeStartPositionMs(
-            startPositionMs = stream.startPositionMs,
-            durationSeconds = stream.durationSeconds,
-        )
-    }
-    val shouldShowResumePrompt = remember(stream) {
-        resumePlaylistPositionMs == null && shouldPromptForPlayerResumePosition(
-            startPositionMs = stream.startPositionMs,
-            durationSeconds = stream.durationSeconds,
-        )
-    }
+    val shouldShowResumePrompt = resumePlaylistPositionMs == null &&
+        shouldPromptForPlayerResumePosition(resolvedResumeStartPositionMs)
     var resumeStartPositionMs by remember(stream) {
         mutableStateOf<Long?>(
             if (shouldShowResumePrompt) {
@@ -2168,10 +2168,10 @@ private fun RealPlayerRoute(
 
         if (resumePromptVisible) {
             ResumePlaybackPrompt(
-                resumePositionMs = stream.startPositionMs,
+                resumePositionMs = resolvedResumeStartPositionMs,
                 onResume = {
                     markPlayerInteraction()
-                    resumeStartPositionMs = stream.startPositionMs
+                    resumeStartPositionMs = resolvedResumeStartPositionMs
                     resumePromptVisible = false
                 },
                 onRestart = {
