@@ -11,6 +11,13 @@ When bumping `versionName`, add a new section for the release version and summar
 - 简体中文：暂无。
 - 繁體中文：暫無。
 
+## [1.14.3] - 2026-11-28
+
+- English: Random sort now works with Favorites only in Explore.
+- 한국어: 탐색에서 즐겨찾기만 보기와 무작위 정렬을 함께 사용할 수 있습니다.
+- 简体中文：探索页仅显示收藏时也可以随机排序。
+- 繁體中文：探索頁僅顯示收藏時也可以隨機排序。
+
 ## [1.14.2] - 2026-11-28
 
 - English: Shuffle playback now picks a fresh order rather than sorting by video ID. Resuming a saved queue still keeps its saved order.

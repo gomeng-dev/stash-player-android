@@ -1,5 +1,7 @@
 package gomeng.dev.stashplayer.core.model
 
+import kotlin.random.Random
+
 fun defaultStashExplorePageSizeOptions(): List<Int> = defaultStashDiscoveryPageSizeOptions()
 
 internal fun showExploreSupportingChrome(isLandscape: Boolean): Boolean = !isLandscape
@@ -44,14 +46,23 @@ data class StashExplorePageState(
     fun forSort(
         sortOption: StashExploreSortOption,
         randomSeed: Int? = null,
-    ): StashExplorePageState = reset().copy(
-        query = query,
-        sortOption = sortOption.copy(
-            sort = freshStashRandomServerSort(sortOption.sort, this.sortOption.sort, randomSeed),
-        ),
-        sortDirection = sortOption.defaultDirection,
-        videoFilter = videoFilter,
-    )
+    ): StashExplorePageState {
+        val previousSort = videoFilter.randomShuffleSeed
+            ?.takeIf { videoFilter.randomShuffle }
+            ?.let { "random_$it" } ?: this.sortOption.sort
+        val sort = freshStashRandomServerSort(sortOption.sort, previousSort, randomSeed)
+        val seed = sort.substringAfter("random_", "").toIntOrNull()
+        return reset().copy(
+            query = query,
+            sortOption = sortOption.copy(sort = sort),
+            sortDirection = sortOption.defaultDirection,
+            videoFilter = if (videoFilter.randomShuffle && seed != null) {
+                videoFilter.withStashRandomShuffleSeed(seed)
+            } else {
+                videoFilter
+            },
+        )
+    }
 
     fun withSortDirection(direction: StashSortDirection): StashExplorePageState = reset().copy(
         query = query,
@@ -84,6 +95,13 @@ data class StashExplorePageState(
         error = null,
         totalCount = totalCount,
     )
+
+    fun withLocalFavorites(favorites: List<SceneCardModel>): StashExplorePageState {
+        val seed = videoFilter.randomShuffleSeed?.takeIf { videoFilter.randomShuffle }
+            ?: sortOption.sort.substringAfter("random_", "").toIntOrNull()
+        val results = if (seed == null) favorites else favorites.shuffled(Random(seed))
+        return withFirstPage(results, results.size, results.size.coerceAtLeast(1))
+    }
 
     fun withNextPage(
         results: List<SceneCardModel>,

@@ -412,14 +412,7 @@ fun ExploreRoute(
             if (routeState.lastLocalFavoriteResetLoadKey != resetLoadKey || pageState.totalCount == null) {
                 routeState.lastLocalFavoriteResetLoadKey = resetLoadKey
                 requestSerial += 1L
-                pageState = StashExplorePageState.initial(pageState.sortOption)
-                    .copy(
-                        query = pageState.query,
-                        sortDirection = pageState.sortDirection,
-                        pageSize = pageState.pageSize,
-                        videoFilter = pageState.videoFilter,
-                    )
-                    .withFirstPage(favoriteScenes, favoriteScenes.size, favoriteScenes.size.coerceAtLeast(1))
+                pageState = pageState.withLocalFavorites(favoriteScenes)
             }
         }
     }
