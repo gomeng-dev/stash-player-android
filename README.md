@@ -99,7 +99,7 @@ The Images tab supports search, sort, filters, and full-screen browsing. In the 
 3. Open the APK and allow installs from your browser or file manager if Android asks.
 4. Launch **Stash Player** and connect it to your Stash server.
 
-Current public release: **v1.14.1**
+Current public release: **v1.14.2**
 
 The delete dialog no longer requires an extra acknowledgement checkbox. Original videos/funscripts and generated files are selected for deletion by default; file deletion is irreversible. Uncheck original-file deletion in the dialog to keep originals. Settings → Interface → **Skip delete confirmation** is OFF by default; enabling it deletes immediately, including original files, for single and multiple selections.
 

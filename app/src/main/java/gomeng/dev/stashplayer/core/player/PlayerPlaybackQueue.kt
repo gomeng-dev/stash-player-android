@@ -5,12 +5,10 @@ import gomeng.dev.stashplayer.core.model.SceneCardModel
 import gomeng.dev.stashplayer.core.model.SimilarSceneRecommendation
 import gomeng.dev.stashplayer.core.model.StashSortDirection
 import gomeng.dev.stashplayer.core.model.StashVideoFilterState
-import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import gomeng.dev.stashplayer.R
 import gomeng.dev.stashplayer.core.ui.i18n.stashString
 
-private val PLAYER_QUEUE_HASH_SEED: Long = 1125899906842597L
 private val PLAYER_PLAYBACK_MENU_MAX_HEIGHT_DP = 560
 private val PLAYER_PLAYBACK_MENU_SCROLL_THRESHOLD = 8
 
@@ -70,7 +68,6 @@ data class PlayerPlaybackQueue(
     val items: List<PlayerQueueItem> = emptyList(),
     val currentSceneId: String? = null,
     val shuffleEnabled: Boolean = false,
-    private val shuffleGeneration: Int = 0,
     private val detachedCurrentOrderIndex: Int? = null,
     private val detachedSequentialOrderIndex: Int? = null,
     internal val sequentialItems: List<PlayerQueueItem>? = null,
@@ -90,40 +87,23 @@ data class PlayerPlaybackQueue(
             return copy(
                 items = sequentialItems ?: items,
                 shuffleEnabled = false,
-                shuffleGeneration = 0,
                 detachedCurrentOrderIndex = detachedSequentialOrderIndex ?: detachedCurrentOrderIndex,
                 detachedSequentialOrderIndex = null,
                 sequentialItems = null,
             )
         }
-        val baseSequentialItems = if (shuffleEnabled) sequentialItems ?: items else items
-        var nextGeneration = shuffleGeneration
-        var shuffledItems: List<PlayerQueueItem>
-        var attempts = 0
-        do {
-            nextGeneration += 1
-            shuffledItems = materializeShuffledItems(
-                items = baseSequentialItems,
-                currentSceneId = currentSceneId,
-                generation = nextGeneration,
-            )
-            attempts += 1
-        } while (
-            shuffleEnabled &&
-                shuffledItems.map { it.sceneId } == items.map { it.sceneId } &&
-                attempts <= baseSequentialItems.size
-        )
-        if (shuffleEnabled && shuffledItems.map { it.sceneId } == items.map { it.sceneId } && shuffledItems.size > 1) {
-            val currentItem = shuffledItems.firstOrNull { it.sceneId == currentSceneId }
-            val remainingItems = shuffledItems.filterNot { it.sceneId == currentItem?.sceneId }
-            val rotation = nextGeneration.mod(remainingItems.size).takeIf { it > 0 } ?: 1
-            val rotatedRemainingItems = remainingItems.drop(rotation) + remainingItems.take(rotation)
-            shuffledItems = if (currentItem != null) listOf(currentItem) + rotatedRemainingItems else rotatedRemainingItems
-        }
+        val baseSequentialItems = sequentialItems ?: items
+        val currentItem = baseSequentialItems.firstOrNull { it.sceneId == currentSceneId }
+        val anchor = listOfNotNull(currentItem)
+        val remaining = baseSequentialItems.filterNot { it.sceneId == currentSceneId }.shuffled()
+        val shuffled = anchor + remaining
         return copy(
-            items = shuffledItems,
+            items = if (shuffleEnabled && shuffled == items && remaining.size > 1) {
+                anchor + remaining.drop(1) + remaining.first()
+            } else {
+                shuffled
+            },
             shuffleEnabled = true,
-            shuffleGeneration = nextGeneration,
             sequentialItems = baseSequentialItems,
         )
     }
@@ -206,7 +186,7 @@ fun handOffLoadedResultPlaybackQueue(
     return if (
         currentQueue.items == nextQueue.items &&
         currentQueue.shuffleEnabled == nextQueue.shuffleEnabled &&
-        currentQueue.playbackOrderSceneIds() == nextQueue.playbackOrderSceneIds()
+        currentQueue.sequentialItems == nextQueue.sequentialItems
     ) {
         currentQueue.withCurrent(selectedSceneId)
     } else {
@@ -552,29 +532,3 @@ fun buildSingleScenePlaybackQueue(sceneId: String): PlayerPlaybackQueue = Player
     items = listOf(PlayerQueueItem(sceneId = sceneId, title = sceneId)),
     currentSceneId = sceneId,
 )
-
-private fun materializeShuffledItems(
-    items: List<PlayerQueueItem>,
-    currentSceneId: String?,
-    generation: Int,
-): List<PlayerQueueItem> {
-    if (items.size <= 1) return items
-    val currentItem = items.firstOrNull { it.sceneId == currentSceneId }
-    val remainingItems = items
-        .filterNot { it.sceneId == currentItem?.sceneId }
-        .sortedWith(compareBy({ stableShuffleKey(it.sceneId, generation) }, { it.sceneId }))
-    val orderedItems = if (currentItem != null) listOf(currentItem) + remainingItems else remainingItems
-    val currentOrder = items.map { it.sceneId }
-    val materializedOrder = orderedItems.map { it.sceneId }
-    if (materializedOrder != currentOrder || remainingItems.size <= 1) return orderedItems
-
-    val rotation = generation.mod(remainingItems.size).takeIf { it > 0 } ?: 1
-    val rotatedRemainingItems = remainingItems.drop(rotation) + remainingItems.take(rotation)
-    return if (currentItem != null) listOf(currentItem) + rotatedRemainingItems else rotatedRemainingItems
-}
-
-private fun stableShuffleKey(sceneId: String, generation: Int): Long = sceneId.fold(
-    PLAYER_QUEUE_HASH_SEED + generation * 1_000_003L,
-) { acc, char ->
-    acc * 31 + char.code
-}.absoluteValue

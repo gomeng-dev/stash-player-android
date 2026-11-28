@@ -11,6 +11,13 @@ When bumping `versionName`, add a new section for the release version and summar
 - 简体中文：暂无。
 - 繁體中文：暫無。
 
+## [1.14.2] - 2026-11-28
+
+- English: Shuffle playback now picks a fresh order rather than sorting by video ID. Resuming a saved queue still keeps its saved order.
+- 한국어: 섞은 순서 재생을 시작할 때 영상 ID에 고정된 순서 대신 새로 무작위로 섞습니다. 저장된 대기열을 이어볼 때는 저장된 순서를 유지합니다.
+- 简体中文：随机播放会重新打乱顺序，而不是按视频 ID 固定排序。继续已保存的队列时保留原顺序。
+- 繁體中文：隨機播放會重新打亂順序，而不是依影片 ID 固定排序。繼續已儲存的佇列時保留原順序。
+
 ## [1.14.1] - 2026-11-25
 
 - English: Turn off Resume video playback in Settings → Playback to start videos from the beginning without clearing watch progress.

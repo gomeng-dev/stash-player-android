@@ -98,23 +98,15 @@ fun buildPlaybackHistoryOverviewModel(
 fun buildQueuePlaybackRequest(
     scenes: List<SceneCardModel>,
     shuffle: Boolean,
-    seed: Long = System.currentTimeMillis(),
+    random: Random = Random,
     selectedSceneId: String? = null,
 ): QueuePlaybackRequest? {
     if (scenes.isEmpty()) return null
-    val orderedScenes = if (shuffle && scenes.size > 1) {
-        scenes.shuffled(Random(seed))
-    } else {
-        scenes
-    }
+    val randomShuffle = shuffle && scenes.size > 1
     val selectedId = selectedSceneId
-        ?.takeIf { candidate -> orderedScenes.any { it.id == candidate } }
-        ?: orderedScenes.first().id
-    return QueuePlaybackRequest(
-        selectedSceneId = selectedId,
-        scenes = orderedScenes,
-        randomShuffle = shuffle && orderedScenes.size > 1,
-    )
+        ?.takeIf { candidate -> scenes.any { it.id == candidate } }
+        ?: (if (randomShuffle) scenes.random(random) else scenes.first()).id
+    return QueuePlaybackRequest(selectedId, scenes, randomShuffle)
 }
 
 fun moveQueueScene(
